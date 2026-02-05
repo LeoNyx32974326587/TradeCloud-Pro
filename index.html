@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud LeoNyx</title>
+    <title>TradeCloud Pro LeoNyx</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -68,7 +68,8 @@
     <section id="view-Übersicht" class="view-section active">
         <div id="greeting-container">
             <h1 id="user-greeting">HALLO</h1>
-            </div>
+            <button class="btn-small" onclick="prepareCreateView()">+ Trade erstellen</button>
+        </div>
         <div id="overview-active-trades" class="card hidden"><h4>OFFENE TRADES</h4><div id="activeListOverview"></div></div>
         <div class="card">
             <h4>PERFORMANCE CHART</h4>
@@ -77,6 +78,11 @@
                 <button class="chart-btn" onclick="setQuickFilter('week')">Woche</button>
                 <button class="chart-btn" onclick="setQuickFilter('month')">Monat</button>
                 <button class="chart-btn active" onclick="setQuickFilter('all')">Alles</button>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center;">
+                <input type="date" id="chartStart" style="width: auto;" onchange="updateChart()">
+                <span>bis</span>
+                <input type="date" id="chartEnd" style="width: auto;" onchange="updateChart()">
             </div>
             <div style="height: 300px;"><canvas id="ovChart"></canvas></div>
         </div>
@@ -153,7 +159,10 @@
             document.getElementById('app-content').classList.remove('hidden');
             document.getElementById('main-header').classList.remove('hidden');
             document.getElementById('user-greeting').innerText = `HALLO ${user.displayName?.split(' ')[0].toUpperCase() || 'TRADER'}`;
-            if(user.email.toLowerCase() === adminEmail) document.getElementById('admin-link').classList.remove('hidden');
+            if(user.email.toLowerCase() === adminEmail) {
+                document.getElementById('admin-link').classList.remove('hidden');
+                loadMembers();
+            }
             await loadUserAssets();
             loadTrades();
             updateNewsWidget();
@@ -162,9 +171,12 @@
         }
     });
 
+    // ASSET LOGIK
     async function loadUserAssets() {
         const snap = await db.collection('userAssets').doc(auth.currentUser.uid).get();
-        if (snap.exists) userAssets = snap.data().assets;
+        if (snap.exists && snap.data().assets) {
+            userAssets = snap.data().assets;
+        }
         renderAssetDropdown();
     }
 
@@ -175,20 +187,40 @@
 
     async function addNewAsset() {
         const name = prompt("Neues Asset Name (z.B. NAS100):");
-        if (name && !userAssets.includes(name.toUpperCase())) {
-            userAssets.push(name.toUpperCase());
-            await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
-            renderAssetDropdown();
+        if (name && name.trim() !== "") {
+            const upperName = name.toUpperCase().trim();
+            if(!userAssets.includes(upperName)) {
+                userAssets.push(upperName);
+                await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
+                renderAssetDropdown();
+                document.getElementById('assetDropdown').value = upperName;
+            }
         }
     }
 
     async function deleteCurrentAsset() {
         const val = document.getElementById('assetDropdown').value;
-        if (val && confirm(`${val} wirklich aus der Liste löschen?`)) {
+        if (val && confirm(`${val} wirklich löschen?`)) {
             userAssets = userAssets.filter(a => a !== val);
             await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
             renderAssetDropdown();
         }
+    }
+
+    // CHART & FILTER LOGIK
+    function setQuickFilter(m) {
+        const now = new Date(); let start = new Date();
+        document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        if(m==='today') start.setHours(0,0,0,0);
+        else if(m==='week') start.setDate(now.getDate()-7);
+        else if(m==='month') start.setMonth(now.getMonth()-1);
+        else start = "";
+        
+        document.getElementById('chartStart').value = start ? start.toISOString().split('T')[0] : "";
+        document.getElementById('chartEnd').value = now.toISOString().split('T')[0];
+        updateChart();
     }
 
     async function loadTrades() {
@@ -203,21 +235,50 @@
         const activeListOv = document.getElementById('activeListOverview');
         body.innerHTML = ''; activeListOv.innerHTML = '';
         let hasActive = false;
+        
         trades.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
             if(t.status !== 'Geschlossen') {
                 hasActive = true;
-                activeListOv.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>${t.asset}</span><button class="btn-close-trade" onclick="quickClose('${t.id}')">SCHLIESSEN</button></div>`;
+                activeListOv.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #222;">
+                    <span><b>${t.asset}</b></span>
+                    <button class="btn-close-trade" onclick="quickClose('${t.id}')">SCHLIESSEN</button>
+                </div>`;
             } else {
-                totalPnl += t.pnl; closedCount++; if(t.pnl > 0) wins++;
+                totalPnl += (t.pnl || 0); closedCount++; if(t.pnl > 0) wins++;
             }
-            body.innerHTML += `<tr><td>${t.date.split('T')[0]}</td><td>${t.asset}</td><td>${t.pnl}€</td><td><button onclick="editTrade('${t.id}')">✏️</button></td></tr>`;
+            body.innerHTML += `<tr><td>${t.date.split('T')[0]}</td><td>${t.asset}</td><td style="color:${t.pnl>=0?'var(--success)':'var(--danger)'}">${t.pnl}€</td><td><button onclick="editTrade('${t.id}')" style="background:none; border:none; cursor:pointer;">✏️</button></td></tr>`;
         });
         document.getElementById('overview-active-trades').classList.toggle('hidden', !hasActive);
         document.getElementById('ovTotal').innerText = totalPnl.toFixed(2) + " €";
+        document.getElementById('ovTotal').style.color = totalPnl >= 0 ? 'var(--success)' : 'var(--danger)';
         document.getElementById('ovWinRate').innerText = closedCount > 0 ? (wins/closedCount*100).toFixed(1) + "%" : "0%";
         updateChart();
     }
 
+    function updateChart() {
+        const ctx = document.getElementById('ovChart').getContext('2d');
+        const s = document.getElementById('chartStart').value;
+        const e = document.getElementById('chartEnd').value;
+        
+        let filtered = trades.filter(t => t.status === 'Geschlossen');
+        if(s) filtered = filtered.filter(t => t.date >= s);
+        if(e) filtered = filtered.filter(t => t.date <= e + "T23:59");
+        
+        filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
+        let sum = 0; const points = filtered.map(t => { sum += t.pnl; return sum; });
+        
+        if(ovChart) ovChart.destroy();
+        ovChart = new Chart(ctx, { 
+            type: 'line', 
+            data: { 
+                labels: filtered.map(t => t.date.split('T')[0]), 
+                datasets: [{ data: points, borderColor: '#bb86fc', tension: 0.2, fill: true, backgroundColor: 'rgba(187,134,252,0.1)' }] 
+            }, 
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } 
+        });
+    }
+
+    // AUTH & HELPER
     async function saveTrade() {
         const id = document.getElementById('editId').value;
         const data = { date: document.getElementById('datetime').value, asset: document.getElementById('assetDropdown').value, status: document.getElementById('status').value, mindset: document.getElementById('mindset').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value, userId: auth.currentUser.uid };
@@ -226,12 +287,10 @@
     }
 
     function prepareCreateView() {
-        document.getElementById('editId').value = "";
-        // Automatische Datum- und Uhrzeitbefüllung
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         document.getElementById('datetime').value = now.toISOString().slice(0,16);
-        
+        document.getElementById('editId').value = "";
         document.getElementById('pnl').value = ""; 
         document.getElementById('imgSetup').value = ""; 
         document.getElementById('imgResult').value = ""; 
@@ -256,14 +315,6 @@
         script.async = true;
         script.innerHTML = JSON.stringify({ "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "100%", "locale": "de_DE", "importanceFilter": filter === 'high' ? "3" : (filter === 'middle' ? "2,3" : "1,2,3") });
         container.appendChild(script);
-    }
-
-    function updateChart() {
-        const ctx = document.getElementById('ovChart').getContext('2d');
-        let filtered = trades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
-        let sum = 0; const points = filtered.map(t => { sum += t.pnl; return sum; });
-        if(ovChart) ovChart.destroy();
-        ovChart = new Chart(ctx, { type: 'line', data: { labels: filtered.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', tension: 0.2, fill: true, backgroundColor: 'rgba(187,134,252,0.1)' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
     }
 
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
