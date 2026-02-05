@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud Pro - Mindset & Vision</title>
+    <title>TradeCloud Pro - Google Auth</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -13,65 +13,54 @@
             --bg-dark: #0f0f0f; --card-bg: #1a1a1a; --text-main: #e0e0e0; 
             --accent: #bb86fc; --success: #03dac6; --danger: #cf6679; --border: #2c2c2c; 
         }
-
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); margin: 0; color: var(--text-main); }
         .hidden { display: none !important; }
-
         header { display: flex; align-items: center; padding: 12px 20px; background: #161616; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
         .menu-btn { cursor: pointer; font-size: 1.4rem; color: var(--accent); background: none; border: none; padding: 10px; z-index: 300; }
-        
         .nav-drawer { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #161616; border-right: 1px solid var(--border); transition: 0.3s ease; z-index: 200; padding-top: 80px; }
         .nav-drawer.open { left: 0; }
         .nav-drawer button { display: block; width: 100%; padding: 15px 25px; text-align: left; background: none; border: none; color: var(--text-main); font-size: 1rem; cursor: pointer; }
-        .nav-drawer button:hover { background: #222; color: var(--accent); }
-
         .container { max-width: 900px; margin: 20px auto; padding: 0 15px; }
         
         #auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-dark); display:flex; justify-content:center; align-items:center; z-index:1000; }
-        .auth-box { background: var(--card-bg); padding: 30px; border-radius: 12px; border: 1px solid var(--accent); width: 320px; text-align: center; }
+        .auth-box { background: var(--card-bg); padding: 40px; border-radius: 12px; border: 1px solid var(--accent); width: 320px; text-align: center; }
         
         .view-section { display: none; }
         .view-section.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .stat-label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-label { font-size: 0.75rem; color: #888; text-transform: uppercase; }
         .stat-val { font-size: 1.6rem; font-weight: bold; margin-top: 5px; }
 
         .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 1rem; }
+        input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; }
         
-        .btn-primary { background: var(--accent); color: black; padding: 14px; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; width: 100%; }
-        .btn-edit { background: none; border: 1px solid #444; color: #aaa; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
-        .btn-delete { color: var(--danger); border: 1px solid var(--danger); background: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px; }
+        .btn-primary { background: var(--accent); color: black; padding: 14px; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; width: 100%; transition: 0.2s; }
+        .btn-google { background: white; color: #444; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-logout { background: none; border: 1px solid #444; color: #888; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
         
-        .chart-controls { display: flex; gap: 8px; margin-bottom: 15px; }
-        .chart-btn { padding: 6px 12px; font-size: 0.75rem; background: #222; border: 1px solid #333; color: white; border-radius: 4px; cursor: pointer; }
-        .chart-btn.active { background: var(--accent); color: black; border-color: var(--accent); }
-
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
         .profit { color: var(--success); } .loss { color: var(--danger); }
-
-        /* Thumbnail Styles */
-        .img-preview { width: 50px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #333; cursor: pointer; margin-right: 5px; }
-        .img-preview:hover { border-color: var(--accent); }
+        .img-preview { width: 45px; height: 30px; object-fit: cover; border-radius: 4px; border: 1px solid #333; cursor: pointer; margin-right: 4px; }
     </style>
 </head>
 <body>
 
 <div id="auth-overlay">
     <div class="auth-box">
-        <h2 style="color: var(--accent)">TradeCloud Login</h2>
-        <input type="email" id="email" placeholder="E-Mail" style="margin-bottom: 10px;">
-        <button onclick="handleLogin()" class="btn-primary">Anmelden</button>
+        <h2 style="color: var(--accent); margin-bottom: 30px;">TradeCloud</h2>
+        <button onclick="loginGoogle()" class="btn-primary btn-google">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Mit Google anmelden
+        </button>
     </div>
 </div>
 
 <header id="main-header" class="hidden">
     <button class="menu-btn" onclick="toggleMenu()">&#9776;</button>
-    <h3 id="view-title" style="margin-left: 15px; flex-grow: 1; font-weight: 500; color: var(--accent);">ÜBERSICHT</h3>
-    <button class="btn-edit" onclick="auth.signOut()" style="font-size: 0.7rem;">Logout</button>
+    <h3 id="view-title" style="margin-left: 15px; flex-grow: 1; color: var(--accent); font-weight: 500;">ÜBERSICHT</h3>
+    <button class="btn-logout" onclick="handleLogout()">Logout</button>
 </header>
 
 <nav class="nav-drawer" id="navDrawer">
@@ -83,11 +72,6 @@
 <div id="app-content" class="container hidden">
     <section id="view-overview" class="view-section active">
         <div class="card">
-            <div class="chart-controls">
-                <button class="chart-btn active" onclick="updateChartPeriod('year', this)">Jahr</button>
-                <button class="chart-btn" onclick="updateChartPeriod('month', this)">Monat</button>
-                <button class="chart-btn" onclick="updateChartPeriod('week', this)">Woche</button>
-            </div>
             <div style="height: 280px;"><canvas id="ovChart"></canvas></div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -98,7 +82,6 @@
 
     <section id="view-entry" class="view-section">
         <div class="card">
-            <h3 style="margin-top:0;">Trade erfassen</h3>
             <input type="hidden" id="editId">
             <div class="input-group">
                 <input type="datetime-local" id="datetime">
@@ -110,17 +93,17 @@
                     <option value="Geschlossen">Geschlossen</option>
                 </select>
                 <select id="mindset">
-                    <option value="Neutral">😐 Neutral</option>
-                    <option value="Sicher">😊 Sicher/Fokus</option>
-                    <option value="Angst">😨 Angst/Zögern</option>
-                    <option value="Wut">😡 Wut/Frust</option>
+                    <option value="😐 Neutral">😐 Neutral</option>
+                    <option value="😊 Sicher">😊 Sicher</option>
+                    <option value="😨 Angst">😨 Angst</option>
+                    <option value="😡 Wut">😡 Wut</option>
                 </select>
             </div>
-            <div id="pnlWrapper" class="hidden" style="margin-bottom:15px;"><input type="number" id="pnl" step="0.01" placeholder="Profit/Verlust (€)"></div>
+            <div id="pnlWrapper" class="hidden"><input type="number" id="pnl" step="0.01" placeholder="Profit/Verlust (€)" style="margin-bottom:15px;"></div>
             <input type="url" id="imgSetup" placeholder="Setup Screenshot URL" style="margin-bottom:15px;">
             <div id="outcomeWrapper" class="hidden"><input type="url" id="imgResult" placeholder="Ergebnis Screenshot URL" style="margin-bottom:15px;"></div>
-            <textarea id="note" placeholder="Notizen zum Trade..." rows="4" style="margin-bottom: 15px;"></textarea>
-            <button onclick="saveTrade()" class="btn-primary">Speichern</button>
+            <textarea id="note" placeholder="Notizen..." rows="4" style="margin-bottom: 15px;"></textarea>
+            <button onclick="saveTrade()" class="btn-primary">Trade Speichern</button>
         </div>
     </section>
 
@@ -135,9 +118,6 @@
 </div>
 
 <script>
-    const myAssets = ["BTCUSD", "ETHUSD", "EURUSD", "GBPUSD", "GOLD", "DAX", "NASDAQ"];
-    const mindsetEmojis = { "Neutral": "😐", "Sicher": "😊", "Angst": "😨", "Wut": "😡" };
-    
     const firebaseConfig = {
         apiKey: "AIzaSyDCgM4h6Rgk-r95Qy7BlT1S4QQI-4IDqAQ",
         authDomain: "trading-journal-acc.firebaseapp.com",
@@ -153,39 +133,29 @@
 
     let trades = [];
     let ovChart;
-    let currentPeriod = 'year';
 
-    function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
-
-    function showView(viewId) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.getElementById('view-' + viewId).classList.add('active');
-        document.getElementById('view-title').innerText = viewId.toUpperCase();
-        document.getElementById('navDrawer').classList.remove('open');
-        if(viewId === 'entry' && !document.getElementById('editId').value) setNow();
-        renderUI();
+    // AUTH FUNKTIONEN
+    function loginGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).catch(err => alert(err.message));
     }
 
-    function setNow() {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        document.getElementById('datetime').value = now.toISOString().slice(0, 16);
-    }
-
-    function toggleOutcomeFields() {
-        const isClosed = document.getElementById('status').value === 'Geschlossen';
-        document.getElementById('pnlWrapper').classList.toggle('hidden', !isClosed);
-        document.getElementById('outcomeWrapper').classList.toggle('hidden', !isClosed);
+    function handleLogout() {
+        auth.signOut().then(() => location.reload());
     }
 
     auth.onAuthStateChanged(user => {
-        if (user) { loadTrades(); document.getElementById('auth-overlay').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); document.getElementById('main-header').classList.remove('hidden'); }
+        if (user) {
+            document.getElementById('auth-overlay').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+            document.getElementById('main-header').classList.remove('hidden');
+            loadTrades();
+        } else {
+            document.getElementById('auth-overlay').classList.remove('hidden');
+        }
     });
 
-    async function handleLogin() {
-        try { await auth.signInWithEmailAndPassword(document.getElementById('email').value, "123456"); } catch(err) { alert("Login Error"); }
-    }
-
+    // DATA FUNKTIONEN
     async function loadTrades() {
         const snap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
         trades = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -205,11 +175,16 @@
             note: document.getElementById('note').value || '',
             userId: auth.currentUser.uid
         };
+
         if(id) await db.collection('trades').doc(id).update(t);
         else await db.collection('trades').add(t);
-        resetForm(); loadTrades(); showView('overview');
+        
+        resetForm();
+        loadTrades();
+        showView('overview');
     }
 
+    // UI FUNKTIONEN
     function renderUI() {
         let totalPnl = 0, wins = 0, closedCount = 0;
         const body = document.getElementById('tradeBody');
@@ -218,37 +193,38 @@
         [...trades].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
             if(t.status === 'Geschlossen') { totalPnl += t.pnl; closedCount++; if(t.pnl > 0) wins++; }
             
-            const setupImg = t.imgSetup ? `<img src="${t.imgSetup}" class="img-preview" onclick="window.open('${t.imgSetup}')">` : '';
-            const resultImg = t.imgResult ? `<img src="${t.imgResult}" class="img-preview" onclick="window.open('${t.imgResult}')">` : '';
-
             body.innerHTML += `<tr>
                 <td>${t.date.split('T')[0]}</td>
                 <td><b>${t.asset}</b></td>
-                <td>${mindsetEmojis[t.mindset] || '😐'}</td>
-                <td>${setupImg}${resultImg}</td>
+                <td>${t.mindset || '😐'}</td>
+                <td>
+                    ${t.imgSetup ? `<img src="${t.imgSetup}" class="img-preview" onclick="window.open('${t.imgSetup}')">` : ''}
+                    ${t.imgResult ? `<img src="${t.imgResult}" class="img-preview" onclick="window.open('${t.imgResult}')">` : ''}
+                </td>
                 <td class="${t.pnl>=0?'profit':'loss'}">${t.status==='Aktiv'?'-':t.pnl.toFixed(2)+'€'}</td>
                 <td style="text-align:right">
-                    <button class="btn-edit" onclick="editTrade('${t.id}')">✎</button>
-                    <button class="btn-delete" onclick="db.collection('trades').doc('${t.id}').delete().then(loadTrades)">X</button>
+                    <button class="btn-logout" style="border:none; color:var(--accent);" onclick="editTrade('${t.id}')">✎</button>
+                    <button class="btn-logout" style="border:none; color:var(--danger);" onclick="deleteTrade('${t.id}')">X</button>
                 </td>
             </tr>`;
         });
 
         document.getElementById('ovTotal').innerText = totalPnl.toFixed(2) + " €";
-        document.getElementById('ovWinRate').innerText = closedCount > 0 ? ((wins/closedCount)*100).toFixed(1) + "%" : "0%";
+        document.getElementById('ovTotal').className = 'stat-val ' + (totalPnl >= 0 ? 'profit' : 'loss');
+        document.getElementById('ovWinRate').innerText = closedCount > 0 ? (wins/closedCount*100).toFixed(1) + "%" : "0%";
         updateChart();
     }
 
     function updateChart() {
         const ctx = document.getElementById('ovChart').getContext('2d');
-        const filtered = trades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
+        const sorted = trades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
         let sum = 0;
-        const points = filtered.map(t => { sum += t.pnl; return sum; });
+        const points = sorted.map(t => { sum += t.pnl; return sum; });
         if(ovChart) ovChart.destroy();
         ovChart = new Chart(ctx, {
             type: 'line',
-            data: { labels: filtered.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', tension: 0.3, fill: true, backgroundColor: 'rgba(187,134,252,0.1)' }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false } } }
+            data: { labels: sorted.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', tension: 0.3, fill: true, backgroundColor: 'rgba(187,134,252,0.1)' }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
     }
 
@@ -258,7 +234,7 @@
         document.getElementById('datetime').value = t.date;
         document.getElementById('assetDropdown').value = t.asset;
         document.getElementById('status').value = t.status;
-        document.getElementById('mindset').value = t.mindset || 'Neutral';
+        document.getElementById('mindset').value = t.mindset || '😐 Neutral';
         document.getElementById('pnl').value = t.pnl;
         document.getElementById('imgSetup').value = t.imgSetup;
         document.getElementById('imgResult').value = t.imgResult;
@@ -267,16 +243,36 @@
         showView('entry');
     }
 
+    async function deleteTrade(id) {
+        if(confirm("Trade löschen?")) { await db.collection('trades').doc(id).delete(); loadTrades(); }
+    }
+
     function resetForm() {
         document.getElementById('editId').value = '';
+        document.getElementById('pnl').value = '';
         document.getElementById('imgSetup').value = '';
         document.getElementById('imgResult').value = '';
         document.getElementById('note').value = '';
-        document.getElementById('pnl').value = '';
-        document.getElementById('status').value = 'Aktiv';
-        toggleOutcomeFields();
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('datetime').value = now.toISOString().slice(0, 16);
     }
 
+    function showView(v) {
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        document.getElementById('view-'+v).classList.add('active');
+        document.getElementById('view-title').innerText = v.toUpperCase();
+        document.getElementById('navDrawer').classList.remove('open');
+    }
+
+    function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
+    function toggleOutcomeFields() {
+        const isClosed = document.getElementById('status').value === 'Geschlossen';
+        document.getElementById('pnlWrapper').classList.toggle('hidden', !isClosed);
+        document.getElementById('outcomeWrapper').classList.toggle('hidden', !isClosed);
+    }
+
+    const myAssets = ["BTCUSD", "ETHUSD", "EURUSD", "GBPUSD", "GOLD", "DAX", "NASDAQ"];
     document.getElementById('assetDropdown').innerHTML = myAssets.map(a => `<option value="${a}">${a}</option>`).join('');
 </script>
 </body>
