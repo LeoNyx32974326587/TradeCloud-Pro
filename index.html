@@ -13,54 +13,61 @@
             --bg-dark: #0f0f0f; --card-bg: #1a1a1a; --text-main: #e0e0e0; 
             --accent: #bb86fc; --success: #03dac6; --danger: #cf6679; --border: #2c2c2c; 
         }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); margin: 0; color: var(--text-main); }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); margin: 0; color: var(--text-main); line-height: 1.6; }
         .hidden { display: none !important; }
         
-        header { display: flex; align-items: center; padding: 12px 20px; background: #161616; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-        .menu-btn { cursor: pointer; font-size: 1.4rem; color: var(--accent); background: none; border: none; padding: 10px; }
+        header { display: flex; align-items: center; padding: 15px 20px; background: #161616; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .menu-btn { cursor: pointer; font-size: 1.6rem; color: var(--accent); background: none; border: none; padding: 10px; }
         
         h4 { 
             color: var(--accent); 
             font-weight: 600; 
             text-transform: uppercase; 
-            font-size: 1rem; 
-            letter-spacing: 1px;
+            font-size: 1.1rem; 
+            letter-spacing: 1.5px;
             margin-top: 0;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        /* Begrüßung - GRÖSSER */
+        #user-greeting {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, var(--accent), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .nav-drawer { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #161616; border-right: 1px solid var(--border); transition: 0.3s ease; z-index: 200; padding-top: 80px; }
         .nav-drawer.open { left: 0; }
-        .nav-drawer button { display: block; width: 100%; padding: 15px 25px; text-align: left; background: none; border: none; color: var(--text-main); font-size: 1rem; cursor: pointer; }
+        .nav-drawer button { display: block; width: 100%; padding: 18px 25px; text-align: left; background: none; border: none; color: var(--text-main); font-size: 1.1rem; cursor: pointer; }
         
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
         
         #auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-dark); display:flex; justify-content:center; align-items:center; z-index:1000; }
-        .auth-box { background: var(--card-bg); padding: 40px; border-radius: 12px; border: 1px solid var(--accent); width: 320px; text-align: center; }
+        .auth-box { background: var(--card-bg); padding: 50px; border-radius: 16px; border: 1px solid var(--accent); width: 350px; text-align: center; }
         
         .view-section { display: none; }
         .view-section.active { display: block; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 25px; }
         
-        .chart-controls { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .chart-btn { background: #222; border: 1px solid #333; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; white-space: nowrap; }
-        .chart-btn.active { background: var(--accent); color: black; border-color: var(--accent); }
+        .chart-btn { background: #222; border: 1px solid #333; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+        .chart-btn.active { background: var(--accent); color: black; font-weight: bold; }
 
-        .active-trade-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #222; }
+        .active-trade-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #222; font-size: 1.1rem; }
         
-        .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; }
-        .btn-primary { background: var(--accent); color: black; padding: 14px; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; width: 100%; }
+        input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 14px; border-radius: 10px; width: 100%; font-size: 1rem; }
+        .btn-primary { background: var(--accent); color: black; padding: 16px; border: none; font-weight: 800; cursor: pointer; border-radius: 10px; width: 100%; font-size: 1rem; }
         
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
-        .profit { color: var(--success); } .loss { color: var(--danger); }
-        .img-preview { width: 40px; height: 28px; object-fit: cover; border-radius: 4px; border: 1px solid #333; cursor: pointer; margin-right: 4px; }
+        th, td { padding: 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        .img-preview { width: 50px; height: 35px; border-radius: 6px; }
 
         .note-cell {
             position: relative;
             cursor: help;
-            max-width: 120px;
+            max-width: 150px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -69,38 +76,35 @@
         .note-cell:hover::after {
             content: attr(data-fullnote);
             position: absolute;
-            left: -50px; top: 100%;
+            left: -50px; top: 110%;
             z-index: 1000;
             background: #2c2c2c;
             color: white;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 10px;
             border: 1px solid var(--accent);
-            width: 220px;
+            width: 280px;
             white-space: normal;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            font-size: 0.9rem;
         }
-
-        .member-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border); align-items: center; }
-        .btn-delete-small { background: var(--danger); color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
     </style>
 </head>
 <body>
 
 <div id="auth-overlay">
     <div class="auth-box">
-        <h2 style="color: var(--accent); margin-bottom: 30px;">TradeCloud</h2>
+        <h2 style="color: var(--accent); margin-bottom: 30px; font-size: 2rem;">TradeCloud</h2>
         <button onclick="loginGoogle()" class="btn-primary" style="background:white; color:#444; display:flex; align-items:center; justify-content:center; gap:10px;">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google Login
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Google Login
         </button>
-        <p id="auth-error" style="color: var(--danger); margin-top: 15px; font-size: 0.8rem;" class="hidden"></p>
+        <p id="auth-error" style="color: var(--danger); margin-top: 15px;" class="hidden"></p>
     </div>
 </div>
 
 <header id="main-header" class="hidden">
     <button class="menu-btn" onclick="toggleMenu()">&#9776;</button>
-    <h3 id="view-title" style="margin-left: 15px; flex-grow: 1; color: var(--accent); font-weight: 600;">ÜBERSICHT</h3>
-    <button onclick="auth.signOut()" style="background:none; border:none; color:#888; cursor:pointer; font-size:0.8rem;">Logout</button>
+    <h3 id="view-title" style="margin-left: 20px; flex-grow: 1; color: var(--accent); font-weight: 700; font-size: 1.3rem;">ÜBERSICHT</h3>
+    <button onclick="auth.signOut()" style="background:none; border:none; color:#888; cursor:pointer; font-weight:bold;">Logout</button>
 </header>
 
 <nav class="nav-drawer" id="navDrawer">
@@ -112,37 +116,37 @@
 
 <div id="app-content" class="container hidden">
     <section id="view-overview" class="view-section active">
-        <h4 id="user-greeting" style="margin-bottom: 10px;">HALLO</h4>
+        <h1 id="user-greeting">HALLO</h1>
         
         <div id="activeTradesCard" class="card hidden">
             <h4>OFFENE POSITIONEN</h4>
             <div id="activeTradesList"></div>
         </div>
         <div class="card">
-            <div class="chart-controls">
+            <div class="chart-controls" style="display: flex; gap: 8px; margin-bottom: 20px;">
                 <button class="chart-btn" onclick="setChartFilter('today', this)">Heute</button>
                 <button class="chart-btn" onclick="setChartFilter('yesterday', this)">Gestern</button>
                 <button class="chart-btn" onclick="setChartFilter('week', this)">Woche</button>
                 <button class="chart-btn" onclick="setChartFilter('month', this)">Monat</button>
                 <button class="chart-btn active" onclick="setChartFilter('year', this)">Jahr</button>
             </div>
-            <div style="height: 250px;"><canvas id="ovChart"></canvas></div>
+            <div style="height: 300px;"><canvas id="ovChart"></canvas></div>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="card"><div style="font-size:0.7rem; color:#888;">PROFIT</div><div id="ovTotal" style="font-size:1.4rem; font-weight:bold;">0.00 €</div></div>
-            <div class="card"><div style="font-size:0.7rem; color:#888;">WIN RATE</div><div id="ovWinRate" style="font-size:1.4rem; font-weight:bold;">0%</div></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="card"><div style="font-size:0.85rem; color:#888; letter-spacing:1px;">GESAMT PROFIT</div><div id="ovTotal" style="font-size:2rem; font-weight:800;">0.00 €</div></div>
+            <div class="card"><div style="font-size:0.85rem; color:#888; letter-spacing:1px;">WIN RATE</div><div id="ovWinRate" style="font-size:2rem; font-weight:800;">0%</div></div>
         </div>
     </section>
 
     <section id="view-entry" class="view-section">
         <div class="card">
-            <h4>TRADE DATEN</h4>
+            <h4>TRADE DATEN ERFASSEN</h4>
             <input type="hidden" id="editId">
             <div class="input-group">
                 <input type="datetime-local" id="datetime">
                 <select id="assetDropdown"></select>
             </div>
-            <div class="input-group">
+            <div class="input-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top:15px;">
                 <select id="status" onchange="toggleOutcomeFields()">
                     <option value="Aktiv">Offen</option>
                     <option value="Geschlossen">Geschlossen</option>
@@ -154,17 +158,17 @@
                     <option value="Wut">😡 Wut</option>
                 </select>
             </div>
-            <div id="pnlWrapper" class="hidden"><input type="number" id="pnl" step="0.01" placeholder="Gewinn / Verlust in €" style="margin-bottom:15px;"></div>
-            <input type="url" id="imgSetup" placeholder="Setup URL (TradingView)" style="margin-bottom:15px;">
-            <div id="outcomeWrapper" class="hidden"><input type="url" id="imgResult" placeholder="Ergebnis URL (TradingView)" style="margin-bottom:15px;"></div>
-            <textarea id="note" placeholder="Deine Notizen..." rows="4" style="margin-bottom:15px;"></textarea>
-            <button onclick="saveTrade()" class="btn-primary">Speichern</button>
+            <div id="pnlWrapper" class="hidden" style="margin-top:15px;"><input type="number" id="pnl" step="0.01" placeholder="Gewinn / Verlust in €"></div>
+            <input type="url" id="imgSetup" placeholder="Setup URL (TradingView)" style="margin-top:15px;">
+            <div id="outcomeWrapper" class="hidden" style="margin-top:15px;"><input type="url" id="imgResult" placeholder="Ergebnis URL (TradingView)"></div>
+            <textarea id="note" placeholder="Deine Notizen..." rows="5" style="margin-top:15px;"></textarea>
+            <button onclick="saveTrade()" class="btn-primary" style="margin-top:20px;">Trade speichern</button>
         </div>
     </section>
 
     <section id="view-history" class="view-section">
         <div class="card" style="padding:0; overflow-x:auto;">
-            <div style="padding: 20px 20px 0 20px;"><h4>TRADE HISTORIE</h4></div>
+            <div style="padding: 25px 25px 0 25px;"><h4>KOMPLETTE HISTORIE</h4></div>
             <table>
                 <thead><tr><th>Datum</th><th>Asset</th><th>Mood</th><th>Charts</th><th>Notiz</th><th>P&L</th><th>Aktion</th></tr></thead>
                 <tbody id="tradeBody"></tbody>
@@ -174,18 +178,19 @@
 
     <section id="view-settings" class="view-section">
         <div class="card">
-            <h4>MITGLIED HINZUFÜGEN</h4>
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <h4>NEUES MITGLIED ZULASSEN</h4>
+            <div style="display: flex; gap: 15px; margin-bottom: 30px;">
                 <input type="email" id="newMemberEmail" placeholder="beispiel@gmail.com">
-                <button onclick="addMember()" class="btn-primary" style="width: auto; padding: 0 20px;">Hinzufügen</button>
+                <button onclick="addMember()" class="btn-primary" style="width: auto; padding: 0 30px;">Add</button>
             </div>
-            <h4>MITGLIEDERLISTE</h4>
+            <h4>ZUGELASSENE NUTZER</h4>
             <div id="memberList"></div>
         </div>
     </section>
 </div>
 
 <script>
+    // FIREBASE KONFIGURATION (VON DIR)
     const firebaseConfig = {
         apiKey: "AIzaSyDCgM4h6Rgk-r95Qy7BlT1S4QQI-4IDqAQ",
         authDomain: "trading-journal-acc.firebaseapp.com",
@@ -202,22 +207,17 @@
 
     let trades = [];
     let ovChart;
-    let currentFilter = 'year';
     const moodMap = { "Neutral": "😐", "Sicher": "😊", "Angst": "😨", "Wut": "😡" };
 
-    function loginGoogle() { 
-        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => showAuthError(e.message)); 
-    }
+    function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => showAuthError(e.message)); }
 
     auth.onAuthStateChanged(async (user) => {
         const adminBtn = document.getElementById('admin-link');
         const greetingEl = document.getElementById('user-greeting');
-        
         if (user) {
-            // Name für Begrüßung setzen
-            const firstName = user.displayName ? user.displayName.split(' ')[0] : "Nutzer";
+            const firstName = user.displayName ? user.displayName.split(' ')[0] : "Trader";
             greetingEl.innerText = `HALLO ${firstName.toUpperCase()}`;
-
+            
             const email = user.email.toLowerCase();
             const memberDoc = await db.collection('members').doc(email).get();
             const isAdmin = (email === adminEmail);
@@ -230,13 +230,12 @@
                 loadTrades();
             } else {
                 auth.signOut();
-                showAuthError("Keine Berechtigung. Melden Sie sich beim Admin.");
+                showAuthError("Zugriff nur für zugelassene Mitglieder.");
             }
         } else {
             document.getElementById('auth-overlay').classList.remove('hidden');
             document.getElementById('app-content').classList.add('hidden');
             document.getElementById('main-header').classList.add('hidden');
-            adminBtn.classList.add('hidden');
         }
     });
 
@@ -277,7 +276,7 @@
                 totalPnl += t.pnl; closed++; if(t.pnl > 0) wins++;
             } else {
                 activeCount++;
-                activeList.innerHTML += `<div class="active-trade-item"><span><b>${t.asset}</b> - ${t.date.split('T')[1]}</span><button onclick="closeTradeFast('${t.id}')" style="background:var(--accent); color:black; border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">Schließen</button></div>`;
+                activeList.innerHTML += `<div class="active-trade-item"><span><b>${t.asset}</b> - ${t.date.split('T')[1]}</span><button onclick="closeTradeFast('${t.id}')" style="background:var(--accent); color:black; border:none; padding:8px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">Schließen</button></div>`;
             }
 
             const setupImg = t.imgSetup ? `<img src="${t.imgSetup}" class="img-preview" onclick="window.open('${t.imgSetup}')">` : '';
@@ -287,13 +286,13 @@
                 <tr>
                     <td>${t.date.split('T')[0]}</td>
                     <td><b>${t.asset}</b></td>
-                    <td><span class="mood-emoji">${moodMap[t.mindset] || "😐"}</span></td>
-                    <td><div style="display:flex; gap:4px;">${setupImg}${resultImg}</div></td>
+                    <td style="font-size:1.3rem;">${moodMap[t.mindset] || "😐"}</td>
+                    <td><div style="display:flex; gap:6px;">${setupImg}${resultImg}</div></td>
                     <td><div class="note-cell" data-fullnote="${t.note || 'Keine Notiz'}">${t.note || '-'}</div></td>
-                    <td class="${t.pnl>=0?'profit':'loss'}">${t.status==='Aktiv'?'<i>Offen</i>':t.pnl.toFixed(2)+'€'}</td>
+                    <td class="${t.pnl>=0?'profit':'loss'}" style="font-weight:bold;">${t.status==='Aktiv'?'<i>Offen</i>':t.pnl.toFixed(2)+'€'}</td>
                     <td>
-                        <button style="background:none; border:none; color:var(--accent); cursor:pointer;" onclick="editTrade('${t.id}')">✎</button>
-                        <button style="background:none; border:none; color:var(--danger); cursor:pointer; margin-left:8px;" onclick="deleteTrade('${t.id}')">✘</button>
+                        <button style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:1.2rem;" onclick="editTrade('${t.id}')">✎</button>
+                        <button style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:1.2rem; margin-left:12px;" onclick="deleteTrade('${t.id}')">✘</button>
                     </td>
                 </tr>`;
         });
@@ -307,7 +306,6 @@
     async function deleteTrade(id) { if(confirm("Trade löschen?")) { await db.collection('trades').doc(id).delete(); loadTrades(); } }
 
     function showView(v) {
-        if (v === 'settings' && auth.currentUser.email.toLowerCase() !== adminEmail) return showView('overview');
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.getElementById('view-'+v).classList.add('active');
         document.getElementById('navDrawer').classList.remove('open');
@@ -335,7 +333,7 @@
 
     function setNow() { const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); document.getElementById('datetime').value = now.toISOString().slice(0, 16); }
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
-    function setChartFilter(f, btn) { currentFilter = f; document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); updateChart(); }
+    function setChartFilter(f, btn) { document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); updateChart(); }
     function toggleOutcomeFields() { const isClosed = document.getElementById('status').value === 'Geschlossen'; document.getElementById('pnlWrapper').classList.toggle('hidden', !isClosed); document.getElementById('outcomeWrapper').classList.toggle('hidden', !isClosed); }
     function resetForm() { document.getElementById('editId').value = ''; document.getElementById('pnl').value = ''; document.getElementById('imgSetup').value = ''; document.getElementById('imgResult').value = ''; document.getElementById('note').value = ''; document.getElementById('status').value = 'Aktiv'; toggleOutcomeFields(); setNow(); }
     function editTrade(id) { const t = trades.find(i => i.id === id); document.getElementById('editId').value = t.id; document.getElementById('datetime').value = t.date; document.getElementById('assetDropdown').value = t.asset; document.getElementById('status').value = t.status; document.getElementById('mindset').value = t.mindset || 'Neutral'; document.getElementById('pnl').value = t.pnl; document.getElementById('imgSetup').value = t.imgSetup; document.getElementById('imgResult').value = t.imgResult; document.getElementById('note').value = t.note; toggleOutcomeFields(); showView('entry'); }
