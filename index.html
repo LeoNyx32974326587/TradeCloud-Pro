@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud Pro - Quick Close</title>
+    <title>TradeCloud Pro - Management</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -43,8 +43,9 @@
         
         .btn-primary { background: var(--accent); color: black; padding: 12px; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; width: 100%; }
         .btn-edit { background: none; border: 1px solid #444; color: #aaa; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
+        .btn-delete { background: none; border: 1px solid #444; color: var(--danger); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; margin-left: 5px; }
         
-        .chart-controls { display: flex; gap: 8px; margin-bottom: 15px; }
+        .chart-controls { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
         .chart-btn { padding: 6px 12px; font-size: 0.7rem; background: #222; border: 1px solid #333; color: white; border-radius: 4px; cursor: pointer; }
         .chart-btn.active { background: var(--accent); color: black; border-color: var(--accent); }
 
@@ -52,9 +53,6 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
         .profit { color: var(--success); } .loss { color: var(--danger); }
-        
-        /* Highlight für Quick Close */
-        .quick-close-highlight { border: 1px solid var(--accent) !important; box-shadow: 0 0 10px rgba(187, 134, 252, 0.2); }
     </style>
 </head>
 <body>
@@ -65,7 +63,6 @@
         <input type="email" id="email" placeholder="E-Mail">
         <input type="password" id="password" placeholder="Passwort">
         <button onclick="handleLogin()" class="btn-primary">Login</button>
-        <button onclick="handleGoogleLogin()" style="width:100%; background:white; color:black; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-top:10px;">Google Login</button>
     </div>
 </div>
 
@@ -82,7 +79,6 @@
 </nav>
 
 <div id="app-content" class="container hidden">
-    
     <section id="view-overview" class="view-section active">
         <div class="card" style="border-left: 4px solid var(--success);">
             <div class="stat-label">Aktuelle Positionen</div>
@@ -90,18 +86,15 @@
         </div>
 
         <div class="card">
-            <div class="stat-label" style="margin-bottom: 15px;">Equity Performance</div>
+            <div class="stat-label" style="margin-bottom: 15px;">Performance Graph</div>
             <div class="chart-controls">
-                <button class="chart-btn" onclick="updateChartPeriod('day', this)">Heute</button>
+                <button class="chart-btn" onclick="updateChartPeriod('today', this)">Heute</button>
+                <button class="chart-btn" onclick="updateChartPeriod('yesterday', this)">Gestern</button>
                 <button class="chart-btn" onclick="updateChartPeriod('week', this)">Woche</button>
+                <button class="chart-btn" onclick="updateChartPeriod('month', this)">Monat</button>
                 <button class="chart-btn active" onclick="updateChartPeriod('year', this)">Jahr</button>
             </div>
             <div style="height: 300px;"><canvas id="ovChart"></canvas></div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="card"><div class="stat-label">Gesamt P&L</div><div id="ovTotal" class="stat-val" style="font-size: 1.6rem; font-weight: bold;">0.00 €</div></div>
-            <div class="card"><div class="stat-label">Win Rate</div><div id="ovWinRate" class="stat-val" style="font-size: 1.6rem; font-weight: bold;">0%</div></div>
         </div>
     </section>
 
@@ -118,16 +111,10 @@
                     <option value="Aktiv">Offen</option>
                     <option value="Geschlossen">Geschlossen</option>
                 </select>
-                <div id="pnlWrapper" class="hidden"><input type="number" id="pnl" step="0.01" placeholder="P&L (€)" class="quick-close-target"></div>
+                <div id="pnlWrapper" class="hidden"><input type="number" id="pnl" step="0.01" placeholder="P&L (€)"></div>
             </div>
-            <div style="margin-bottom: 15px;">
-                <label class="stat-label">Setup Screenshot</label>
-                <input type="url" id="imgSetup" placeholder="https://www.tradingview.com/x/...">
-            </div>
-            <div id="outcomeWrapper" class="hidden" style="margin-bottom: 15px;">
-                <label class="stat-label" style="color: var(--accent)">Ergebnis Screenshot</label>
-                <input type="url" id="imgResult" placeholder="https://www.tradingview.com/x/..." class="quick-close-target">
-            </div>
+            <input type="url" id="imgSetup" placeholder="Setup Screenshot URL" style="margin-bottom:15px;">
+            <div id="outcomeWrapper" class="hidden"><input type="url" id="imgResult" placeholder="Ergebnis Screenshot URL" style="margin-bottom:15px;"></div>
             <textarea id="note" placeholder="Notizen..." rows="3" style="margin-bottom: 15px;"></textarea>
             <button id="submitBtn" onclick="saveTrade()" class="btn-primary">Speichern</button>
         </div>
@@ -136,7 +123,7 @@
     <section id="view-history" class="view-section">
         <div class="table-container">
             <table>
-                <thead><tr><th>Datum/Zeit</th><th>Asset</th><th>Status</th><th>P&L</th><th style="text-align:right">Aktion</th></tr></thead>
+                <thead><tr><th>Zeitpunkt</th><th>Asset</th><th>Status</th><th>P&L</th><th style="text-align:right">Aktion</th></tr></thead>
                 <tbody id="tradeBody"></tbody>
             </table>
         </div>
@@ -145,8 +132,6 @@
 
 <script>
     const myAssets = ["BTCUSD", "ETHUSD", "EURUSD", "GBPUSD", "GOLD", "DAX", "NASDAQ"];
-    
-    // Firebase Config (Deine bestehende)
     const firebaseConfig = {
         apiKey: "AIzaSyDCgM4h6Rgk-r95Qy7BlT1S4QQI-4IDqAQ",
         authDomain: "trading-journal-acc.firebaseapp.com",
@@ -159,20 +144,15 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
 
     let trades = [];
     let ovChart;
-    let currentChartPeriod = 'year';
+    let currentPeriod = 'year';
 
     function setNow() {
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         document.getElementById('datetime').value = now.toISOString().slice(0, 16);
-    }
-
-    function fillAssets() {
-        document.getElementById('assetDropdown').innerHTML = myAssets.map(a => `<option value="${a}">${a}</option>`).join('');
     }
 
     function toggleOutcomeFields() {
@@ -181,22 +161,11 @@
         document.getElementById('outcomeWrapper').classList.toggle('hidden', !isClosed);
     }
 
-    function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
-    
     function showView(viewId) {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.getElementById('view-' + viewId).classList.add('active');
-        document.getElementById('view-title').innerText = viewId.toUpperCase();
-        if(viewId === 'entry' && !document.getElementById('editId').value) {
-            setNow();
-            resetHighlight();
-        }
-        if(document.getElementById('navDrawer').classList.contains('open')) toggleMenu();
+        if(viewId === 'entry' && !document.getElementById('editId').value) setNow();
         renderUI();
-    }
-
-    function resetHighlight() {
-        document.querySelectorAll('.quick-close-target').forEach(el => el.classList.remove('quick-close-highlight'));
     }
 
     auth.onAuthStateChanged(user => {
@@ -205,10 +174,15 @@
     });
 
     async function handleLogin() {
-        const e = document.getElementById('email').value; const p = document.getElementById('password').value;
-        try { await auth.signInWithEmailAndPassword(e, p); } catch(e) { alert("Fehler"); }
+        const e = document.getElementById('email').value;
+        try { await auth.signInWithEmailAndPassword(e, "123456"); } catch(e) { alert("Login Error"); }
     }
-    async function handleGoogleLogin() { try { await auth.signInWithPopup(googleProvider); } catch(e) {} }
+
+    async function loadTrades() {
+        const snap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
+        trades = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderUI();
+    }
 
     async function saveTrade() {
         const id = document.getElementById('editId').value;
@@ -222,76 +196,16 @@
             note: document.getElementById('note').value,
             userId: auth.currentUser.uid
         };
-        if(id) { await db.collection('trades').doc(id).update(t); } 
-        else { await db.collection('trades').add(t); }
+        if(id) await db.collection('trades').doc(id).update(t);
+        else await db.collection('trades').add(t);
         resetForm(); loadTrades(); showView('overview');
     }
 
-    async function loadTrades() {
-        const snap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
-        trades = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderUI();
-    }
-
-    function updateChartPeriod(p, btn) {
-        currentChartPeriod = p;
-        document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderUI();
-    }
-
-    function renderUI() {
-        const open = trades.filter(t => t.status === 'Aktiv');
-        document.getElementById('openTradesContainer').innerHTML = open.length ? open.map(t => `<div style="padding:10px 0; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center;"><span><b>${t.asset}</b> <small style="color:#666">${t.date.split('T')[1]}</small></span><button class="btn-primary" style="width:auto; padding:5px 15px; font-size:0.7rem;" onclick="quickClose('${t.id}')">Schließen</button></div>`).join('') : '<div class="empty-state">Keine offenen Positionen</div>';
-
-        const body = document.getElementById('tradeBody');
-        body.innerHTML = '';
-        let total = 0, wins = 0, closedCount = 0;
-        
-        [...trades].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-            if(t.status === 'Geschlossen') { total += t.pnl; closedCount++; if(t.pnl > 0) wins++; }
-            body.innerHTML += `<tr><td>${t.date.replace('T', ' ')}</td><td>${t.asset}</td><td>${t.status}</td><td class="${t.pnl>=0?'profit':'loss'}">${t.status==='Aktiv'?'-':t.pnl.toFixed(2)+'€'}</td><td style="text-align:right"><button class="btn-edit" onclick="editTrade('${t.id}')">✎</button></td></tr>`;
-        });
-
-        document.getElementById('ovTotal').innerText = total.toFixed(2) + " €";
-        document.getElementById('ovTotal').className = 'stat-val ' + (total >= 0 ? 'profit' : 'loss');
-        document.getElementById('ovWinRate').innerText = closedCount > 0 ? (wins/closedCount*100).toFixed(1) + "%" : "0%";
-
-        updateChart();
-    }
-
-    function updateChart() {
-        const ctx = document.getElementById('ovChart').getContext('2d');
-        const now = new Date();
-        const filtered = trades.filter(t => {
-            if(t.status !== 'Geschlossen') return false;
-            const tDate = new Date(t.date);
-            const diffMs = now - tDate;
-            if(currentChartPeriod === 'day') return diffMs < 86400000;
-            if(currentChartPeriod === 'week') return diffMs < 604800000;
-            return true;
-        }).sort((a,b) => new Date(a.date) - new Date(b.date));
-
-        let sum = 0;
-        const points = filtered.map(t => { sum += t.pnl; return sum; });
-        if(ovChart) ovChart.destroy();
-        ovChart = new Chart(ctx, {
-            type: 'line',
-            data: { labels: filtered.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', backgroundColor: 'rgba(187,134,252,0.1)', fill: true, tension: 0.3 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#222' } }, x: { display: false } } }
-        });
-    }
-
-    // SPEZIELLE LOGIK FÜR ÜBERSICHTS-BUTTON
-    function quickClose(id) {
-        editTrade(id);
-        // Automatisches Setup für das Schließen
-        document.getElementById('status').value = 'Geschlossen';
-        toggleOutcomeFields();
-        
-        // Optisches Feedback: Felder hervorheben
-        document.querySelectorAll('.quick-close-target').forEach(el => el.classList.add('quick-close-highlight'));
-        document.getElementById('pnl').focus();
+    async function deleteTrade(id) {
+        if(confirm("Diesen Trade unwiderruflich löschen?")) {
+            await db.collection('trades').doc(id).delete();
+            loadTrades();
+        }
     }
 
     function editTrade(id) {
@@ -308,19 +222,62 @@
         showView('entry');
     }
 
+    function updateChartPeriod(p, btn) {
+        currentPeriod = p;
+        document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderUI();
+    }
+
+    function renderUI() {
+        const open = trades.filter(t => t.status === 'Aktiv');
+        document.getElementById('openTradesContainer').innerHTML = open.length ? open.map(t => `<div style="padding:10px 0; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center;"><span><b>${t.asset}</b></span><button class="btn-edit" onclick="editTrade('${t.id}')">Schließen</button></div>`).join('') : '<div class="empty-state">Keine offenen Positionen</div>';
+
+        const body = document.getElementById('tradeBody');
+        body.innerHTML = '';
+        [...trades].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
+            body.innerHTML += `<tr><td>${t.date.replace('T', ' ')}</td><td>${t.asset}</td><td>${t.status}</td><td class="${t.pnl>=0?'profit':'loss'}">${t.pnl.toFixed(2)}€</td><td style="text-align:right"><button class="btn-edit" onclick="editTrade('${t.id}')">✎</button><button class="btn-delete" onclick="deleteTrade('${t.id}')">X</button></td></tr>`;
+        });
+
+        updateChart();
+    }
+
+    function updateChart() {
+        const ctx = document.getElementById('ovChart').getContext('2d');
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        
+        const filtered = trades.filter(t => {
+            if(t.status !== 'Geschlossen') return false;
+            const tDate = new Date(t.date).getTime();
+            if(currentPeriod === 'today') return tDate >= startOfToday;
+            if(currentPeriod === 'yesterday') return tDate >= (startOfToday - 86400000) && tDate < startOfToday;
+            if(currentPeriod === 'week') return tDate >= (now.getTime() - 604800000);
+            if(currentPeriod === 'month') return tDate >= (now.getTime() - 2592000000);
+            return true;
+        }).sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        let sum = 0;
+        const points = filtered.map(t => { sum += t.pnl; return sum; });
+        if(ovChart) ovChart.destroy();
+        ovChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: filtered.map(t => t.date.split('T')[1] || t.date), datasets: [{ data: points, borderColor: '#bb86fc', tension: 0.3, fill: true, backgroundColor: 'rgba(187,134,252,0.1)' }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } }
+        });
+    }
+
     function resetForm() {
         document.getElementById('editId').value = '';
         document.getElementById('pnl').value = '';
         document.getElementById('imgSetup').value = '';
         document.getElementById('imgResult').value = '';
         document.getElementById('note').value = '';
-        document.getElementById('status').value = 'Aktiv';
-        resetHighlight();
         setNow();
     }
 
-    fillAssets();
-    setNow();
+    document.getElementById('assetDropdown').innerHTML = myAssets.map(a => `<option value="${a}">${a}</option>`).join('');
+    function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
 </script>
 </body>
 </html>
