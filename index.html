@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg-dark: #0f0f0f; --card-bg: #1a1a1a; --text-main: #e0e0e0; --accent: #bb86fc; --success: #03dac6; --danger: #cf6679; --border: #2c2c2c; }
+        :root { --bg-dark: #0f0f0f; --card-bg: #1a1a1a; --text-main: #e0e0e0; --accent: #bb86fc; --success: #03dac6; --danger: #cf6679; --info: #03a9f4; --border: #2c2c2c; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); margin: 0; color: var(--text-main); line-height: 1.6; }
         .hidden { display: none !important; }
         header { display: flex; align-items: center; padding: 15px 20px; background: #161616; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
@@ -34,6 +34,7 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
         a { color: var(--accent); text-decoration: none; font-weight: bold; }
+        .status-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -122,7 +123,7 @@
     <section id="view-Historie" class="view-section">
         <div class="card" style="padding:0; overflow-x:auto;">
             <table>
-                <thead><tr><th>Datum</th><th>Asset</th><th>P&L</th><th>Links</th><th>Notiz</th><th>Aktion</th></tr></thead>
+                <thead><tr><th>Datum</th><th>Asset</th><th>Status</th><th>P&L</th><th>Links</th><th>Aktion</th></tr></thead>
                 <tbody id="tradeBody"></tbody>
             </table>
         </div>
@@ -191,9 +192,7 @@
 
     function updateAssetDropdown() {
         const select = document.getElementById('assetDropdown');
-        if(select) {
-            select.innerHTML = userAssets.map(a => `<option value="${a}">${a}</option>`).join('');
-        }
+        if(select) select.innerHTML = userAssets.map(a => `<option value="${a}">${a}</option>`).join('');
     }
 
     async function loadTrades() {
@@ -203,32 +202,36 @@
     }
 
     function renderDashboard() {
-        let filtered = trades.filter(t => t.status === 'Geschlossen');
+        // Chart & Stats nur für geschlossene Trades
+        let closedTrades = trades.filter(t => t.status === 'Geschlossen');
         const now = new Date();
-        if(currentFilter === 'today') filtered = filtered.filter(t => new Date(t.date).toDateString() === now.toDateString());
-        if(currentFilter === 'week') { const d = new Date(); d.setDate(d.getDate()-7); filtered = filtered.filter(t => new Date(t.date) >= d); }
-        if(currentFilter === 'month') { const d = new Date(); d.setMonth(d.getMonth()-1); filtered = filtered.filter(t => new Date(t.date) >= d); }
-        filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
+        if(currentFilter === 'today') closedTrades = closedTrades.filter(t => new Date(t.date).toDateString() === now.toDateString());
+        if(currentFilter === 'week') { const d = new Date(); d.setDate(d.getDate()-7); closedTrades = closedTrades.filter(t => new Date(t.date) >= d); }
+        if(currentFilter === 'month') { const d = new Date(); d.setMonth(d.getMonth()-1); closedTrades = closedTrades.filter(t => new Date(t.date) >= d); }
+        closedTrades.sort((a,b) => new Date(a.date) - new Date(b.date));
 
         let sum = 0, total = 0, wins = 0;
-        const data = filtered.map(t => { let p = parseFloat(t.pnl) || 0; sum += p; total += p; if(p > 0) wins++; return sum; });
+        const data = closedTrades.map(t => { let p = parseFloat(t.pnl) || 0; sum += p; total += p; if(p > 0) wins++; return sum; });
         document.getElementById('ovTotal').innerText = total.toFixed(2) + " €";
-        document.getElementById('ovWinRate').innerText = filtered.length > 0 ? (wins/filtered.length*100).toFixed(0) + "%" : "0%";
+        document.getElementById('ovWinRate').innerText = closedTrades.length > 0 ? (wins/closedTrades.length*100).toFixed(0) + "%" : "0%";
 
         const ctx = document.getElementById('ovChart').getContext('2d');
         if(ovChart) ovChart.destroy();
-        ovChart = new Chart(ctx, { type: 'line', data: { labels: filtered.map(t => t.date.split('T')[0]), datasets: [{ data: data, borderColor: '#bb86fc', tension: 0.3, fill: true, backgroundColor: 'rgba(187,134,252,0.1)' }] }, options: { responsive: true, maintainAspectRatio: false } });
+        ovChart = new Chart(ctx, { type: 'line', data: { labels: closedTrades.map(t => t.date.split('T')[0]), datasets: [{ data: data, borderColor: '#bb86fc', tension: 0.3, fill: true, backgroundColor: 'rgba(187,134,252,0.1)' }] }, options: { responsive: true, maintainAspectRatio: false } });
         
+        // Historie zeigt ALLE Trades (Offen & Geschlossen)
         document.getElementById('tradeBody').innerHTML = trades.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
             <tr>
                 <td>${t.date.split('T')[0]}</td>
                 <td>${t.asset}</td>
-                <td style="color:${t.pnl >= 0 ? 'var(--success)' : 'var(--danger)'}">${(t.pnl || 0).toFixed(2)}€</td>
+                <td><span class="status-badge" style="background:${t.status === 'Aktiv' ? 'var(--info)' : '#333'}">${t.status === 'Aktiv' ? 'OFFEN' : 'ZUGU.'}</span></td>
+                <td style="color:${t.status === 'Aktiv' ? 'var(--text-main)' : (t.pnl >= 0 ? 'var(--success)' : 'var(--danger)')}">
+                    ${t.status === 'Aktiv' ? '-' : (t.pnl || 0).toFixed(2) + '€'}
+                </td>
                 <td>
                     ${t.imgSetup ? `<a href="${t.imgSetup}" target="_blank">S</a>` : ''} 
                     ${t.imgResult ? `| <a href="${t.imgResult}" target="_blank">R</a>` : ''}
                 </td>
-                <td style="font-size:0.7rem; color:#888; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${t.note || '-'}</td>
                 <td><button onclick="editTrade('${t.id}')" style="background:none;border:none;cursor:pointer;">✏️</button> <button onclick="deleteTrade('${t.id}')" style="background:none;border:none;cursor:pointer;">🗑️</button></td>
             </tr>
         `).join('');
@@ -236,23 +239,9 @@
 
     async function saveTrade() {
         const id = document.getElementById('editId').value;
-        const selectedAsset = document.getElementById('assetDropdown').value; // FIX: Nur das ausgewählte Asset lesen
-        
-        const obj = { 
-            date: document.getElementById('datetime').value, 
-            asset: selectedAsset, 
-            status: document.getElementById('status').value, 
-            mindset: document.getElementById('mindset').value, 
-            pnl: parseFloat(document.getElementById('pnl').value) || 0, 
-            imgSetup: document.getElementById('imgSetup').value, 
-            imgResult: document.getElementById('imgResult').value || "", 
-            note: document.getElementById('note').value, 
-            userId: auth.currentUser.uid 
-        };
-        
+        const obj = { date: document.getElementById('datetime').value, asset: document.getElementById('assetDropdown').value, status: document.getElementById('status').value, mindset: document.getElementById('mindset').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value || "", note: document.getElementById('note').value, userId: auth.currentUser.uid };
         id ? await db.collection('trades').doc(id).update(obj) : await db.collection('trades').add(obj);
-        loadTrades(); 
-        showView('Übersicht');
+        loadTrades(); showView('Übersicht');
     }
 
     function editTrade(id) {
@@ -271,7 +260,8 @@
 
     function showView(v) {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.getElementById('view-' + v.replace(/\s+/g, '-')).classList.add('active');
+        const targetId = 'view-' + v.replace(/\s+/g, '-');
+        if(document.getElementById(targetId)) document.getElementById(targetId).classList.add('active');
         document.getElementById('view-title').innerText = v.toUpperCase();
         document.getElementById('navDrawer').classList.remove('open');
         if(v === 'Trade erstellen' || v === 'Übersicht') updateAssetDropdown();
