@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Multi Journal & New Popup</title>
+    <title>TradeCloud Pro - Multi Journal</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -15,16 +15,14 @@
             --text-main: #e0e0e0; --accent: #bb86fc; 
             --success: #00c853; --danger: #ff3d00; --border: #2c2c2c; 
             --blur: 0px;
-            --popup-bg: #1a1a1a; /* New background color for the popup */
         }
         body.light-mode {
             --bg-dark: #f0f2f5; --card-bg: #ffffff; --cell-bg: #e4e6eb; --text-main: #1c1e21;
             --accent: #6200ee; --border: #ddd;
-            --popup-bg: #ffffff;
         }
 
         /* --- GLOBAL --- */
-        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; color: var(--text-main); padding-bottom: 40px; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; color: var(--text-main); padding-bottom: 40px; }
         .hidden { display: none !important; }
         .view-section { display: none; animation: fadeIn 0.3s; }
         .view-section.active { display: block; }
@@ -76,152 +74,14 @@
         .text-green { color: var(--success); }
         .text-red { color: var(--danger); }
 
-        /* --- POPUP (NEW STYLE) --- */
-        #popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px); /* Unscharfer Hintergrund */
-            z-index: 999;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        #popup-overlay.open {
-            display: flex;
-            opacity: 1;
-        }
-
-        .day-view-container { 
-            position: relative; /* Not fixed anymore */
-            width: 90%;
-            max-width: 500px;
-            max-height: 85vh; /* Max height for scrolling */
-            background: var(--popup-bg); /* Use a distinct background */
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            overflow-y: auto;
-            /* z-index is handled by the overlay */
-            transform: translateY(20px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border);
-        }
-        #popup-overlay.open .day-view-container {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .dv-header { 
-            padding: 15px 20px; 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            background: var(--popup-bg); 
-            position: sticky; 
-            top:0; 
-            z-index:10; 
-            border-bottom: 1px solid var(--border);
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-        }
-        .dv-back-btn {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0;
-            display: flex;
-            align-items: center;
-        }
-        .dv-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin: 0;
-            flex-grow: 1;
-            text-align: center; /* Center the date */
-        }
+        /* --- POPUPS (FULLSCREEN DAY VIEW) --- */
+        .day-view-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 500; overflow-y: auto; display: none; padding-bottom: 50px; }
+        .day-view-container.open { display: block; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
-        /* Stats Grid like in image 2 */
-        .dv-stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 20px;
-        }
-        .dv-stat-box {
-            /* background: var(--cell-bg); */ /* Optional: Use cell-bg for boxes */
-            /* padding: 15px; */
-            /* border-radius: 12px; */
-            text-align: left;
-        }
-        .dv-stat-label {
-            font-size: 0.8rem;
-            color: #888;
-            margin-bottom: 5px;
-            display: block;
-        }
-        .dv-stat-value {
-            font-size: 1.3rem;
-            font-weight: 800;
-        }
+        .dv-header { padding: 20px; display: flex; gap: 15px; background: var(--bg-dark); position: sticky; top:0; z-index:10; border-bottom: 1px solid var(--border); }
+        .dv-trade-item { background: var(--cell-bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* Trades List like in image 2 */
-        .dv-trades-list-container {
-            padding: 0 20px 20px 20px;
-        }
-        .dv-list-header {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-        .dv-trade-item { 
-            background: var(--cell-bg); 
-            border-radius: 12px; 
-            padding: 12px 15px; 
-            margin-bottom: 10px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        .dv-trade-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .dv-trade-icon {
-            font-size: 1.2rem;
-        }
-        .dv-trade-info {
-            display: flex;
-            flex-direction: column;
-        }
-        .dv-trade-time {
-            font-size: 0.75rem;
-            color: #888;
-        }
-        .dv-trade-asset {
-            font-weight: 700;
-            font-size: 1rem;
-        }
-        .dv-trade-pnl {
-            font-weight: 800;
-            font-size: 1rem;
-            text-align: right;
-        }
-        .dv-trade-arrow {
-             color: #888;
-             font-size: 1.2rem;
-             margin-left: 10px;
-        }
-
-        /* --- UTILS --- */
         input, select, textarea { background: var(--bg-dark); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
         .btn-primary { background: var(--accent); color: black; padding: 15px; border: none; font-weight: 800; border-radius: 8px; width: 100%; cursor: pointer; }
         
@@ -231,42 +91,6 @@
     </style>
 </head>
 <body>
-
-<div id="popup-overlay" onclick="if(event.target === this) closeDayDetail()">
-    <div id="day-detail-view" class="day-view-container">
-        <div class="dv-header">
-            <button class="dv-back-btn" onclick="closeDayDetail()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-            </button>
-            <h2 id="dv-date-title" class="dv-title">Date</h2>
-            <div style="width: 24px;"></div> </div>
-        <div style="padding:20px; height:220px;"><canvas id="dayChart"></canvas></div>
-        
-        <div class="dv-stats-grid">
-            <div class="dv-stat-box">
-                <span class="dv-stat-label">PnL</span>
-                <div id="dv-pnl" class="dv-stat-value sensitive">-</div>
-            </div>
-            <div class="dv-stat-box">
-                <span class="dv-stat-label">Win rate</span>
-                <div id="dv-winrate" class="dv-stat-value">-</div>
-            </div>
-            <div class="dv-stat-box">
-                <span class="dv-stat-label">Profit factor</span>
-                <div id="dv-pf" class="dv-stat-value">-</div>
-            </div>
-            <div class="dv-stat-box">
-                <span class="dv-stat-label">Trades count</span>
-                <div id="dv-count" class="dv-stat-value">-</div>
-            </div>
-        </div>
-        
-        <div class="dv-trades-list-container">
-            <div class="dv-list-header">Closed Trades</div>
-            <div id="dv-list"></div>
-        </div>
-    </div>
-</div>
 
 <div id="auth-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); display:flex; justify-content:center; align-items:center; z-index:1000;">
     <div class="card" style="text-align: center; width: 300px; border: 1px solid var(--accent);">
@@ -351,6 +175,22 @@
             <div id="cal-days-grid" class="calendar-grid" style="margin-top:5px;"></div>
         </div>
     </section>
+
+    <div id="day-detail-view" class="day-view-container">
+        <div class="dv-header">
+            <button class="icon-btn" onclick="closeDayDetail()" style="font-size:1.5rem;">❮</button>
+            <h2 id="dv-date-title" style="margin:0;">Datum</h2>
+        </div>
+        <div style="padding:15px; height:200px;"><canvas id="dayChart"></canvas></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; padding:15px; text-align:center;">
+            <div class="card" style="margin:0;"><div style="color:#888;font-size:0.8rem;">PnL</div><div id="dv-pnl" class="sensitive" style="font-weight:bold;">-</div></div>
+            <div class="card" style="margin:0;"><div style="color:#888;font-size:0.8rem;">WinRate</div><div id="dv-winrate" style="font-weight:bold;">-</div></div>
+        </div>
+        <div style="padding:0 15px 50px 15px;">
+            <h4>Trades</h4>
+            <div id="dv-list"></div>
+        </div>
+    </div>
 
     <section id="view-Trade-erstellen" class="view-section">
         <div class="card">
@@ -463,10 +303,8 @@
     function showView(v) {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.getElementById('view-' + v.replace(/\s+/g, '-')).classList.add('active');
-        
         document.getElementById('view-title').innerText = v.toUpperCase();
         document.getElementById('navDrawer').classList.remove('open');
-        
         document.querySelectorAll('.nav-drawer button').forEach(b => b.classList.remove('nav-active'));
         const btn = document.getElementById('btn-' + v);
         if(btn) btn.classList.add('nav-active');
@@ -608,12 +446,9 @@
     
     function changeCalMonth(d) { calDate.setMonth(calDate.getMonth() + d); renderCalendar(); }
 
-    // --- DAY DETAIL POPUP (NEW LOGIC) ---
     function openDayDetail(dateStr) {
         const d = new Date(dateStr);
-        // Format date like "Friday, 16 January 2026"
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('dv-date-title').innerText = d.toLocaleDateString('en-GB', options);
+        document.getElementById('dv-date-title').innerText = d.toLocaleDateString();
         
         const dayTrades = trades.filter(t => {
             if(currentJournalFilter !== 'All' && (t.journal || 'Main') !== currentJournalFilter) return false;
@@ -621,77 +456,26 @@
         }).sort((a,b)=> new Date(a.date)-new Date(b.date));
 
         let sum=0; dayTrades.forEach(t=>sum+=t.pnl);
-        const wins = dayTrades.filter(t=>t.pnl>0).length;
-        const losses = dayTrades.filter(t=>t.pnl<=0).length;
-        const grossProfit = dayTrades.filter(t=>t.pnl>0).reduce((a,b)=>a+b.pnl,0);
-        const grossLoss = Math.abs(dayTrades.filter(t=>t.pnl<0).reduce((a,b)=>a+b.pnl,0));
-        const pf = grossLoss === 0 ? (grossProfit>0?99:0) : (grossProfit/grossLoss);
-
-        document.getElementById('dv-pnl').innerText = (sum<0?'-':'+') + '€' + Math.abs(sum).toFixed(2);
-        document.getElementById('dv-pnl').className = `dv-stat-value sensitive ${sum>=0?'text-green':'text-red'}`;
-        document.getElementById('dv-winrate').innerText = dayTrades.length ? ((wins/dayTrades.length)*100).toFixed(2)+'%' : '0%';
-        document.getElementById('dv-pf').innerText = pf.toFixed(2);
-        document.getElementById('dv-count').innerText = dayTrades.length;
+        document.getElementById('dv-pnl').innerText = sum.toFixed(2) + ' €';
+        document.getElementById('dv-winrate').innerText = dayTrades.length ? (dayTrades.filter(t=>t.pnl>0).length/dayTrades.length*100).toFixed(0)+'%' : '-';
 
         const ctx = document.getElementById('dayChart').getContext('2d');
         if(dayChart) dayChart.destroy();
         let r=0; const data = dayTrades.map(t=>{r+=t.pnl; return r;});
-        
-        // Gradient for chart
-        let gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        if(sum >= 0) { gradient.addColorStop(0, 'rgba(0, 200, 83, 0.2)'); gradient.addColorStop(1, 'rgba(0, 200, 83, 0)'); }
-        else { gradient.addColorStop(0, 'rgba(255, 61, 0, 0.2)'); gradient.addColorStop(1, 'rgba(255, 61, 0, 0)'); }
-
-        dayChart = new Chart(ctx, {
-            type:'line',
-            data:{
-                labels:dayTrades.map(t=>''),
-                datasets:[{
-                    data,
-                    borderColor: sum >= 0 ? '#00c853' : '#ff3d00',
-                    backgroundColor: gradient,
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.1,
-                    pointRadius: 0
-                }]
-            },
-            options:{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins:{legend:{display:false}},
-                scales:{x:{display:false}, y:{grid:{color:'#222'}, ticks:{color:'#666'}}}
-            }
-        });
+        dayChart = new Chart(ctx, { type:'line', data:{labels:dayTrades.map(t=>''), datasets:[{data, borderColor:'#fff', tension:0.1}]}, options:{plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}}} });
 
         const list = document.getElementById('dv-list');
-        list.innerHTML = dayTrades.map(t => {
-            const isWin = t.pnl >= 0;
-            const arrowClass = isWin ? 'text-green' : 'text-red';
-            const arrow = isWin ? '↗' : '↘';
-            const timeStr = t.date.split('T')[1].slice(0,5);
-            return `
+        list.innerHTML = dayTrades.map(t => `
             <div class="dv-trade-item">
-                <div class="dv-trade-left">
-                    <div class="dv-trade-icon ${arrowClass}">${arrow}</div>
-                    <div class="dv-trade-info">
-                        <span class="dv-trade-time">${timeStr}</span>
-                        <span class="dv-trade-asset">${t.asset}</span>
-                    </div>
-                </div>
-                <div style="display:flex; align-items:center;">
-                    <div class="dv-trade-pnl sensitive ${arrowClass}">${t.pnl.toFixed(2)}</div>
-                    <div class="dv-trade-arrow">›</div>
-                </div>
+                <div><b style="color:var(--accent)">${t.asset}</b> <small>${t.date.split('T')[1]}</small></div>
+                <div class="sensitive ${t.pnl>=0?'text-green':'text-red'}">${t.pnl.toFixed(2)}</div>
             </div>
-        `;
-        }).join('');
+        `).join('');
 
-        document.getElementById('popup-overlay').classList.add('open');
+        document.getElementById('day-detail-view').classList.add('open');
     }
-    function closeDayDetail() { document.getElementById('popup-overlay').classList.remove('open'); }
+    function closeDayDetail() { document.getElementById('day-detail-view').classList.remove('open'); }
 
-    // --- HISTORY LIST (FILTERED) ---
     function renderHistory() {
         const filtered = trades.filter(t => {
             if(currentJournalFilter !== 'All' && (t.journal || 'Main') !== currentJournalFilter) return false;
@@ -713,7 +497,6 @@
         `).join('');
     }
 
-    // --- TRADE ACTIONS ---
     function prepareCreateView() {
         document.getElementById('editId').value = "";
         document.getElementById('datetime').value = new Date().toISOString().slice(0,16);
@@ -751,7 +534,6 @@
     async function delTrade(id) { if(confirm("Löschen?")) { await db.collection('trades').doc(id).delete(); loadTrades(); } }
     function toggleFormFields() { const s = document.getElementById('status').value; document.getElementById('closedFields').classList.toggle('hidden', s === 'Aktiv'); }
 
-    // --- UTILS ---
     function togglePrivacy() { privacyMode = !privacyMode; document.documentElement.style.setProperty('--blur', privacyMode ? '5px' : '0px'); }
     function handleLogout() { auth.signOut().then(()=>location.reload()); }
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
