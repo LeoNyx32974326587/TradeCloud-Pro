@@ -3,49 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud Pro - Final Fix</title>
+    <title>TradeCloud Pro - Final Polish</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg-dark: #0f0f0f; --card-bg: #1a1a1a; --text-main: #e0e0e0; --accent: #bb86fc; --success: #03dac6; --danger: #cf6679; --border: #2c2c2c; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; color: var(--text-main); overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; color: var(--text-main); }
         .hidden { display: none !important; }
         header { display: flex; align-items: center; padding: 15px 20px; background: #161616; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-        .menu-btn { cursor: pointer; font-size: 1.5rem; color: var(--accent); background: none; border: none; }
-        #user-greeting { font-size: 1.8rem; font-weight: 800; margin-bottom: 20px; color: white; }
+        .menu-btn { cursor: pointer; font-size: 1.5rem; color: var(--accent); background: none; border: none; padding: 5px; }
+        #view-title { margin-left: 15px; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
         .nav-drawer { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #161616; border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 60px; }
         .nav-drawer.open { left: 0; }
         .nav-drawer button { display: block; width: 100%; padding: 15px 25px; text-align: left; background: none; border: none; color: white; cursor: pointer; border-bottom: 1px solid #222; font-size: 1rem; }
         .container { max-width: 1000px; margin: 20px auto; padding: 0 20px; box-sizing: border-box; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; position: relative; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
         .view-section { display: none; }
         .view-section.active { display: block; }
-        .chart-btn { background: #222; border: 1px solid #333; color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
+        .chart-btn { background: #222; border: 1px solid #333; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
         .chart-btn.active { background: var(--accent); color: black; font-weight: bold; }
-        input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; font-size: 1rem; }
-        .btn-primary { background: var(--accent); color: black; padding: 16px; border: none; font-weight: 800; cursor: pointer; border-radius: 10px; width: 100%; font-size: 1rem; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
+        .btn-primary { background: var(--accent); color: black; padding: 16px; border: none; font-weight: 800; cursor: pointer; border-radius: 10px; width: 100%; font-size: 1rem; text-transform: uppercase; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 12px; border-radius: 10px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #222; }
         .open-trade-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #222; }
         #auth-overlay { position: fixed; inset: 0; background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .status-pill { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
 <div id="auth-overlay">
-    <div class="card" style="text-align: center; width: 320px; border: 2px solid var(--accent);">
-        <h2 style="color: var(--accent); letter-spacing: 2px;">TRADECLOUD PRO</h2>
-        <p style="color: #888; margin-bottom: 25px;">Ready to log your edge?</p>
-        <button onclick="loginGoogle()" class="btn-primary">LOGIN MIT GOOGLE</button>
+    <div class="card" style="text-align: center; width: 320px; border: 1px solid var(--accent);">
+        <h2 style="color: var(--accent);">TRADECLOUD</h2>
+        <button onclick="loginGoogle()" class="btn-primary">Google Login</button>
     </div>
 </div>
 
 <header id="main-header" class="hidden">
     <button class="menu-btn" onclick="toggleMenu()">&#9776;</button>
-    <div id="view-title" style="margin-left: 20px; font-weight: 800; color: var(--accent); letter-spacing: 1px;">ÜBERSICHT</div>
+    <div id="view-title">ÜBERSICHT</div>
 </header>
 
 <nav class="nav-drawer" id="navDrawer">
@@ -55,19 +54,24 @@
     <button onclick="prepareCreateView()">➕ Trade erfassen</button>
     <button onclick="showView('Historie')">📜 Trading Journal</button>
     <button id="admin-link" class="hidden" onclick="showView('Einstellungen')" style="color: #ffb74d;">⚙️ Admin Settings</button>
-    <button onclick="handleLogout()" style="margin-top: 40px; color: var(--danger); opacity: 0.7;">🚪 Ausloggen</button>
+    <button onclick="handleLogout()" style="margin-top: 30px; color: var(--danger);">🚪 Ausloggen</button>
 </nav>
 
 <div id="app-content" class="container hidden">
     <section id="view-Übersicht" class="view-section active">
-        <h1 id="user-greeting">WILLKOMMEN</h1>
-        <div class="card">
-            <h4>📍 OFFENE POSITIONEN</h4>
-            <div id="open-trades-list"></div>
-        </div>
+        <h1 id="user-greeting" style="font-size: 2rem; font-weight: 800; margin-bottom: 25px;">WILLKOMMEN</h1>
+        
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h4>PERFORMANCE CURVE</h4>
+                <h4>📍 OFFENE POSITIONEN</h4>
+                <button onclick="prepareCreateView()" class="chart-btn" style="background: var(--accent); color: black;">+ NEUER TRADE</button>
+            </div>
+            <div id="open-trades-list"></div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h4>PERFORMANCE</h4>
                 <div id="filter-container">
                     <button class="chart-btn" onclick="setFilter('today', this)">H</button>
                     <button class="chart-btn" onclick="setFilter('week', this)">W</button>
@@ -77,9 +81,10 @@
             </div>
             <div style="height: 250px;"><canvas id="ovChart"></canvas></div>
         </div>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="card" style="text-align: center;"><div>GESAMT PROFIT</div><div id="ovTotal" style="font-size:1.6rem; font-weight:800; color: var(--success);">0.00 €</div></div>
-            <div class="card" style="text-align: center;"><div>WIN RATE</div><div id="ovWinRate" style="font-size:1.6rem; font-weight:800; color: var(--accent);">0%</div></div>
+            <div class="card" style="text-align: center;"><div>PROFIT</div><div id="ovTotal" style="font-size:1.5rem; font-weight:800;">0.00 €</div></div>
+            <div class="card" style="text-align: center;"><div>WIN RATE</div><div id="ovWinRate" style="font-size:1.5rem; font-weight:800;">0%</div></div>
         </div>
     </section>
 
@@ -87,86 +92,57 @@
         <div class="card">
             <h4 id="form-header">TRADE LOGGER</h4>
             <input type="hidden" id="editId">
-            <label>Datum & Uhrzeit</label>
-            <input type="datetime-local" id="datetime">
             
             <label>Asset</label>
-            <div style="display:flex; gap:8px;">
-                <select id="assetDropdown" style="flex:1;"></select>
-                <button onclick="addAssetPrompt()" class="chart-btn" style="height:48px; width:48px; font-size:1.2rem;">+</button>
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <select id="assetDropdown" style="flex:1; margin-bottom:0;"></select>
+                <button onclick="addAssetPrompt()" class="chart-btn" style="height:48px; width:48px;">+</button>
             </div>
             
             <label>Status</label>
-            <select id="status" onchange="togglePnl()"><option value="Aktiv">Offen (Running)</option><option value="Geschlossen">Geschlossen (Finished)</option></select>
+            <select id="status" onchange="togglePnl()"><option value="Aktiv">Laufend</option><option value="Geschlossen">Geschlossen</option></select>
             
             <div id="pnlDiv" class="hidden">
-                <label>P&L in Euro</label>
+                <label>Gewinn/Verlust (€)</label>
                 <input type="number" id="pnl" placeholder="0.00" step="0.01">
             </div>
+
+            <label>Datum</label>
+            <input type="datetime-local" id="datetime">
             
-            <label>Setup Screenshot (URL)</label>
-            <input type="url" id="imgSetup" placeholder="https://tradingview.com/x/...">
+            <label>Screenshot Link</label>
+            <input type="url" id="imgSetup" placeholder="https://...">
+
+            <label>Notizen</label>
+            <textarea id="note" rows="3"></textarea>
             
-            <label>Notizen / Psychologie</label>
-            <textarea id="note" placeholder="Warum hast du diesen Trade genommen?" rows="3"></textarea>
-            
-            <button onclick="saveTrade()" class="btn-primary">TRADE SPEICHERN</button>
+            <button onclick="saveTrade()" class="btn-primary">SPEICHERN</button>
+            <button onclick="showView('Übersicht')" class="btn-outline">ABBRECHEN</button>
         </div>
     </section>
 
     <section id="view-Historie" class="view-section">
         <div class="card" style="padding:10px; overflow-x:auto;">
-            <h4>TRADING JOURNAL</h4>
+            <h4>JOURNAL</h4>
             <table>
-                <thead><tr><th>Datum</th><th>Asset</th><th>Ergebnis</th><th>Aktion</th></tr></thead>
+                <thead><tr><th>Datum</th><th>Asset</th><th>P&L</th><th>Aktion</th></tr></thead>
                 <tbody id="tradeBody"></tbody>
             </table>
         </div>
     </section>
 
-    <section id="view-Lot-Rechner" class="view-section">
-        <div class="card">
-            <h4>LOT SIZE CALCULATOR</h4>
-            <select id="cType"><option value="forex">Forex (100k Einheiten)</option><option value="indices">Indizes / Gold (1.0 pro Punkt)</option></select>
-            <input type="number" id="cBal" placeholder="Kontostand (€)">
-            <input type="number" id="cRisk" placeholder="Risiko (%)">
-            <input type="number" id="cEnt" placeholder="Entry Preis">
-            <input type="number" id="cSl" placeholder="Stop Loss Preis">
-            <button onclick="calcLots()" class="btn-primary">POSITION BERECHNEN</button>
-            <div style="margin-top:20px; text-align:center;">
-                <div style="color:#888;">Empfohlene Lot-Größe:</div>
-                <div id="cRes" style="font-size:2.5rem; font-weight:800; color:var(--success);">0.00</div>
-            </div>
-        </div>
-    </section>
-
-    <section id="view-News" class="view-section">
-        <div class="card" style="height:600px; padding:0;">
-            <div id="news-box" style="height:100%;"></div>
-        </div>
-    </section>
-
-    <section id="view-Einstellungen" class="view-section">
-        <div class="card">
-            <h4>ADMIN: TEAM VERWALTUNG</h4>
-            <div style="display:flex; gap:10px;">
-                <input type="email" id="admEmail" placeholder="E-Mail des neuen Mitglieds">
-                <button onclick="admAdd()" class="chart-btn" style="height:45px;">Hinzufügen</button>
-            </div>
-            <div id="admList" style="margin-top:20px;"></div>
-        </div>
-    </section>
+    <section id="view-Lot-Rechner" class="view-section"><div class="card"><h4>LOT RECHNER</h4><input type="number" id="cBal" placeholder="Balance"><input type="number" id="cRisk" placeholder="Risiko %"><input type="number" id="cEnt" placeholder="Entry"><input type="number" id="cSl" placeholder="SL"><button onclick="calcLots()" class="btn-primary">Berechnen</button><div id="cRes" style="font-size:2rem; text-align:center; margin-top:15px; color:var(--success);">0.00</div></div></section>
+    <section id="view-News" class="view-section"><div class="card" style="height:600px; padding:0;"><div id="news-box" style="height:100%;"></div></div></section>
+    <section id="view-Einstellungen" class="view-section"><div class="card"><h4>TEAM ADMIN</h4><input type="email" id="admEmail" placeholder="User E-Mail"><button onclick="admAdd()" class="btn-primary">Hinzufügen</button><div id="admList" style="margin-top:20px;"></div></div></section>
 </div>
 
 <script>
-    // Firebase Config
     const firebaseConfig = { apiKey: "AIzaSyDCgM4h6Rgk-r95Qy7BlT1S4QQI-4IDqAQ", authDomain: "trading-journal-acc.firebaseapp.com", projectId: "trading-journal-acc", storageBucket: "trading-journal-acc.firebasestorage.app", messagingSenderId: "68601000570", appId: "1:68601000570:web:87d3ebd5e86416403e41c3" };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth(), db = firebase.firestore();
 
-    let trades = [], userAssets = ["EURUSD", "NAS100", "GOLD", "DAX"], ovChart = null, currentFilter = 'all';
+    let trades = [], userAssets = [], ovChart = null, currentFilter = 'all';
 
-    // Auth & Initialisierung
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             document.getElementById('auth-overlay').classList.add('hidden');
@@ -174,116 +150,93 @@
             document.getElementById('main-header').classList.remove('hidden');
             document.getElementById('user-greeting').innerText = `HALLO ${user.displayName?.split(' ')[0].toUpperCase() || 'TRADER'}`;
             
-            // Admin Check (Leon)
             if(user.email.toLowerCase() === "leon.luca.lauterbach@gmail.com") {
                 document.getElementById('admin-link').classList.remove('hidden');
                 admLoad();
             }
             
-            // Daten-Loop starten
+            await initAssets();
             await refreshAll();
-            setInterval(refreshAll, 5000); // Alle 5 Sek Sync
+            setInterval(refreshAll, 5000);
         }
     });
 
+    async function initAssets() {
+        const doc = await db.collection('userAssets').doc(auth.currentUser.uid).get();
+        if(doc.exists && doc.data().assets.length > 0) {
+            userAssets = doc.data().assets;
+        } else {
+            // Standard Assets falls nichts da ist
+            userAssets = ["NAS100", "DAX", "GOLD", "EURUSD"];
+            await db.collection('userAssets').doc(auth.currentUser.uid).set({assets: userAssets});
+        }
+        updateAssetUI();
+    }
+
+    function updateAssetUI() {
+        const sel = document.getElementById('assetDropdown');
+        sel.innerHTML = userAssets.map(a => `<option value="${a}">${a}</option>`).join('');
+    }
+
+    async function addAssetPrompt() {
+        const a = prompt("Neues Asset (z.B. BTCUSD):");
+        if(a) {
+            const up = a.toUpperCase().trim();
+            if(!userAssets.includes(up)) {
+                userAssets.push(up);
+                await db.collection('userAssets').doc(auth.currentUser.uid).set({assets: userAssets});
+                updateAssetUI();
+            }
+        }
+    }
+
     async function refreshAll() {
         if(!auth.currentUser) return;
-        await syncAssets();
-        await loadTrades();
+        const snap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
+        trades = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        render();
     }
 
-    async function syncAssets() {
-        try {
-            const doc = await db.collection('userAssets').doc(auth.currentUser.uid).get();
-            if(doc.exists && doc.data().assets) {
-                userAssets = doc.data().assets;
-            }
-            const sel = document.getElementById('assetDropdown');
-            const currentVal = sel.value;
-            sel.innerHTML = userAssets.map(a => `<option value="${a}">${a}</option>`).join('');
-            if(currentVal && userAssets.includes(currentVal)) sel.value = currentVal;
-        } catch(e) { console.error("Asset Sync Error", e); }
-    }
-
-    async function loadTrades() {
-        try {
-            const snap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
-            trades = snap.docs.map(d => ({id: d.id, ...d.data()}));
-            renderUI();
-        } catch(e) { console.error("Trade Load Error", e); }
-    }
-
-    function renderUI() {
-        // 1. Offene Trades
+    function render() {
+        // Dashboard Open Trades
         const open = trades.filter(t => t.status === 'Aktiv');
-        const openContainer = document.getElementById('open-trades-list');
-        openContainer.innerHTML = open.length ? open.map(t => `
+        document.getElementById('open-trades-list').innerHTML = open.length ? open.map(t => `
             <div class="open-trade-item">
-                <div>
-                    <span class="status-pill" style="background:var(--accent); color:black;">Live</span>
-                    <b style="margin-left:10px;">${t.asset}</b>
-                    <div style="font-size:0.7rem; color:#888;">Eingetragen: ${t.date.replace('T', ' ')}</div>
-                </div>
-                <button onclick="editTrade('${t.id}', true)" class="chart-btn" style="border-color:var(--success); color:var(--success);">BEENDEN</button>
+                <span><b>${t.asset}</b> (${t.date.split('T')[0]})</span>
+                <button onclick="editTrade('${t.id}', true)" class="chart-btn" style="color:var(--success);">CLOSE</button>
             </div>
-        `).join('') : '<p style="color:#555; font-size:0.9rem;">Keine laufenden Positionen.</p>';
+        `).join('') : '<p style="color:#555;">Keine laufenden Positionen.</p>';
 
-        // 2. Performance & Statistik
+        // Stats & Filter
         let closed = trades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
         const now = new Date();
         if(currentFilter === 'today') closed = closed.filter(t => new Date(t.date).toDateString() === now.toDateString());
         if(currentFilter === 'week') { let d = new Date(); d.setDate(d.getDate()-7); closed = closed.filter(t => new Date(t.date) >= d); }
-        if(currentFilter === 'month') { let d = new Date(); d.setMonth(d.getMonth()-1); closed = closed.filter(t => new Date(t.date) >= d); }
+        if(currentFilter === 'month') closed = closed.filter(t => new Date(t.date).getMonth() === now.getMonth());
 
-        let totalPnl = 0, winCount = 0;
-        const chartPoints = closed.map(t => { 
-            totalPnl += (t.pnl || 0); 
-            if(t.pnl > 0) winCount++; 
-            return totalPnl.toFixed(2); 
-        });
+        let sum = 0, wins = 0;
+        const points = closed.map(t => { sum += t.pnl; if(t.pnl > 0) wins++; return sum; });
+        document.getElementById('ovTotal').innerText = sum.toFixed(2) + " €";
+        document.getElementById('ovTotal').style.color = sum >= 0 ? 'var(--success)' : 'var(--danger)';
+        document.getElementById('ovWinRate').innerText = closed.length ? (wins/closed.length*100).toFixed(0) + "%" : "0%";
 
-        document.getElementById('ovTotal').innerText = totalPnl.toFixed(2) + " €";
-        document.getElementById('ovTotal').style.color = totalPnl >= 0 ? 'var(--success)' : 'var(--danger)';
-        document.getElementById('ovWinRate').innerText = closed.length ? (winCount/closed.length*100).toFixed(0) + "%" : "0%";
-
-        // Chart Update
         const ctx = document.getElementById('ovChart').getContext('2d');
         if(ovChart) ovChart.destroy();
-        ovChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: closed.map(t => t.date.split('T')[0].split('-').slice(1).reverse().join('.')),
-                datasets: [{
-                    label: 'Equity (€)',
-                    data: chartPoints,
-                    borderColor: '#bb86fc',
-                    backgroundColor: 'rgba(187, 134, 252, 0.1)',
-                    fill: true,
-                    tension: 0.3,
-                    borderWidth: 3,
-                    pointRadius: 2
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#222' } }, x: { grid: { display: false } } } }
-        });
+        ovChart = new Chart(ctx, { type: 'line', data: { labels: closed.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', tension: 0.3, fill: false }] }, options: { responsive: true, maintainAspectRatio: false }});
 
-        // 3. Journal (Historie)
+        // Historie
         document.getElementById('tradeBody').innerHTML = trades.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
             <tr>
                 <td>${t.date.split('T')[0]}</td>
-                <td><b>${t.asset}</b></td>
+                <td>${t.asset}</td>
                 <td style="color:${t.status === 'Aktiv' ? 'var(--accent)' : (t.pnl >= 0 ? 'var(--success)' : 'var(--danger)')}">
-                    ${t.status === 'Aktiv' ? 'OFFEN' : t.pnl.toFixed(2) + '€'}
+                    ${t.status === 'Aktiv' ? 'RUNNING' : t.pnl.toFixed(2)+'€'}
                 </td>
-                <td>
-                    <button class="menu-btn" style="font-size:1rem;" onclick="editTrade('${t.id}')">✏️</button>
-                    <button class="menu-btn" style="font-size:1rem; color:var(--danger);" onclick="delTrade('${t.id}')">🗑️</button>
-                </td>
+                <td><button class="menu-btn" onclick="editTrade('${t.id}')">✏️</button></td>
             </tr>
         `).join('');
     }
 
-    // Aktionen
     async function saveTrade() {
         const id = document.getElementById('editId').value;
         const data = {
@@ -293,53 +246,31 @@
             pnl: parseFloat(document.getElementById('pnl').value) || 0,
             imgSetup: document.getElementById('imgSetup').value,
             note: document.getElementById('note').value,
-            userId: auth.currentUser.uid,
-            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+            userId: auth.currentUser.uid
         };
-        if(!data.date || !data.asset) return alert("Bitte Datum und Asset wählen!");
-        
-        try {
-            id ? await db.collection('trades').doc(id).update(data) : await db.collection('trades').add(data);
-            showView('Übersicht');
-            await loadTrades();
-        } catch(e) { alert("Fehler beim Speichern"); }
+        id ? await db.collection('trades').doc(id).update(data) : await db.collection('trades').add(data);
+        showView('Übersicht'); refreshAll();
     }
 
-    function editTrade(id, finishMode = false) {
+    function editTrade(id, closeMode = false) {
         const t = trades.find(x => x.id === id);
-        if(!t) return;
         document.getElementById('editId').value = t.id;
         document.getElementById('datetime').value = t.date;
         document.getElementById('assetDropdown').value = t.asset;
-        document.getElementById('status').value = finishMode ? 'Geschlossen' : t.status;
-        document.getElementById('pnl').value = t.pnl || 0;
+        document.getElementById('status').value = closeMode ? 'Geschlossen' : t.status;
+        document.getElementById('pnl').value = t.pnl;
         document.getElementById('imgSetup').value = t.imgSetup || '';
         document.getElementById('note').value = t.note || '';
-        document.getElementById('form-header').innerText = finishMode ? 'TRADE BEENDEN' : 'TRADE EDITIEREN';
-        togglePnl();
-        showView('Trade erstellen');
+        togglePnl(); showView('Trade erstellen');
     }
 
-    async function delTrade(id) {
-        if(confirm('Trade wirklich aus dem Journal löschen?')) {
-            await db.collection('trades').doc(id).delete();
-            await loadTrades();
-        }
+    function prepareCreateView() { 
+        document.getElementById('editId').value = ""; 
+        document.getElementById('datetime').value = new Date().toISOString().slice(0,16); 
+        togglePnl(); 
+        showView('Trade erstellen'); 
     }
 
-    async function addAssetPrompt() {
-        const a = prompt("Neues Trading-Asset eingeben (z.B. BTCUSD):");
-        if(a && a.length > 1) {
-            const up = a.toUpperCase().trim();
-            if(!userAssets.includes(up)) {
-                userAssets.push(up);
-                await db.collection('userAssets').doc(auth.currentUser.uid).set({assets: userAssets});
-                await syncAssets();
-            }
-        }
-    }
-
-    // Navigation & UI Helper
     function showView(v) {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.getElementById('view-' + v.replace(/\s+/g, '-')).classList.add('active');
@@ -348,8 +279,7 @@
         if(v === 'News') {
             const b = document.getElementById('news-box'); b.innerHTML = '';
             const s = document.createElement('script'); s.src = "https://s3.tradingview.com/external-embedding/embed-widget-events.js"; s.async = true;
-            s.innerHTML = JSON.stringify({"colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "100%", "locale": "de"}); 
-            b.appendChild(s);
+            s.innerHTML = JSON.stringify({"colorTheme": "dark", "width": "100%", "height": "100%", "locale": "de"}); b.appendChild(s);
         }
     }
 
@@ -357,40 +287,22 @@
         currentFilter = f;
         document.querySelectorAll('#filter-container .chart-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        renderUI();
+        render();
     }
 
     function togglePnl() { document.getElementById('pnlDiv').classList.toggle('hidden', document.getElementById('status').value === 'Aktiv'); }
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
-    function prepareCreateView() { 
-        document.getElementById('editId').value = ""; 
-        document.getElementById('datetime').value = new Date().toISOString().slice(0,16); 
-        document.getElementById('form-header').innerText = 'NEUER TRADE';
-        togglePnl(); 
-        showView('Trade erstellen'); 
-    }
-
-    function calcLots() {
-        const b = parseFloat(document.getElementById('cBal').value), r = parseFloat(document.getElementById('cRisk').value)/100, e = parseFloat(document.getElementById('cEnt').value), s = parseFloat(document.getElementById('cSl').value), t = document.getElementById('cType').value;
-        if(!b || !e || !s) return alert("Bitte alle Felder ausfüllen!");
-        const riskEur = b * r, diff = Math.abs(e - s);
-        const res = t === 'forex' ? riskEur / (diff * 100000) : riskEur / diff;
-        document.getElementById('cRes').innerText = res.toFixed(2);
-    }
-
-    // Admin
-    async function admLoad() {
-        const s = await db.collection('members').get();
-        document.getElementById('admList').innerHTML = s.docs.map(d => `<div class="open-trade-item"><span>${d.data().email}</span><button onclick="admDel('${d.id}')" class="chart-btn" style="color:var(--danger)">Entfernen</button></div>`).join('');
-    }
-    async function admAdd() { 
-        const e = document.getElementById('admEmail').value.toLowerCase().trim(); 
-        if(e) { await db.collection('members').add({email: e}); document.getElementById('admEmail').value = ''; admLoad(); } 
-    }
-    async function admDel(id) { if(confirm('User löschen?')) { await db.collection('members').doc(id).delete(); admLoad(); } }
-
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function handleLogout() { auth.signOut().then(() => location.reload()); }
+    function calcLots() {
+        const b = parseFloat(document.getElementById('cBal').value), r = parseFloat(document.getElementById('cRisk').value)/100, e = parseFloat(document.getElementById('cEnt').value), s = parseFloat(document.getElementById('cSl').value);
+        document.getElementById('cRes').innerText = ( (b*r) / Math.abs(e-s) ).toFixed(2);
+    }
+    async function admLoad() {
+        const s = await db.collection('members').get();
+        document.getElementById('admList').innerHTML = s.docs.map(d => `<div>${d.data().email}</div>`).join('');
+    }
+    async function admAdd() { await db.collection('members').add({email: document.getElementById('admEmail').value}); admLoad(); }
 </script>
 </body>
 </html>
