@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Admin Fix</title>
+    <title>TradeCloud Pro - Secure Login</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -32,7 +32,6 @@
         /* BUTTONS & INPUTS */
         input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; font-family: inherit; font-size: 16px; }
         
-        /* Filter Button Style */
         .chart-btn { background: #222; border: 1px solid #333; color: white; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; text-decoration: none; display: inline-block; margin: 2px 0; min-width: 30px; text-align: center; }
         .chart-btn.active { background: var(--accent); color: black; font-weight: bold; }
         
@@ -47,11 +46,8 @@
         .open-trade-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #222; }
         .link-badge { background: #333; color: var(--accent); padding: 4px 8px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px; border: 1px solid #444; display: inline-block; }
         
-        /* Chart Header Mobile Layout */
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
         #filter-container { display: flex; gap: 4px; flex-wrap: wrap; }
-
-        /* Icon Button */
         .icon-btn { background: none; border: none; cursor: pointer; padding: 5px; color: #888; transition: 0.2s; }
         .icon-btn:hover { color: var(--danger); }
 
@@ -229,8 +225,8 @@
     // AUTH CHECK MIT WHITELIST
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            // Check Admin Hardcode
-            const userEmail = user.email.toLowerCase(); // WICHTIG: Kleinbuchstaben
+            // Check Admin Hardcode (WICHTIG: Kleinbuchstaben)
+            const userEmail = user.email.toLowerCase().trim();
             const isAdmin = userEmail === "leon.luca.lauterbach@gmail.com";
             
             let isAllowed = isAdmin;
@@ -259,7 +255,8 @@
                 await loadTrades();
                 setInterval(loadTrades, 5000);
             } else {
-                alert("Kein Zugriff! Dein Account wurde vom Admin nicht freigeschaltet.");
+                // ZEIGE DIE ABGELEHNTE EMAIL AN
+                alert(`Kein Zugriff für: ${userEmail}\nBitte Admin kontaktieren.`);
                 await auth.signOut();
                 location.reload();
             }
@@ -439,11 +436,11 @@
     }
 
     async function admAdd() { 
-        // WICHTIG: E-Mail bereinigen (trim und lowercase)
         const val = document.getElementById('admEmail').value.trim().toLowerCase();
         if(!val) return;
         await db.collection('members').add({email: val}); 
-        document.getElementById('admEmail').value = ""; // Feld leeren
+        alert("Nutzer hinzugefügt: " + val); // BESTÄTIGUNG
+        document.getElementById('admEmail').value = ""; 
         admLoad(); 
     }
 
