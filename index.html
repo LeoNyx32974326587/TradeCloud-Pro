@@ -34,8 +34,9 @@
         #asset-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; }
         .popup-content { background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--accent); width: 300px; text-align: center; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        .btn-close-trade { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .action-btns button { background: none; border: none; cursor: pointer; font-size: 1.1rem; margin-right: 5px; }
+        .link-icon { color: var(--accent); text-decoration: none; font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -54,9 +55,7 @@
 <div id="auth-overlay">
     <div class="auth-box">
         <h2 style="color: var(--accent); margin-bottom: 30px;">TradeCloud</h2>
-        <button onclick="loginGoogle()" class="btn-primary" style="background:white; color:#444; display:flex; align-items:center; justify-content:center; gap:10px;">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Login mit Google
-        </button>
+        <button onclick="loginGoogle()" class="btn-primary">Login mit Google</button>
     </div>
 </div>
 
@@ -100,7 +99,7 @@
 
     <section id="view-Trade-erstellen" class="view-section">
         <div class="card">
-            <h4>TRADE ERSTELLEN</h4>
+            <h4 id="trade-form-title">TRADE ERSTELLEN</h4>
             <input type="hidden" id="editId">
             <div style="display: grid; gap: 15px;">
                 <input type="datetime-local" id="datetime">
@@ -116,8 +115,27 @@
                 <input type="url" id="imgSetup" placeholder="Setup Link">
                 <div id="outcomeWrapper" class="hidden"><input type="url" id="imgResult" placeholder="Ergebnis Link"></div>
                 <textarea id="note" placeholder="Notizen..." rows="4"></textarea>
-                <button onclick="saveTrade()" class="btn-primary">Trade speichern</button>
+                <button onclick="saveTrade()" class="btn-primary">Speichern</button>
             </div>
+        </div>
+    </section>
+
+    <section id="view-Historie" class="view-section">
+        <div class="card" style="padding:0; overflow-x:auto;">
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Asset</th>
+                        <th>P&L</th>
+                        <th>Setup</th>
+                        <th>Result</th>
+                        <th>Notiz</th>
+                        <th>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody id="tradeBody"></tbody>
+            </table>
         </div>
     </section>
 
@@ -139,7 +157,6 @@
     </section>
 
     <section id="view-News" class="view-section"><div class="card"><div id="news-container" style="height: 600px;"></div></div></section>
-    <section id="view-Historie" class="view-section"><div class="card" style="padding:0; overflow-x:auto;"><table><thead><tr><th>Datum</th><th>Asset</th><th>P&L</th><th>Aktion</th></tr></thead><tbody id="tradeBody"></tbody></table></div></section>
     <section id="view-Einstellungen" class="view-section"><div class="card"><h4>EINSTELLUNGEN</h4><div style="display:flex;gap:10px;margin-bottom:20px;"><input type="email" id="newMemberEmail" placeholder="E-Mail"><button onclick="addMember()" class="chart-btn">Hinzufügen</button></div><div id="memberList"></div></div></section>
 </div>
 
@@ -163,17 +180,6 @@
         } else { document.getElementById('auth-overlay').classList.remove('hidden'); }
     });
 
-    async function loadUserAssets() {
-        const snap = await db.collection('userAssets').doc(auth.currentUser.uid).get();
-        if (snap.exists && snap.data().assets) userAssets = snap.data().assets;
-        updateAssetDropdown();
-    }
-
-    function updateAssetDropdown() {
-        const dd = document.getElementById('assetDropdown');
-        if(dd) dd.innerHTML = userAssets.map(a => `<option value="${a}">${a}</option>`).join('');
-    }
-
     async function loadTrades() {
         const snap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
         trades = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -191,11 +197,28 @@
             const pVal = parseFloat(t.pnl) || 0;
             if(t.status !== 'Geschlossen') {
                 hasActive = true;
-                activeListOv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #222;"><span>${t.asset}</span><button class="btn-close-trade" onclick="quickClose('${t.id}')">Schließen</button></div>`;
+                activeListOv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #222;"><span>${t.asset}</span><button onclick="quickClose('${t.id}')" style="background:var(--danger); color:white; border:none; border-radius:4px; padding:5px 10px;">Schließen</button></div>`;
             } else {
                 totalPnl += pVal; closedCount++; if(pVal > 0) wins++;
             }
-            body.innerHTML += `<tr><td>${t.date.split('T')[0]}</td><td>${t.asset}</td><td style="color:${pVal>=0?'var(--success)':'var(--danger)'}">${pVal.toFixed(2)}€</td><td><button onclick="editTrade('${t.id}')">✏️</button></td></tr>`;
+            
+            const setupHtml = t.imgSetup ? `<a href="${t.imgSetup}" target="_blank" class="link-icon">🖼️</a>` : '-';
+            const resultHtml = t.imgResult ? `<a href="${t.imgResult}" target="_blank" class="link-icon">📈</a>` : '-';
+            const noteText = t.note ? (t.note.length > 20 ? t.note.substring(0,20) + '...' : t.note) : '-';
+
+            body.innerHTML += `
+                <tr>
+                    <td>${t.date.split('T')[0]}</td>
+                    <td>${t.asset}</td>
+                    <td style="color:${pVal>=0?'var(--success)':'var(--danger)'}">${pVal.toFixed(2)}€</td>
+                    <td>${setupHtml}</td>
+                    <td>${resultHtml}</td>
+                    <td title="${t.note || ''}">${noteText}</td>
+                    <td class="action-btns">
+                        <button onclick="editTrade('${t.id}')">✏️</button>
+                        <button onclick="deleteTrade('${t.id}')">🗑️</button>
+                    </td>
+                </tr>`;
         });
 
         document.getElementById('overview-active-trades').classList.toggle('hidden', !hasActive);
@@ -205,68 +228,83 @@
         updateChart();
     }
 
-    function updateChart() {
-        const canvas = document.getElementById('ovChart');
-        if(!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let filtered = trades.filter(t => t.status === 'Geschlossen');
-        const now = new Date();
-        if(currentFilter === 'today') filtered = filtered.filter(t => new Date(t.date).toDateString() === now.toDateString());
-        else if(currentFilter === 'week') { const weekAgo = new Date(); weekAgo.setDate(now.getDate()-7); filtered = filtered.filter(t => new Date(t.date) >= weekAgo); }
-        else if(currentFilter === 'month') { const monthAgo = new Date(); monthAgo.setMonth(now.getMonth()-1); filtered = filtered.filter(t => new Date(t.date) >= monthAgo); }
-        
-        filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
-        let sum = 0; const points = filtered.map(t => { sum += (parseFloat(t.pnl) || 0); return sum; });
-        if(ovChart) ovChart.destroy();
-        ovChart = new Chart(ctx, { type: 'line', data: { labels: filtered.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', tension: 0.2, fill: true, backgroundColor: 'rgba(187,134,252,0.1)' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-    }
-
-    function setQuickFilter(f) {
-        currentFilter = f;
-        document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
-        if(document.getElementById('filter-' + f)) document.getElementById('filter-' + f).classList.add('active');
-        updateChart();
-    }
-
     async function saveTrade() {
-        const asset = document.getElementById('assetDropdown').value;
-        const data = { date: document.getElementById('datetime').value, asset: asset, status: document.getElementById('status').value, mindset: document.getElementById('mindset').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value, userId: auth.currentUser.uid };
-        await db.collection('trades').add(data); 
+        const id = document.getElementById('editId').value;
+        const data = { 
+            date: document.getElementById('datetime').value, 
+            asset: document.getElementById('assetDropdown').value, 
+            status: document.getElementById('status').value, 
+            mindset: document.getElementById('mindset').value, 
+            pnl: parseFloat(document.getElementById('pnl').value) || 0, 
+            imgSetup: document.getElementById('imgSetup').value, 
+            imgResult: document.getElementById('imgResult').value, 
+            note: document.getElementById('note').value, 
+            userId: auth.currentUser.uid 
+        };
+        id ? await db.collection('trades').doc(id).update(data) : await db.collection('trades').add(data);
         loadTrades(); showView('Übersicht');
+    }
+
+    function editTrade(id) {
+        const t = trades.find(x => x.id === id);
+        document.getElementById('editId').value = t.id;
+        document.getElementById('datetime').value = t.date;
+        document.getElementById('assetDropdown').value = t.asset;
+        document.getElementById('status').value = t.status;
+        document.getElementById('mindset').value = t.mindset;
+        document.getElementById('pnl').value = t.pnl;
+        document.getElementById('imgSetup').value = t.imgSetup;
+        document.getElementById('imgResult').value = t.imgResult;
+        document.getElementById('note').value = t.note;
+        document.getElementById('trade-form-title').innerText = "TRADE BEARBEITEN";
+        toggleOutcomeFields();
+        showView('Trade erstellen');
+    }
+
+    async function deleteTrade(id) {
+        if(confirm("Diesen Trade wirklich löschen?")) {
+            await db.collection('trades').doc(id).delete();
+            loadTrades();
+        }
     }
 
     function prepareCreateView() { 
         const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         document.getElementById('datetime').value = now.toISOString().slice(0,16);
-        document.getElementById('editId').value = ""; document.getElementById('pnl').value = ""; 
-        updateAssetDropdown(); toggleOutcomeFields(); showView('Trade erstellen'); 
+        document.getElementById('editId').value = ""; 
+        document.getElementById('pnl').value = ""; 
+        document.getElementById('imgSetup').value = "";
+        document.getElementById('imgResult').value = "";
+        document.getElementById('note').value = "";
+        document.getElementById('trade-form-title').innerText = "TRADE ERSTELLEN";
+        toggleOutcomeFields(); showView('Trade erstellen'); 
     }
 
+    // Hilfsfunktionen (Chart, Filter, Assets, UI)
+    function updateChart() {
+        const ctx = document.getElementById('ovChart').getContext('2d');
+        let filtered = trades.filter(t => t.status === 'Geschlossen');
+        const now = new Date();
+        if(currentFilter === 'today') filtered = filtered.filter(t => new Date(t.date).toDateString() === now.toDateString());
+        else if(currentFilter === 'week') { const weekAgo = new Date(); weekAgo.setDate(now.getDate()-7); filtered = filtered.filter(t => new Date(t.date) >= weekAgo); }
+        else if(currentFilter === 'month') { const monthAgo = new Date(); monthAgo.setMonth(now.getMonth()-1); filtered = filtered.filter(t => new Date(t.date) >= monthAgo); }
+        filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
+        let sum = 0; const points = filtered.map(t => { sum += (parseFloat(t.pnl) || 0); return sum; });
+        if(ovChart) ovChart.destroy();
+        ovChart = new Chart(ctx, { type: 'line', data: { labels: filtered.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', tension: 0.2, fill: true, backgroundColor: 'rgba(187,134,252,0.1)' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+    }
+    function setQuickFilter(f) { currentFilter = f; document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active')); document.getElementById('filter-' + f).classList.add('active'); updateChart(); }
+    async function loadUserAssets() { const snap = await db.collection('userAssets').doc(auth.currentUser.uid).get(); if (snap.exists && snap.data().assets) userAssets = snap.data().assets; updateAssetDropdown(); }
+    function updateAssetDropdown() { document.getElementById('assetDropdown').innerHTML = userAssets.map(a => `<option value="${a}">${a}</option>`).join(''); }
     function openAssetPopup() { document.getElementById('asset-popup').classList.remove('hidden'); }
     function closeAssetPopup() { document.getElementById('asset-popup').classList.add('hidden'); }
-    
-    async function confirmAddAsset() {
-        const name = document.getElementById('newAssetName').value.toUpperCase().trim();
-        if (name && !userAssets.includes(name)) {
-            userAssets.push(name);
-            await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
-            updateAssetDropdown(); document.getElementById('newAssetName').value = ''; closeAssetPopup();
-        }
-    }
-
-    function showView(v) { 
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active')); 
-        const target = document.getElementById('view-' + v.replace(/\s+/g, '-'));
-        if(target) target.classList.add('active');
-        document.getElementById('view-title').innerText = v; 
-        document.getElementById('navDrawer').classList.remove('open'); 
-    }
-
-    async function quickClose(id) {
-        const pnl = prompt("P&L (€):", "0");
-        if(pnl !== null) { await db.collection('trades').doc(id).update({ status: 'Geschlossen', pnl: parseFloat(pnl) || 0 }); loadTrades(); }
-    }
-
+    async function confirmAddAsset() { const name = document.getElementById('newAssetName').value.toUpperCase().trim(); if (name && !userAssets.includes(name)) { userAssets.push(name); await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets }); updateAssetDropdown(); document.getElementById('newAssetName').value = ''; closeAssetPopup(); } }
+    function showView(v) { document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active')); const target = document.getElementById('view-' + v.replace(/\s+/g, '-')); if(target) target.classList.add('active'); document.getElementById('view-title').innerText = v; document.getElementById('navDrawer').classList.remove('open'); }
+    function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
+    function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    function handleLogout() { auth.signOut().then(() => location.reload()); }
+    function toggleOutcomeFields() { const c = document.getElementById('status').value === 'Geschlossen'; document.getElementById('pnlWrapper').classList.toggle('hidden', !c); document.getElementById('outcomeWrapper').classList.toggle('hidden', !c); }
+    async function quickClose(id) { const pnl = prompt("P&L (€):", "0"); if(pnl !== null) { await db.collection('trades').doc(id).update({ status: 'Geschlossen', pnl: parseFloat(pnl) || 0 }); loadTrades(); } }
     function calculateLots() {
         const type = document.getElementById('calcAssetType').value;
         const balance = parseFloat(document.getElementById('calcBalance').value) || 0;
@@ -281,26 +319,14 @@
             document.getElementById('riskEuroResult').innerText = riskEuro.toFixed(2) + " €";
         }
     }
-
-    function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
-    function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-    function handleLogout() { auth.signOut().then(() => location.reload()); }
-    function toggleOutcomeFields() { const c = document.getElementById('status').value === 'Geschlossen'; document.getElementById('pnlWrapper').classList.toggle('hidden', !c); document.getElementById('outcomeWrapper').classList.toggle('hidden', !c); }
     function updateNewsWidget() {
         const container = document.getElementById('news-container'); container.innerHTML = '';
         const script = document.createElement('script'); script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js'; script.async = true;
         script.innerHTML = JSON.stringify({ "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "100%", "locale": "de_DE", "importanceFilter": "-1,0,1" });
         container.appendChild(script);
     }
-    async function loadMembers() {
-        const snap = await db.collection('members').get();
-        const list = document.getElementById('memberList');
-        list.innerHTML = ''; snap.forEach(doc => { list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #222;"><span>${doc.data().email}</span></div>`; });
-    }
-    async function addMember() {
-        const email = document.getElementById('newMemberEmail').value;
-        if(email) { await db.collection('members').add({ email: email.toLowerCase() }); document.getElementById('newMemberEmail').value = ''; loadMembers(); }
-    }
+    async function loadMembers() { const snap = await db.collection('members').get(); const list = document.getElementById('memberList'); list.innerHTML = ''; snap.forEach(doc => { list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #222;"><span>${doc.data().email}</span></div>`; }); }
+    async function addMember() { const email = document.getElementById('newMemberEmail').value; if(email) { await db.collection('members').add({ email: email.toLowerCase() }); document.getElementById('newMemberEmail').value = ''; loadMembers(); } }
 </script>
 </body>
 </html>
