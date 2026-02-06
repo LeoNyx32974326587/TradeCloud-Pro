@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Fixed Layout</title>
+    <title>TradeCloud Pro - Final Config</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -24,7 +24,6 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; color: var(--text-main); padding-bottom: 40px; transition: background 0.3s, color 0.3s; }
         .hidden { display: none !important; }
         
-        /* WICHTIG: Das hier repariert das "Alles auf einer Seite" Problem */
         .view-section { display: none; animation: fadeIn 0.3s; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -43,7 +42,6 @@
         .nav-drawer { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: var(--card-bg); border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 60px; box-shadow: 2px 0 10px rgba(0,0,0,0.5); }
         .nav-drawer.open { left: 0; }
         .nav-drawer button { display: block; width: 100%; padding: 18px 25px; text-align: left; background: none; border: none; color: var(--text-main); cursor: pointer; border-bottom: 1px solid var(--border); font-size: 1rem; }
-        .nav-drawer button:hover { background: rgba(255,255,255,0.05); }
 
         /* --- CARDS & CONTAINERS --- */
         .container { max-width: 1000px; margin: 15px auto; padding: 0 15px; box-sizing: border-box; }
@@ -71,13 +69,16 @@
         /* Image Preview Tooltip */
         #img-preview { position: fixed; display: none; width: 300px; height: 180px; background-size: cover; background-position: center; border: 2px solid var(--accent); border-radius: 8px; z-index: 999; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background-color: #000; pointer-events: none; }
 
-        /* --- CALENDAR --- */
+        /* --- CALENDAR (BIG NUMBERS) --- */
         .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .cal-nav button { background: #333; border: none; color: white; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .cal-cell { background: var(--bg-dark); border-radius: 6px; min-height: 70px; padding: 5px; position: relative; border: 1px solid var(--border); }
-        .cal-date { font-size: 0.7rem; color: #888; position: absolute; top: 5px; right: 5px; }
-        .cal-pnl { font-size: 0.8rem; font-weight: bold; position: absolute; bottom: 5px; left: 5px; right: 5px; text-align: center; }
+        .cal-cell { background: var(--bg-dark); border-radius: 6px; min-height: 80px; padding: 5px; position: relative; border: 1px solid var(--border); }
+        
+        /* Bigger Numbers */
+        .cal-date { font-size: 1rem; font-weight: bold; color: #888; position: absolute; top: 5px; right: 8px; }
+        .cal-pnl { font-size: 1.1rem; font-weight: 800; position: absolute; bottom: 8px; left: 5px; right: 5px; text-align: center; }
+        
         .cal-green { background: rgba(3, 218, 198, 0.1); border-color: var(--success); }
         .cal-red { background: rgba(207, 102, 121, 0.1); border-color: var(--danger); }
         .cal-pnl-pos { color: var(--success); }
@@ -86,6 +87,7 @@
         /* --- UTILS --- */
         .icon-btn { background: none; border: none; cursor: pointer; padding: 8px; color: #888; transition: 0.2s; }
         .icon-btn:hover { color: var(--accent); transform: scale(1.1); }
+        .icon-trash { color: var(--danger); }
         
         /* --- POPUPS --- */
         #auth-overlay, #stats-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -146,7 +148,7 @@
         
         <div id="dd-banner" class="card dd-alert hidden">
             <h3 style="margin:0;">⚠️ TAGES-LIMIT ERREICHT ⚠️</h3>
-            <p style="margin:5px 0 0 0;">Dein maximaler Verlust für heute wurde überschritten. Stop Trading!</p>
+            <p style="margin:5px 0 0 0;">Stop Trading für heute!</p>
         </div>
 
         <div class="card">
@@ -187,14 +189,34 @@
         <div class="card">
             <h4 id="form-header">TRADE ERFASSEN</h4>
             <input type="hidden" id="editId">
-            <label>Asset</label><input type="text" id="assetInput" placeholder="z.B. EURUSD" required>
-            <label>Status</label><select id="status" onchange="togglePnl()"><option value="Aktiv">Laufend</option><option value="Geschlossen">Geschlossen</option></select>
-            <div id="pnlDiv" class="hidden"><label>Gewinn/Verlust (€)</label><input type="number" id="pnl" placeholder="0.00" step="0.01"></div>
-            <label>Datum</label><input type="datetime-local" id="datetime">
-            <label>Setup Link</label><input type="url" id="imgSetup" placeholder="https://...">
-            <label>Ergebnis Link</label><input type="url" id="imgResult" placeholder="https://...">
-            <label>Notizen</label><textarea id="note" rows="3"></textarea>
-            <button onclick="saveTrade()" class="btn-primary">SPEICHERN</button>
+            
+            <label>Status</label>
+            <select id="status" onchange="toggleFormFields()">
+                <option value="Aktiv" selected>Laufend (Offen)</option>
+                <option value="Geschlossen">Geschlossen</option>
+            </select>
+
+            <label>Asset</label>
+            <input type="text" id="assetInput" placeholder="z.B. EURUSD" required>
+
+            <label>Datum & Zeit</label>
+            <input type="datetime-local" id="datetime">
+
+            <label>Setup Link (Chart Bild)</label>
+            <input type="url" id="imgSetup" placeholder="https://...">
+
+            <label>Notizen</label>
+            <textarea id="note" rows="3"></textarea>
+            
+            <div id="closedFields" class="hidden">
+                <label style="color:var(--success);">Gewinn/Verlust (€)</label>
+                <input type="number" id="pnl" placeholder="0.00" step="0.01">
+                
+                <label>Ergebnis Link (Optional)</label>
+                <input type="url" id="imgResult" placeholder="https://...">
+            </div>
+            
+            <button onclick="saveTrade()" class="btn-primary" style="margin-top:20px;">SPEICHERN</button>
             <button onclick="showView('Übersicht')" class="btn-outline">ABBRECHEN</button>
         </div>
     </section>
@@ -211,11 +233,10 @@
         <div class="card" style="padding:0;">
             <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
                 <h4 style="margin:0;">JOURNAL</h4>
-                <button onclick="downloadCSV()" class="chart-btn" style="background:#333;">📥 CSV EXPORT</button>
-            </div>
+                </div>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>Datum</th><th>Asset</th><th>P&L</th><th>Links</th><th></th></tr></thead>
+                    <thead><tr><th>Datum</th><th>Asset</th><th>P&L</th><th>Links</th><th>Action</th></tr></thead>
                     <tbody id="tradeBody"></tbody>
                 </table>
             </div>
@@ -224,7 +245,7 @@
 
     <section id="view-Einstellungen" class="view-section">
         <div class="card">
-            <h4>APP EINSTELLUNGEN</h4>
+            <h4>EINSTELLUNGEN</h4>
             
             <label>Design Modus</label>
             <div style="display:flex; gap:10px; margin-bottom:20px;">
@@ -232,8 +253,19 @@
                 <button onclick="setTheme('light')" class="chart-btn" style="flex:1; background:#ddd; color:black;">☀️ Light</button>
             </div>
 
-            <label>Drawdown Monitor (Warnung bei Tagesverlust)</label>
-            <input type="number" id="settingMaxLoss" placeholder="z.B. 500 (für 500€ Verlustlimit)">
+            <hr style="border-color:var(--border); opacity:0.3; margin:20px 0;">
+
+            <label>Startkapital (€)</label>
+            <input type="number" id="settingStartCap" placeholder="z.B. 10000">
+
+            <label>Drawdown Limit (Tagesverlust)</label>
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="settingMaxLoss" placeholder="Wert (z.B. 500)">
+                <select id="settingLossType" style="width:120px;">
+                    <option value="eur">EUR (€)</option>
+                    <option value="perc">Prozent (%)</option>
+                </select>
+            </div>
             
             <button onclick="saveUserSettings()" class="btn-primary" style="margin-top:20px;">SPEICHERN</button>
         </div>
@@ -272,7 +304,7 @@
     let trades = [], ovChart = null, currentFilter = 'all', calDate = new Date();
     let privacyMode = false;
 
-    // Load Theme on start
+    // Load Theme
     const storedTheme = localStorage.getItem('tradeTheme') || 'dark';
     if(storedTheme === 'light') document.body.classList.add('light-mode');
     
@@ -300,9 +332,10 @@
                     admLoad();
                 }
 
-                // Load Max Loss Setting
-                const savedMax = localStorage.getItem('maxLoss');
-                if(savedMax) document.getElementById('settingMaxLoss').value = savedMax;
+                // Load Settings
+                if(localStorage.getItem('startCap')) document.getElementById('settingStartCap').value = localStorage.getItem('startCap');
+                if(localStorage.getItem('maxLoss')) document.getElementById('settingMaxLoss').value = localStorage.getItem('maxLoss');
+                if(localStorage.getItem('lossType')) document.getElementById('settingLossType').value = localStorage.getItem('lossType');
                 
                 await loadTrades(); setInterval(loadTrades, 5000);
             } else {
@@ -320,18 +353,60 @@
         } catch(e){}
     }
 
-    // --- LOGIC: Drawdown Check ---
+    // --- FORM LOGIC (Open/Closed) ---
+    function toggleFormFields() {
+        const s = document.getElementById('status').value;
+        const closedFields = document.getElementById('closedFields');
+        if(s === 'Aktiv') {
+            closedFields.classList.add('hidden');
+        } else {
+            closedFields.classList.remove('hidden');
+        }
+    }
+
+    function prepareCreateView() { 
+        document.getElementById('editId').value=""; 
+        document.getElementById('datetime').value=new Date().toISOString().slice(0,16); 
+        document.getElementById('assetInput').value=""; 
+        document.getElementById('pnl').value=""; 
+        document.getElementById('imgSetup').value=""; 
+        document.getElementById('imgResult').value="";
+        document.getElementById('note').value="";
+        
+        // Default to "Aktiv"
+        document.getElementById('status').value = "Aktiv";
+        document.getElementById('form-header').innerText='NEUER TRADE'; 
+        toggleFormFields(); 
+        showView('Trade erstellen'); 
+    }
+
+    // --- DRAWDOWN CHECK (€ or %) ---
     function checkDrawdown() {
-        const limit = parseFloat(localStorage.getItem('maxLoss'));
-        if(!limit) return;
+        const val = parseFloat(localStorage.getItem('maxLoss'));
+        const type = localStorage.getItem('lossType') || 'eur';
+        const startCap = parseFloat(localStorage.getItem('startCap')) || 0;
+        
+        if(!val) return;
+        
+        let limit = 0;
+        if(type === 'eur') limit = val;
+        else if(type === 'perc' && startCap > 0) limit = startCap * (val / 100);
+        
+        if(limit === 0) return;
+
         const today = new Date().toDateString();
         let todayPnL = 0;
         trades.forEach(t => { if(t.status === 'Geschlossen' && new Date(t.date).toDateString() === today) todayPnL += t.pnl; });
+        
         const banner = document.getElementById('dd-banner');
-        if(todayPnL <= -Math.abs(limit)) banner.classList.remove('hidden'); else banner.classList.add('hidden');
+        if(todayPnL <= -Math.abs(limit)) {
+            banner.classList.remove('hidden');
+            banner.querySelector('p').innerText = `Verlustlimit (${limit.toFixed(2)}€) erreicht!`;
+        } else {
+            banner.classList.add('hidden');
+        }
     }
 
-    // --- LOGIC: Render Dashboard ---
     function render() {
         const open = trades.filter(t => t.status === 'Aktiv');
         document.getElementById('open-trades-list').innerHTML = open.length ? open.map(t => `
@@ -343,12 +418,11 @@
         let closed = trades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay() + (now.getDay() == 0 ? -6:1)); weekStart.setHours(0,0,0,0);
         
         if(currentFilter === 'today') closed = closed.filter(t => new Date(t.date) >= todayStart);
         else if(currentFilter === 'yesterday') { const yStart = new Date(todayStart); yStart.setDate(yStart.getDate() - 1); closed = closed.filter(t => new Date(t.date) >= yStart && new Date(t.date) < todayStart); }
-        else if(currentFilter === 'week') closed = closed.filter(t => new Date(t.date) >= weekStart);
-        else if(currentFilter === 'month') closed = closed.filter(t => new Date(t.date).getMonth() === now.getMonth() && new Date(t.date).getFullYear() === now.getFullYear());
+        else if(currentFilter === 'week') { const w = new Date(now); w.setDate(now.getDate() - now.getDay() + (now.getDay() == 0 ? -6:1)); w.setHours(0,0,0,0); closed = closed.filter(t => new Date(t.date) >= w); }
+        else if(currentFilter === 'month') closed = closed.filter(t => new Date(t.date).getMonth() === now.getMonth());
         else if(currentFilter === 'year') closed = closed.filter(t => new Date(t.date).getFullYear() === now.getFullYear());
 
         let sum = 0, wins = 0;
@@ -361,6 +435,7 @@
         if(ovChart) ovChart.destroy();
         ovChart = new Chart(ctx, { type: 'line', data: { labels: closed.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', backgroundColor: 'rgba(187, 134, 252, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } } });
 
+        // Table with Pencil AND TRASH ICON
         document.getElementById('tradeBody').innerHTML = trades.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
             <tr>
                 <td>${t.date.split('T')[0]}</td><td><b>${t.asset}</b></td>
@@ -369,12 +444,15 @@
                     ${t.imgSetup ? `<span class="link-badge" onclick="window.open('${t.imgSetup}')" onmouseover="showPreview('${t.imgSetup}', event)" onmouseout="hidePreview()">S</span>` : ''}
                     ${t.imgResult ? `<span class="link-badge" onclick="window.open('${t.imgResult}')" onmouseover="showPreview('${t.imgResult}', event)" onmouseout="hidePreview()">E</span>` : ''}
                 </td>
-                <td><button class="chart-btn" onclick="editTrade('${t.id}')">✏️</button></td>
+                <td>
+                    <button class="icon-btn" onclick="editTrade('${t.id}')">✏️</button>
+                    <button class="icon-btn icon-trash" onclick="delTrade('${t.id}')">🗑️</button>
+                </td>
             </tr>
         `).join('');
     }
 
-    // --- LOGIC: Privacy & Theme ---
+    // --- OTHER LOGIC ---
     function togglePrivacy() {
         const root = document.documentElement;
         if(privacyMode) { root.style.setProperty('--blur', '0px'); privacyMode = false; }
@@ -387,19 +465,18 @@
     }
     function saveUserSettings() {
         localStorage.setItem('maxLoss', document.getElementById('settingMaxLoss').value);
+        localStorage.setItem('startCap', document.getElementById('settingStartCap').value);
+        localStorage.setItem('lossType', document.getElementById('settingLossType').value);
         alert("Einstellungen gespeichert!"); checkDrawdown();
     }
-
-    // --- LOGIC: Image Preview ---
     function showPreview(url, e) {
         const el = document.getElementById('img-preview');
         el.style.display = 'block'; el.style.backgroundImage = `url('${url}')`;
         el.style.top = (e.clientY + 10) + 'px'; el.style.left = (e.clientX - 150) + 'px';
     }
     function hidePreview() { document.getElementById('img-preview').style.display = 'none'; }
-
-    // --- LOGIC: Calendar ---
     function changeCalMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
+    
     function renderCalendar() {
         const y=calDate.getFullYear(), m=calDate.getMonth();
         document.getElementById('cal-month-title').innerText = new Date(y,m).toLocaleString('de-DE', {month:'long', year:'numeric'});
@@ -413,15 +490,7 @@
             grid.innerHTML+=`<div class="${c}"><div class="cal-date">${d}</div><div class="cal-pnl ${sum>0?'cal-pnl-pos':(sum<0?'cal-pnl-neg':'')}">${sum!==0?sum.toFixed(0):''}</div></div>`;
         }
     }
-    
-    // --- LOGIC: Export ---
-    function downloadCSV() {
-        let csv = "Date,Asset,Status,PnL,Note,Setup,Result\n";
-        trades.forEach(t => csv += `${t.date},${t.asset},${t.status},${t.pnl},"${(t.note||'').replace(/"/g,'""')}",${t.imgSetup||''},${t.imgResult||''}\n`);
-        const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='journal.csv'; a.click();
-    }
 
-    // --- LOGIC: Standard ---
     async function saveTrade() {
         const id = document.getElementById('editId').value;
         const asset = document.getElementById('assetInput').value.toUpperCase();
@@ -436,9 +505,11 @@
         document.getElementById('assetInput').value = t.asset; document.getElementById('status').value = c ? 'Geschlossen' : t.status;
         document.getElementById('pnl').value = t.pnl; document.getElementById('imgSetup').value = t.imgSetup||'';
         document.getElementById('imgResult').value = t.imgResult||''; document.getElementById('note').value = t.note||'';
-        togglePnl(); showView('Trade erstellen');
+        document.getElementById('form-header').innerText=c?'BEENDEN':'BEARBEITEN';
+        toggleFormFields(); showView('Trade erstellen');
     }
-    function prepareCreateView() { document.getElementById('editId').value=""; document.getElementById('datetime').value=new Date().toISOString().slice(0,16); document.getElementById('assetInput').value=""; document.getElementById('pnl').value=""; togglePnl(); showView('Trade erstellen'); }
+    async function delTrade(id) { if(confirm('Löschen?')) { await db.collection('trades').doc(id).delete(); loadTrades(); } }
+    
     function showView(v) { 
         document.querySelectorAll('.view-section').forEach(s=>s.classList.remove('active')); 
         document.getElementById('view-'+v.replace(/\s+/g, '-')).classList.add('active'); 
@@ -448,23 +519,20 @@
         if(v==='Kalender') renderCalendar(); 
     }
     function setFilter(f,b) { currentFilter=f; document.querySelectorAll('#filter-container .chart-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); render(); }
-    function togglePnl() { document.getElementById('pnlDiv').classList.toggle('hidden', document.getElementById('status').value==='Aktiv'); }
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function handleLogout() { auth.signOut().then(()=>location.reload()); }
     function updateContractSize() { const t=document.getElementById('cType').value; if(t==='forex')document.getElementById('cSize').value=100000; else if(t==='indices')document.getElementById('cSize').value=1; }
     function calcLots() { const b=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), e=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value), s=parseFloat(document.getElementById('cSize').value); if(b&&r&&e&&sl&&s) document.getElementById('cRes').innerText=((b*(r/100))/(Math.abs(e-sl)*s)).toFixed(2)+" Lot"; }
     
-    // --- LOGIC: Admin ---
+    /* ADMIN */
     async function admLoad() { const s=await db.collection('members').get(); document.getElementById('admList').innerHTML=s.docs.map(d=>`<div style="padding:10px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><span>${d.data().email}</span><div><button class="icon-btn" onclick="viewStats('${d.id}')">👁️</button><button class="icon-btn" onclick="admDel('${d.id}')">🗑️</button></div></div>`).join(''); }
     async function admAdd() { const v=document.getElementById('admEmail').value.trim().toLowerCase(); if(v){ await db.collection('members').add({email:v}); document.getElementById('admEmail').value=""; admLoad(); }}
     async function admDel(id) { if(confirm("Löschen?")) { await db.collection('members').doc(id).delete(); admLoad(); }}
     async function viewStats(id) {
-        const m = (await db.collection('members').doc(id).get()).data();
-        if(!m.uid) return alert("User war nie eingeloggt.");
+        const m = (await db.collection('members').doc(id).get()).data(); if(!m.uid) return alert("User war nie eingeloggt.");
         const t = (await db.collection('trades').where('userId','==',m.uid).get()).docs.map(d=>d.data());
-        const cl = t.filter(x=>x.status==='Geschlossen');
-        let w=0, p=0; cl.forEach(x=>{p+=x.pnl; if(x.pnl>0)w++;});
+        const cl = t.filter(x=>x.status==='Geschlossen'); let w=0, p=0; cl.forEach(x=>{p+=x.pnl; if(x.pnl>0)w++;});
         document.getElementById('stats-email').innerText=m.email; document.getElementById('st-count').innerText=cl.length; document.getElementById('st-win').innerText=cl.length?(w/cl.length*100).toFixed(0)+'%':'0%'; document.getElementById('st-pnl').innerText=p.toFixed(2)+'€';
         document.getElementById('stats-popup').classList.remove('hidden');
     }
