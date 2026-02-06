@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud Pro</title>
+    <title>TradeCloud LEONYX</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -148,58 +148,84 @@
             document.getElementById('app-content').classList.remove('hidden');
             document.getElementById('main-header').classList.remove('hidden');
             document.getElementById('user-greeting').innerText = `HALLO ${user.displayName?.split(' ')[0].toUpperCase() || 'TRADER'}`;
+            
+            // Erst Assets laden, dann Rest
+            await loadUserAssets();
+            loadTrades();
+            updateNewsWidget();
+            
             if(user.email.toLowerCase() === adminEmail) {
                 document.getElementById('admin-link').classList.remove('hidden');
                 loadMembers();
             }
-            await loadUserAssets();
-            loadTrades();
-            updateNewsWidget();
         } else {
             document.getElementById('auth-overlay').classList.remove('hidden');
         }
     });
 
-    // ASSET LOGIK
     async function loadUserAssets() {
-        const snap = await db.collection('userAssets').doc(auth.currentUser.uid).get();
-        if (snap.exists && snap.data().assets) userAssets = snap.data().assets;
-        renderAssetDropdown();
+        try {
+            const snap = await db.collection('userAssets').doc(auth.currentUser.uid).get();
+            if (snap.exists && snap.data().assets) {
+                userAssets = snap.data().assets;
+            } else {
+                // Fallback: Initiales Speichern für neue User
+                await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
+            }
+            renderAssetDropdown();
+        } catch(e) { console.error("Asset Load Error", e); }
     }
+
     function renderAssetDropdown() {
         const dd = document.getElementById('assetDropdown');
+        if(!dd) return;
         dd.innerHTML = userAssets.map(a => `<option value="${a}">${a}</option>`).join('');
     }
-    function openAssetPopup() { document.getElementById('asset-popup').classList.remove('hidden'); document.getElementById('newAssetName').focus(); }
-    function closeAssetPopup() { document.getElementById('asset-popup').classList.add('hidden'); document.getElementById('newAssetName').value = ''; }
+
+    function openAssetPopup() { 
+        document.getElementById('asset-popup').classList.remove('hidden'); 
+        document.getElementById('newAssetName').focus(); 
+    }
+    
+    function closeAssetPopup() { 
+        document.getElementById('asset-popup').classList.add('hidden'); 
+        document.getElementById('newAssetName').value = ''; 
+    }
+
     async function confirmAddAsset() {
-        const name = document.getElementById('newAssetName').value.toUpperCase().trim();
+        const input = document.getElementById('newAssetName');
+        const name = input.value.toUpperCase().trim();
         if (name && !userAssets.includes(name)) {
             userAssets.push(name);
-            await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
-            renderAssetDropdown();
+            renderAssetDropdown(); // Sofort UI updaten
             document.getElementById('assetDropdown').value = name;
-            closeAssetPopup();
-        } else if (userAssets.includes(name)) { alert("Asset existiert bereits!"); }
-    }
-    async function deleteCurrentAsset() {
-        const val = document.getElementById('assetDropdown').value;
-        if (val && confirm(`${val} wirklich löschen?`)) {
-            userAssets = userAssets.filter(a => a !== val);
             await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
-            renderAssetDropdown();
+            closeAssetPopup();
+        } else if (userAssets.includes(name)) { 
+            alert("Asset existiert bereits!"); 
         }
     }
 
-    // ADMIN / MITGLIEDER LOGIK
+    async function deleteCurrentAsset() {
+        const val = document.getElementById('assetDropdown').value;
+        if (val && confirm(`${val} wirklich aus deiner Liste löschen?`)) {
+            userAssets = userAssets.filter(a => a !== val);
+            renderAssetDropdown();
+            await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
+        }
+    }
+
+    // --- ADMIN LOGIK ---
     async function loadMembers() {
-        const snap = await db.collection('members').get();
-        const list = document.getElementById('memberList');
-        list.innerHTML = '<h4>MITGLIEDER</h4>';
-        snap.forEach(doc => {
-            const m = doc.data();
-            list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #222;"><span>${m.email}</span><button onclick="deleteMember('${doc.id}')" style="background:none; border:none; color:red; cursor:pointer;">Löschen</button></div>`;
-        });
+        try {
+            const snap = await db.collection('members').get();
+            const list = document.getElementById('memberList');
+            list.innerHTML = '<h4>MITGLIEDER</h4>';
+            snap.forEach(doc => {
+                const m = doc.data();
+                list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #222;"><span>${m.email}</span><button onclick="deleteMember('${doc.id}')" style="background:none; border:none; color:red; cursor:pointer;">Löschen</button></div>`;
+            });
+        } catch(e) {}
     }
     async function addMember() {
         const email = document.getElementById('newMemberEmail').value;
@@ -207,7 +233,7 @@
     }
     async function deleteMember(id) { if(confirm('Mitglied löschen?')) { await db.collection('members').doc(id).delete(); loadMembers(); } }
 
-    // RESTLICHE CORE LOGIK
+    // --- CORE LOGIK ---
     async function loadTrades() {
         const snap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
         trades = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -226,7 +252,7 @@
             } else {
                 totalPnl += (t.pnl || 0); closedCount++; if(t.pnl > 0) wins++;
             }
-            body.innerHTML += `<tr><td>${t.date.split('T')[0]}</td><td>${t.asset}</td><td>${t.pnl}€</td><td><button onclick="editTrade('${t.id}')">✏️</button></td></tr>`;
+            body.innerHTML += `<tr><td>${t.date.split('T')[0]}</td><td>${t.asset}</td><td style="color:${t.pnl>=0?'var(--success)':'var(--danger)'}">${t.pnl}€</td><td><button onclick="editTrade('${t.id}')">✏️</button></td></tr>`;
         });
         document.getElementById('overview-active-trades').classList.toggle('hidden', !hasActive);
         document.getElementById('ovTotal').innerText = totalPnl.toFixed(2) + " €";
