@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Full Filters</title>
+    <title>TradeCloud Pro - Multi Journal</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -52,8 +52,6 @@
         input, select, textarea { background: var(--bg-dark); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; font-family: inherit; font-size: 16px; box-sizing: border-box;}
         .btn-primary { background: var(--accent); color: black; padding: 16px; border: none; font-weight: 800; cursor: pointer; border-radius: 10px; width: 100%; font-size: 1rem; text-transform: uppercase; margin-top: 10px; }
         .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 14px; border-radius: 10px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        
-        /* Filter Buttons Style */
         .chart-btn { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; margin: 2px 0; min-width: 30px; text-align: center; }
         .chart-btn.active { background: var(--accent); color: black; font-weight: bold; }
 
@@ -61,7 +59,7 @@
         .dd-alert { border: 2px solid var(--danger); box-shadow: 0 0 15px rgba(255, 61, 0, 0.3); background: rgba(255, 61, 0, 0.1); color: var(--danger); text-align: center; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 61, 0, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 61, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 61, 0, 0); } }
 
-        /* --- CALENDAR STYLES --- */
+        /* --- CALENDAR --- */
         .cal-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .cal-month-name { font-size: 1.4rem; font-weight: bold; margin: 0; }
         .cal-stats-row { display: flex; justify-content: space-between; color: #888; font-size: 0.9rem; margin-bottom: 10px; }
@@ -69,8 +67,8 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
         .cal-day-label { text-align: center; color: #666; font-size: 0.75rem; padding-bottom: 5px; }
         .cal-cell { background: var(--cell-bg); border-radius: 8px; aspect-ratio: 1/1.2; position: relative; border: 1px solid transparent; cursor: pointer; transition: 0.2s; overflow: hidden; }
-        .cal-cell.empty { background: transparent; border: none; cursor: default; }
         .cal-cell:hover { transform: translateY(-2px); }
+        .cal-cell.empty { background: transparent; border: none; cursor: default; }
         .cal-cell.profit { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--success); box-shadow: 0 0 8px rgba(0, 230, 118, 0.1); }
         .cal-cell.loss { background: rgba(255, 23, 68, 0.15); border: 1px solid var(--danger); box-shadow: 0 0 8px rgba(255, 23, 68, 0.1); }
         .cal-date { position: absolute; top: 8px; left: 8px; font-size: 0.9rem; font-weight: 600; color: #aaa; }
@@ -79,7 +77,7 @@
         .text-green { color: var(--success); }
         .text-red { color: var(--danger); }
 
-        /* --- POPUP STYLES --- */
+        /* --- POPUP --- */
         .day-view-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 500; overflow-y: auto; display: none; padding-bottom: 50px; }
         .day-view-container.open { display: block; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -116,9 +114,9 @@
 <header id="main-header" class="hidden">
     <div class="header-left" style="display:flex; align-items:center;">
         <button class="menu-btn" onclick="toggleMenu()">&#9776;</button>
-        <div id="view-title">DASHBOARD</div>
+        <div id="view-title" style="margin-right:15px;">DASHBOARD</div>
     </div>
-    <div class="header-right">
+    <div class="header-right" style="display:flex; align-items:center;">
         <button class="icon-btn-header" onclick="togglePrivacy()" title="Privacy Mode">👁️</button>
     </div>
 </header>
@@ -138,8 +136,15 @@
 <div id="app-content" class="container hidden">
     
     <section id="view-Übersicht" class="view-section active">
-        <h1 id="user-greeting" style="font-size: 1.5rem; font-weight: 800; margin-bottom: 15px;">DASHBOARD</h1>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h1 id="user-greeting" style="font-size: 1.5rem; font-weight: 800; margin:0;">DASHBOARD</h1>
+            <select id="journalSelect" onchange="changeJournal()" style="width:auto; margin:0; padding:8px; border-color:var(--accent); color:var(--accent); font-weight:bold;">
+                <option value="Standard">Standard</option>
+            </select>
+        </div>
+        
         <div id="dd-banner" class="card dd-alert hidden"><h3 style="margin:0;">⚠️ TAGES-LIMIT ERREICHT ⚠️</h3><p>Stop Trading für heute!</p></div>
+        
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h4>📍 OFFENE POSITIONEN</h4>
@@ -151,12 +156,12 @@
             <div style="display:flex; justify-content:space-between; margin-bottom:15px; flex-wrap:wrap;">
                 <h4 style="margin:0;">PERFORMANCE</h4>
                 <div id="filter-container">
-                    <button class="chart-btn" onclick="setFilter('today', this)" title="Heute">H</button>
-                    <button class="chart-btn" onclick="setFilter('yesterday', this)" title="Gestern">G</button>
-                    <button class="chart-btn" onclick="setFilter('week', this)" title="Woche">W</button>
-                    <button class="chart-btn" onclick="setFilter('month', this)" title="Monat">M</button>
-                    <button class="chart-btn" onclick="setFilter('year', this)" title="Jahr">J</button>
-                    <button class="chart-btn active" onclick="setFilter('all', this)" title="Alles">A</button>
+                    <button class="chart-btn" onclick="setFilter('today', this)">H</button>
+                    <button class="chart-btn" onclick="setFilter('yesterday', this)">G</button>
+                    <button class="chart-btn" onclick="setFilter('week', this)">W</button>
+                    <button class="chart-btn" onclick="setFilter('month', this)">M</button>
+                    <button class="chart-btn" onclick="setFilter('year', this)">J</button>
+                    <button class="chart-btn active" onclick="setFilter('all', this)">A</button>
                 </div>
             </div>
             <div style="height: 250px;"><canvas id="ovChart"></canvas></div>
@@ -177,7 +182,10 @@
                         <button class="chart-btn" onclick="changeCalMonth(1)">❯</button>
                     </div>
                 </div>
-                <button class="icon-btn" onclick="showView('Einstellungen')">⚙️</button>
+                <div style="text-align:right;">
+                    <span style="color:var(--accent); font-size:0.8rem; font-weight:bold; display:block;">Active Journal:</span>
+                    <span id="calActiveJournal" style="font-size:0.9rem;">Standard</span>
+                </div>
             </div>
             <div class="cal-stats-row">
                 <span id="cal-trading-days">0 Trading days</span>
@@ -210,7 +218,9 @@
         <div class="card">
             <h4 id="form-header">TRADE ERFASSEN</h4>
             <input type="hidden" id="editId">
-            <label>Status</label><select id="status" onchange="toggleFormFields()"><option value="Aktiv" selected>Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
+            
+            <label>Journal wählen</label>
+            <select id="createJournalSelect"></select> <label>Status</label><select id="status" onchange="toggleFormFields()"><option value="Aktiv" selected>Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
             <label>Asset</label><input type="text" id="assetInput" placeholder="z.B. XAUUSD" required>
             <label>Datum & Zeit</label><input type="datetime-local" id="datetime">
             <label>Setup Link (Bild)</label><input type="url" id="imgSetup" placeholder="https://...">
@@ -226,7 +236,10 @@
 
     <section id="view-Historie" class="view-section">
         <div class="card" style="padding:0;">
-            <div style="padding:15px;"><h4>JOURNAL</h4></div>
+            <div style="padding:15px; display:flex; justify-content:space-between;">
+                <h4>JOURNAL</h4>
+                <span id="histActiveJournal" style="color:var(--accent); font-weight:bold;">Standard</span>
+            </div>
             <div class="table-wrapper">
                 <table>
                     <thead><tr><th>Datum</th><th>Asset</th><th>P&L</th><th>Links</th><th>Action</th></tr></thead>
@@ -238,7 +251,17 @@
 
     <section id="view-Einstellungen" class="view-section">
         <div class="card">
-            <h4>EINSTELLUNGEN</h4>
+            <h4>JOURNALE VERWALTEN</h4>
+            <p style="color:#888; font-size:0.9rem;">Erstelle neue Journale (z.B. Live, Demo).</p>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="newJournalName" placeholder="Name (z.B. Scalping Challenge)">
+                <button onclick="addJournal()" class="chart-btn" style="background:var(--success); color:black; font-weight:bold;">+</button>
+            </div>
+            <div id="settingsJournalList" style="margin-top:15px;"></div>
+        </div>
+
+        <div class="card">
+            <h4>ALLGEMEIN</h4>
             <label>Design</label>
             <div style="display:flex; gap:10px; margin-bottom:20px;"><button onclick="setTheme('dark')" class="chart-btn" style="flex:1;">🌑 Dark</button><button onclick="setTheme('light')" class="chart-btn" style="flex:1; background:#ddd; color:black;">☀️ Light</button></div>
             <hr style="border-color:var(--border); opacity:0.3;">
@@ -275,6 +298,10 @@
 
     let trades = [], ovChart = null, dayChart = null, currentFilter = 'all', calDate = new Date();
     let privacyMode = false;
+    
+    // --- MULTI JOURNAL STATE ---
+    let journals = JSON.parse(localStorage.getItem('myJournals')) || ['Standard'];
+    let activeJournal = localStorage.getItem('activeJournal') || 'Standard';
 
     if(localStorage.getItem('tradeTheme') === 'light') document.body.classList.add('light-mode');
     
@@ -292,18 +319,103 @@
                 document.getElementById('auth-overlay').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
                 document.getElementById('main-header').classList.remove('hidden');
-                if(email === "leon.luca.lauterbach@gmail.com") {
-                    document.getElementById('admin-link').classList.remove('hidden');
-                    admLoad();
-                }
+                if(email === "leon.luca.lauterbach@gmail.com") { document.getElementById('admin-link').classList.remove('hidden'); admLoad(); }
+                
                 if(localStorage.getItem('startCap')) document.getElementById('settingStartCap').value = localStorage.getItem('startCap');
                 if(localStorage.getItem('maxLoss')) document.getElementById('settingMaxLoss').value = localStorage.getItem('maxLoss');
                 if(localStorage.getItem('lossType')) document.getElementById('settingLossType').value = localStorage.getItem('lossType');
                 
-                await loadTrades(); setInterval(loadTrades, 5000);
+                initJournalUI(); // Init Dropdowns
+                await loadTrades(); 
+                setInterval(loadTrades, 5000);
             } else { alert("Kein Zugriff."); await auth.signOut(); location.reload(); }
         }
     });
+
+    // --- JOURNAL LOGIC ---
+    function initJournalUI() {
+        updateJournalSelects();
+        renderJournalSettingsList();
+    }
+
+    function updateJournalSelects() {
+        const dashSelect = document.getElementById('journalSelect');
+        const createSelect = document.getElementById('createJournalSelect');
+        
+        // Clear options
+        dashSelect.innerHTML = '';
+        createSelect.innerHTML = '';
+
+        journals.forEach(j => {
+            // Dashboard Select
+            const opt1 = document.createElement('option');
+            opt1.value = j; opt1.innerText = j;
+            if(j === activeJournal) opt1.selected = true;
+            dashSelect.appendChild(opt1);
+
+            // Create Trade Select
+            const opt2 = document.createElement('option');
+            opt2.value = j; opt2.innerText = j;
+            if(j === activeJournal) opt2.selected = true; // Default to active
+            createSelect.appendChild(opt2);
+        });
+        
+        // Update Labels in other views
+        document.getElementById('calActiveJournal').innerText = activeJournal;
+        document.getElementById('histActiveJournal').innerText = activeJournal;
+    }
+
+    function changeJournal() {
+        activeJournal = document.getElementById('journalSelect').value;
+        localStorage.setItem('activeJournal', activeJournal);
+        
+        // Update Create Select to match
+        document.getElementById('createJournalSelect').value = activeJournal;
+        document.getElementById('calActiveJournal').innerText = activeJournal;
+        document.getElementById('histActiveJournal').innerText = activeJournal;
+
+        render(); renderCalendar(); checkDrawdown();
+    }
+
+    function addJournal() {
+        const name = document.getElementById('newJournalName').value.trim();
+        if(name && !journals.includes(name)) {
+            journals.push(name);
+            localStorage.setItem('myJournals', JSON.stringify(journals));
+            document.getElementById('newJournalName').value = "";
+            initJournalUI();
+            alert("Journal erstellt: " + name);
+        }
+    }
+
+    function deleteJournal(name) {
+        if(name === 'Standard') return alert("Standard kann nicht gelöscht werden.");
+        if(confirm(`Journal "${name}" löschen?`)) {
+            journals = journals.filter(j => j !== name);
+            localStorage.setItem('myJournals', JSON.stringify(journals));
+            if(activeJournal === name) { activeJournal = 'Standard'; localStorage.setItem('activeJournal', 'Standard'); }
+            initJournalUI();
+            render(); renderCalendar();
+        }
+    }
+
+    function renderJournalSettingsList() {
+        const div = document.getElementById('settingsJournalList');
+        div.innerHTML = journals.map(j => `
+            <div style="padding:10px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+                <span>${j} ${j===activeJournal ? '(Aktiv)' : ''}</span>
+                ${j !== 'Standard' ? `<button onclick="deleteJournal('${j}')" class="icon-btn icon-trash">🗑️</button>` : ''}
+            </div>
+        `).join('');
+    }
+
+    // Helper to get trades for current journal
+    function getFilteredTrades() {
+        return trades.filter(t => {
+            const tJournal = t.journal || 'Standard'; // Legacy support
+            return tJournal === activeJournal;
+        });
+    }
 
     async function loadTrades() {
         if(!auth.currentUser) return;
@@ -314,55 +426,75 @@
         } catch(e){}
     }
 
+    // --- RENDER DASHBOARD (Uses getFilteredTrades) ---
+    function render() {
+        const currentJournalTrades = getFilteredTrades();
+        
+        const open = currentJournalTrades.filter(t => t.status === 'Aktiv');
+        document.getElementById('open-trades-list').innerHTML = open.length ? open.map(t => `<div class="open-trade-item"><div><span style="color:var(--accent); font-weight:bold;">${t.asset}</span><br><small>${t.date.split('T')[0]}</small></div><button onclick="editTrade('${t.id}', true)" class="chart-btn" style="color:var(--success);">CLOSE</button></div>`).join('') : '<p>Keine offenen Trades in "' + activeJournal + '".</p>';
+
+        let closed = currentJournalTrades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
+        const now = new Date(); const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay() + (now.getDay() == 0 ? -6:1)); weekStart.setHours(0,0,0,0);
+
+        if(currentFilter === 'today') closed = closed.filter(t => new Date(t.date) >= todayStart);
+        else if(currentFilter === 'yesterday') { const yStart = new Date(todayStart); yStart.setDate(yStart.getDate() - 1); closed = closed.filter(t => new Date(t.date) >= yStart && new Date(t.date) < todayStart); }
+        else if(currentFilter === 'week') closed = closed.filter(t => new Date(t.date) >= weekStart);
+        else if(currentFilter === 'month') closed = closed.filter(t => new Date(t.date).getMonth() === now.getMonth() && new Date(t.date).getFullYear() === now.getFullYear());
+        else if(currentFilter === 'year') closed = closed.filter(t => new Date(t.date).getFullYear() === now.getFullYear());
+
+        let sum = 0, wins = 0; const points = closed.map(t => { sum += t.pnl; if(t.pnl > 0) wins++; return sum; });
+        document.getElementById('ovTotal').innerText = sum.toFixed(2) + " €"; document.getElementById('ovTotal').style.color = sum >= 0 ? 'var(--success)' : 'var(--danger)';
+        document.getElementById('ovWinRate').innerText = closed.length ? (wins/closed.length*100).toFixed(0) + "%" : "0%";
+        const ctx = document.getElementById('ovChart').getContext('2d'); if(ovChart) ovChart.destroy();
+        ovChart = new Chart(ctx, { type: 'line', data: { labels: closed.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', backgroundColor: 'rgba(187, 134, 252, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } } });
+        document.getElementById('tradeBody').innerHTML = currentJournalTrades.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `<tr><td>${t.date.split('T')[0]}</td><td><b>${t.asset}</b></td><td class="sensitive" style="color:${t.status==='Aktiv'?'var(--accent)':(t.pnl>=0?'var(--success)':'var(--danger)')}">${t.status==='Aktiv'?'RUN':t.pnl.toFixed(2)}</td><td>${t.imgSetup ? `<span class="link-badge" onclick="window.open('${t.imgSetup}')" onmouseover="showPreview('${t.imgSetup}', event)" onmouseout="hidePreview()">S</span>` : ''}${t.imgResult ? `<span class="link-badge" onclick="window.open('${t.imgResult}')" onmouseover="showPreview('${t.imgResult}', event)" onmouseout="hidePreview()">E</span>` : ''}</td><td><button class="icon-btn" onclick="editTrade('${t.id}')">✏️</button><button class="icon-btn icon-trash" onclick="delTrade('${t.id}')">🗑️</button></td></tr>`).join('');
+    }
+
+    // --- CALENDAR RENDER ---
     function changeCalMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
-    
     function renderCalendar() {
         const y = calDate.getFullYear(), m = calDate.getMonth();
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         document.getElementById('cal-month-title').innerText = `${monthNames[m]} ${y}`;
+        const grid = document.getElementById('cal-days-grid'); grid.innerHTML = "";
+        const firstDay = new Date(y, m, 1).getDay(); const lastDay = new Date(y, m + 1, 0).getDate();
         
-        const grid = document.getElementById('cal-days-grid'); 
-        grid.innerHTML = "";
+        // Filter by Journal!
+        const journalTrades = getFilteredTrades();
+        let monthTrades = journalTrades.filter(t => t.status==='Geschlossen' && new Date(t.date).getMonth() === m && new Date(t.date).getFullYear() === y);
         
-        const firstDay = new Date(y, m, 1).getDay();
-        const lastDay = new Date(y, m + 1, 0).getDate();
-        
-        let monthTrades = trades.filter(t => t.status==='Geschlossen' && new Date(t.date).getMonth() === m && new Date(t.date).getFullYear() === y);
         let monthPnl = monthTrades.reduce((a, b) => a + b.pnl, 0);
         let uniqueDays = [...new Set(monthTrades.map(t => new Date(t.date).toDateString()))].length;
-        
         document.getElementById('cal-trading-days').innerText = `${uniqueDays} Trading days`;
         const pnlEl = document.getElementById('cal-total-pnl');
         pnlEl.innerText = (monthPnl < 0 ? '-' : '+') + '€' + Math.abs(monthPnl).toFixed(2);
         pnlEl.className = `cal-stat-pnl sensitive ${monthPnl >= 0 ? 'text-green' : 'text-red'}`;
 
         for(let i=0; i<firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`;
-        
         for(let d=1; d<=lastDay; d++) {
             const dateStr = new Date(y, m, d).toDateString();
-            const dayTrades = trades.filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === dateStr);
+            const dayTrades = journalTrades.filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === dateStr);
             let dayPnl = dayTrades.reduce((a,b) => a + b.pnl, 0);
             let count = dayTrades.length;
-            
             let cellHtml = `<div class="cal-date">${d}</div>`;
             let cssClass = "cal-cell";
             let clickAttr = "";
-
             if(count > 0) {
                 clickAttr = `onclick="openDayDetail('${y}-${m+1}-${d}')"`;
-                if(dayPnl > 0) cssClass += " profit";
-                else if(dayPnl < 0) cssClass += " loss";
+                if(dayPnl > 0) cssClass += " profit"; else if(dayPnl < 0) cssClass += " loss";
                 let pnlClass = dayPnl >= 0 ? 'text-green' : 'text-red';
                 cellHtml += `<div class="cal-pnl sensitive ${pnlClass}">${dayPnl < 0 ? '' : '+'}€${dayPnl.toFixed(0)}</div><div class="cal-trades"><span>${count}</span> <span style="font-size:0.6rem">Trades</span></div>`;
             }
-
             grid.innerHTML += `<div class="${cssClass}" ${clickAttr}>${cellHtml}</div>`;
         }
     }
 
     function openDayDetail(dateStr) {
         const dateObj = new Date(dateStr);
-        const dayTrades = trades.filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === dateObj.toDateString()).sort((a,b) => new Date(a.date) - new Date(b.date));
+        // Filter by Journal
+        const dayTrades = getFilteredTrades().filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === dateObj.toDateString()).sort((a,b) => new Date(a.date) - new Date(b.date));
+        
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dv-date-title').innerText = dateObj.toLocaleDateString('en-GB', options); 
         let pnl = dayTrades.reduce((a,b)=>a+b.pnl,0);
@@ -385,14 +517,7 @@
         if(pnl >= 0) { gradient.addColorStop(0, 'rgba(0, 200, 83, 0.2)'); gradient.addColorStop(1, 'rgba(0, 200, 83, 0)'); }
         else { gradient.addColorStop(0, 'rgba(255, 61, 0, 0.2)'); gradient.addColorStop(1, 'rgba(255, 61, 0, 0)'); }
 
-        dayChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: chartLabels,
-                datasets: [{ data: chartData, borderColor: pnl >= 0 ? '#00c853' : '#ff3d00', backgroundColor: gradient, borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' }, ticks: { color: '#666' } } } }
-        });
+        dayChart = new Chart(ctx, { type: 'line', data: { labels: chartLabels, datasets: [{ data: chartData, borderColor: pnl >= 0 ? '#00c853' : '#ff3d00', backgroundColor: gradient, borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' }, ticks: { color: '#666' } } } } });
 
         document.getElementById('dv-list').innerHTML = dayTrades.map(t => {
             const isWin = t.pnl >= 0; const arrow = isWin ? '↗' : '↘'; const arrowClass = isWin ? 'text-green' : 'text-red';
@@ -403,37 +528,70 @@
     function closeDayDetail() { document.getElementById('day-detail-view').classList.remove('open'); }
 
     /* --- STANDARD --- */
-    function render() {
-        const open = trades.filter(t => t.status === 'Aktiv');
-        document.getElementById('open-trades-list').innerHTML = open.length ? open.map(t => `<div class="open-trade-item"><div><span style="color:var(--accent); font-weight:bold;">${t.asset}</span><br><small>${t.date.split('T')[0]}</small></div><button onclick="editTrade('${t.id}', true)" class="chart-btn" style="color:var(--success);">CLOSE</button></div>`).join('') : '<p>Keine offenen Trades.</p>';
-        let closed = trades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
-        const now = new Date(); const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay() + (now.getDay() == 0 ? -6:1)); weekStart.setHours(0,0,0,0);
-
-        if(currentFilter === 'today') closed = closed.filter(t => new Date(t.date) >= todayStart);
-        else if(currentFilter === 'yesterday') { const yStart = new Date(todayStart); yStart.setDate(yStart.getDate() - 1); closed = closed.filter(t => new Date(t.date) >= yStart && new Date(t.date) < todayStart); }
-        else if(currentFilter === 'week') closed = closed.filter(t => new Date(t.date) >= weekStart);
-        else if(currentFilter === 'month') closed = closed.filter(t => new Date(t.date).getMonth() === now.getMonth() && new Date(t.date).getFullYear() === now.getFullYear());
-        else if(currentFilter === 'year') closed = closed.filter(t => new Date(t.date).getFullYear() === now.getFullYear());
-
-        let sum = 0, wins = 0; const points = closed.map(t => { sum += t.pnl; if(t.pnl > 0) wins++; return sum; });
-        document.getElementById('ovTotal').innerText = sum.toFixed(2) + " €"; document.getElementById('ovTotal').style.color = sum >= 0 ? 'var(--success)' : 'var(--danger)';
-        document.getElementById('ovWinRate').innerText = closed.length ? (wins/closed.length*100).toFixed(0) + "%" : "0%";
-        const ctx = document.getElementById('ovChart').getContext('2d'); if(ovChart) ovChart.destroy();
-        ovChart = new Chart(ctx, { type: 'line', data: { labels: closed.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', backgroundColor: 'rgba(187, 134, 252, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } } });
-        document.getElementById('tradeBody').innerHTML = trades.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `<tr><td>${t.date.split('T')[0]}</td><td><b>${t.asset}</b></td><td class="sensitive" style="color:${t.status==='Aktiv'?'var(--accent)':(t.pnl>=0?'var(--success)':'var(--danger)')}">${t.status==='Aktiv'?'RUN':t.pnl.toFixed(2)}</td><td>${t.imgSetup ? `<span class="link-badge" onclick="window.open('${t.imgSetup}')" onmouseover="showPreview('${t.imgSetup}', event)" onmouseout="hidePreview()">S</span>` : ''}${t.imgResult ? `<span class="link-badge" onclick="window.open('${t.imgResult}')" onmouseover="showPreview('${t.imgResult}', event)" onmouseout="hidePreview()">E</span>` : ''}</td><td><button class="icon-btn" onclick="editTrade('${t.id}')">✏️</button><button class="icon-btn icon-trash" onclick="delTrade('${t.id}')">🗑️</button></td></tr>`).join('');
-    }
-
     function toggleFormFields() { const s = document.getElementById('status').value; document.getElementById('closedFields').classList.toggle('hidden', s === 'Aktiv'); }
-    function checkDrawdown() { const val = parseFloat(localStorage.getItem('maxLoss')); const type = localStorage.getItem('lossType') || 'eur'; const startCap = parseFloat(localStorage.getItem('startCap')) || 0; if(!val) return; let limit = type === 'eur' ? val : (startCap > 0 ? startCap * (val / 100) : 0); if(limit === 0) return; const today = new Date().toDateString(); let todayPnL = trades.filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === today).reduce((a,b)=>a+b.pnl,0); const banner = document.getElementById('dd-banner'); if(todayPnL <= -Math.abs(limit)) { banner.classList.remove('hidden'); banner.querySelector('p').innerText = `Limit (${limit.toFixed(2)}€) erreicht!`; } else banner.classList.add('hidden'); }
-    function prepareCreateView() { document.getElementById('editId').value=""; document.getElementById('datetime').value=new Date().toISOString().slice(0,16); document.getElementById('assetInput').value=""; document.getElementById('pnl').value=""; document.getElementById('imgSetup').value=""; document.getElementById('imgResult').value=""; document.getElementById('note').value=""; document.getElementById('status').value = "Aktiv"; document.getElementById('form-header').innerText='NEUER TRADE'; toggleFormFields(); showView('Trade erstellen'); }
+    function checkDrawdown() { 
+        const val = parseFloat(localStorage.getItem('maxLoss')); const type = localStorage.getItem('lossType') || 'eur'; const startCap = parseFloat(localStorage.getItem('startCap')) || 0; if(!val) return; 
+        let limit = type === 'eur' ? val : (startCap > 0 ? startCap * (val / 100) : 0); if(limit === 0) return; 
+        const today = new Date().toDateString(); 
+        // Filter by Journal too!
+        let todayPnL = getFilteredTrades().filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === today).reduce((a,b)=>a+b.pnl,0); 
+        const banner = document.getElementById('dd-banner'); 
+        if(todayPnL <= -Math.abs(limit)) { banner.classList.remove('hidden'); banner.querySelector('p').innerText = `Limit (${limit.toFixed(2)}€) erreicht!`; } else banner.classList.add('hidden'); 
+    }
+    
+    function prepareCreateView() { 
+        document.getElementById('editId').value=""; document.getElementById('datetime').value=new Date().toISOString().slice(0,16); document.getElementById('assetInput').value=""; document.getElementById('pnl').value=""; document.getElementById('imgSetup').value=""; document.getElementById('imgResult').value=""; document.getElementById('note').value=""; document.getElementById('status').value = "Aktiv"; document.getElementById('form-header').innerText='NEUER TRADE'; 
+        // Select Active Journal
+        document.getElementById('createJournalSelect').value = activeJournal;
+        toggleFormFields(); showView('Trade erstellen'); 
+    }
+    
     function togglePrivacy() { document.documentElement.style.setProperty('--blur', privacyMode ? '0px' : '6px'); privacyMode = !privacyMode; }
     function setTheme(mode) { if(mode==='light')document.body.classList.add('light-mode'); else document.body.classList.remove('light-mode'); localStorage.setItem('tradeTheme', mode); }
     function saveUserSettings() { localStorage.setItem('maxLoss', document.getElementById('settingMaxLoss').value); localStorage.setItem('startCap', document.getElementById('settingStartCap').value); localStorage.setItem('lossType', document.getElementById('settingLossType').value); alert("Gespeichert!"); checkDrawdown(); }
     function showPreview(url, e) { const el=document.getElementById('img-preview'); el.style.display='block'; el.style.backgroundImage=`url('${url}')`; el.style.top=(e.clientY+10)+'px'; el.style.left=(e.clientX-150)+'px'; }
     function hidePreview() { document.getElementById('img-preview').style.display='none'; }
-    async function saveTrade() { const id = document.getElementById('editId').value; const asset = document.getElementById('assetInput').value.toUpperCase(); if(!asset) return; const data = { date: document.getElementById('datetime').value, asset, status: document.getElementById('status').value, pnl: parseFloat(document.getElementById('pnl').value)||0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value, userId: auth.currentUser.uid }; id ? await db.collection('trades').doc(id).update(data) : await db.collection('trades').add(data); showView('Übersicht'); loadTrades(); }
-    function editTrade(id, c) { const t = trades.find(x => x.id === id); document.getElementById('editId').value = t.id; document.getElementById('datetime').value = t.date; document.getElementById('assetInput').value = t.asset; document.getElementById('status').value = c ? 'Geschlossen' : t.status; document.getElementById('pnl').value = t.pnl; document.getElementById('imgSetup').value = t.imgSetup||''; document.getElementById('imgResult').value = t.imgResult||''; document.getElementById('note').value = t.note||''; document.getElementById('form-header').innerText=c?'BEENDEN':'BEARBEITEN'; toggleFormFields(); showView('Trade erstellen'); }
+    
+    async function saveTrade() { 
+        const id = document.getElementById('editId').value; 
+        const asset = document.getElementById('assetInput').value.toUpperCase(); 
+        const selectedJournal = document.getElementById('createJournalSelect').value;
+        if(!asset) return; 
+        const data = { 
+            date: document.getElementById('datetime').value, 
+            asset, 
+            status: document.getElementById('status').value, 
+            pnl: parseFloat(document.getElementById('pnl').value)||0, 
+            imgSetup: document.getElementById('imgSetup').value, 
+            imgResult: document.getElementById('imgResult').value, 
+            note: document.getElementById('note').value, 
+            journal: selectedJournal, // Save Journal Name
+            userId: auth.currentUser.uid 
+        }; 
+        id ? await db.collection('trades').doc(id).update(data) : await db.collection('trades').add(data); 
+        // Switch view to the journal of the new trade
+        if(selectedJournal !== activeJournal) {
+            document.getElementById('journalSelect').value = selectedJournal;
+            changeJournal();
+        }
+        showView('Übersicht'); loadTrades(); 
+    }
+    
+    function editTrade(id, c) { 
+        const t = trades.find(x => x.id === id); 
+        document.getElementById('editId').value = t.id; 
+        document.getElementById('datetime').value = t.date; 
+        document.getElementById('assetInput').value = t.asset; 
+        document.getElementById('status').value = c ? 'Geschlossen' : t.status; 
+        document.getElementById('pnl').value = t.pnl; 
+        document.getElementById('imgSetup').value = t.imgSetup||''; 
+        document.getElementById('imgResult').value = t.imgResult||''; 
+        document.getElementById('note').value = t.note||''; 
+        document.getElementById('form-header').innerText=c?'BEENDEN':'BEARBEITEN'; 
+        // Set Journal
+        document.getElementById('createJournalSelect').value = t.journal || 'Standard';
+        toggleFormFields(); showView('Trade erstellen'); 
+    }
     async function delTrade(id) { if(confirm('Löschen?')) { await db.collection('trades').doc(id).delete(); loadTrades(); } }
     function showView(v) { document.querySelectorAll('.view-section').forEach(s=>s.classList.remove('active')); document.getElementById('view-'+v.replace(/\s+/g, '-')).classList.add('active'); document.getElementById('view-title').innerText=v.toUpperCase(); document.getElementById('navDrawer').classList.remove('open'); if(v==='News'){const b=document.getElementById('news-box'); b.innerHTML=''; const s=document.createElement('script'); s.src="https://s3.tradingview.com/external-embedding/embed-widget-events.js"; s.async=true; s.innerHTML=JSON.stringify({"colorTheme":document.body.classList.contains('light-mode')?'light':'dark',"width":"100%","height":"100%","locale":"de"}); b.appendChild(s);} if(v==='Kalender') renderCalendar(); }
     function setFilter(f,b) { currentFilter=f; document.querySelectorAll('#filter-container .chart-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); render(); }
