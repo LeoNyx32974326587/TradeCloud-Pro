@@ -2,45 +2,65 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud Pro - Final Links</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TradeCloud Pro - Mobile Final</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg-dark: #0f0f0f; --card-bg: #1a1a1a; --text-main: #e0e0e0; --accent: #bb86fc; --success: #03dac6; --danger: #cf6679; --border: #2c2c2c; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; color: var(--text-main); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; color: var(--text-main); padding-bottom: 30px; }
         .hidden { display: none !important; }
+        
+        /* HEADER */
         header { display: flex; align-items: center; padding: 15px 20px; background: #161616; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-        .menu-btn { cursor: pointer; font-size: 1.5rem; color: var(--accent); background: none; border: none; padding: 5px; }
+        .menu-btn { cursor: pointer; font-size: 1.8rem; color: var(--accent); background: none; border: none; padding: 5px; }
         #view-title { margin-left: 15px; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
-        .nav-drawer { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #161616; border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 60px; }
+        
+        /* NAVIGATION */
+        .nav-drawer { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #161616; border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 60px; box-shadow: 2px 0 10px rgba(0,0,0,0.5); }
         .nav-drawer.open { left: 0; }
-        .nav-drawer button { display: block; width: 100%; padding: 15px 25px; text-align: left; background: none; border: none; color: white; cursor: pointer; border-bottom: 1px solid #222; font-size: 1rem; }
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 20px; box-sizing: border-box; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .nav-drawer button { display: block; width: 100%; padding: 18px 25px; text-align: left; background: none; border: none; color: white; cursor: pointer; border-bottom: 1px solid #222; font-size: 1rem; }
+        
+        /* LAYOUT */
+        .container { max-width: 1000px; margin: 15px auto; padding: 0 15px; box-sizing: border-box; }
+        .card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
         .view-section { display: none; }
         .view-section.active { display: block; }
-        .chart-btn { background: #222; border: 1px solid #333; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; text-decoration: none; display: inline-block; }
+        
+        /* BUTTONS & INPUTS */
+        /* WICHTIG: Font-Size 16px verhindert Zoom auf iPhone */
+        input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; font-family: inherit; font-size: 16px; }
+        .chart-btn { background: #222; border: 1px solid #333; color: white; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; text-decoration: none; display: inline-block; margin: 2px; }
         .chart-btn.active { background: var(--accent); color: black; font-weight: bold; }
-        input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; font-family: inherit; }
-        .btn-primary { background: var(--accent); color: black; padding: 16px; border: none; font-weight: 800; cursor: pointer; border-radius: 10px; width: 100%; font-size: 1rem; text-transform: uppercase; }
-        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 12px; border-radius: 10px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #222; }
-        .open-trade-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #222; }
+        .btn-primary { background: var(--accent); color: black; padding: 16px; border: none; font-weight: 800; cursor: pointer; border-radius: 10px; width: 100%; font-size: 1rem; text-transform: uppercase; margin-top: 10px; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 14px; border-radius: 10px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        /* TABLE & LISTS */
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 500px; /* Erzwingt Scroll auf Handy */ }
+        th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #222; white-space: nowrap; }
+        
+        /* Note Column Truncation */
+        .note-cell { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #888; font-style: italic; }
+        
+        .open-trade-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #222; }
+        
+        /* Links */
+        .link-badge { background: #333; color: var(--accent); padding: 4px 8px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px; border: 1px solid #444; display: inline-block; }
+        
+        /* Mobile Specific Header for Chart */
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        
         #auth-overlay { position: fixed; inset: 0; background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         #assetInput { text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
-        /* Link Buttons Style */
-        .link-badge { background: #333; color: var(--accent); padding: 2px 6px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 3px; border: 1px solid #444; }
-        .link-badge:hover { background: var(--accent); color: black; }
     </style>
 </head>
 <body>
 
 <div id="auth-overlay">
-    <div class="card" style="text-align: center; width: 320px; border: 1px solid var(--accent);">
+    <div class="card" style="text-align: center; width: 300px; border: 1px solid var(--accent);">
         <h2 style="color: var(--accent); letter-spacing: 2px;">TRADECLOUD</h2>
         <button onclick="loginGoogle()" class="btn-primary">LOGIN</button>
     </div>
@@ -63,19 +83,19 @@
 
 <div id="app-content" class="container hidden">
     <section id="view-Übersicht" class="view-section active">
-        <h1 id="user-greeting" style="font-size: 1.8rem; font-weight: 800; margin-bottom: 20px;">DASHBOARD</h1>
+        <h1 id="user-greeting" style="font-size: 1.5rem; font-weight: 800; margin-bottom: 15px;">DASHBOARD</h1>
         
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h4>📍 OFFENE POSITIONEN</h4>
-                <button onclick="prepareCreateView()" class="chart-btn" style="background: var(--accent); color: black; font-weight:bold;">+ NEUER TRADE</button>
+                <button onclick="prepareCreateView()" class="chart-btn" style="background: var(--accent); color: black; font-weight:bold; padding: 12px;">+ NEU</button>
             </div>
             <div id="open-trades-list"></div>
         </div>
 
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h4>PERFORMANCE</h4>
+            <div class="chart-header">
+                <h4 style="margin:0;">PERFORMANCE</h4>
                 <div id="filter-container">
                     <button class="chart-btn" onclick="setFilter('today', this)">H</button>
                     <button class="chart-btn" onclick="setFilter('week', this)">W</button>
@@ -86,14 +106,14 @@
             <div style="height: 250px;"><canvas id="ovChart"></canvas></div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div class="card" style="text-align: center;">
                 <div style="color:#888; font-size:0.8rem;">TOTAL P&L</div>
-                <div id="ovTotal" style="font-size:1.6rem; font-weight:800;">0.00 €</div>
+                <div id="ovTotal" style="font-size:1.4rem; font-weight:800;">0.00 €</div>
             </div>
             <div class="card" style="text-align: center;">
                 <div style="color:#888; font-size:0.8rem;">WIN RATE</div>
-                <div id="ovWinRate" style="font-size:1.6rem; font-weight:800;">0%</div>
+                <div id="ovWinRate" style="font-size:1.4rem; font-weight:800;">0%</div>
             </div>
         </div>
     </section>
@@ -120,14 +140,14 @@
             <label>Datum & Zeit</label>
             <input type="datetime-local" id="datetime">
             
-            <label>Setup Link (TradingView etc.)</label>
+            <label>Setup Link</label>
             <input type="url" id="imgSetup" placeholder="https://...">
             
-            <label>Ergebnis Link (Optional)</label>
+            <label>Ergebnis Link</label>
             <input type="url" id="imgResult" placeholder="https://...">
 
             <label>Notizen</label>
-            <textarea id="note" rows="3" placeholder="Setup, Gefühle, Fehler..."></textarea>
+            <textarea id="note" rows="3" placeholder="Setup Gedanken..."></textarea>
             
             <button onclick="saveTrade()" class="btn-primary">SPEICHERN</button>
             <button onclick="showView('Übersicht')" class="btn-outline">ABBRECHEN</button>
@@ -135,26 +155,25 @@
     </section>
 
     <section id="view-Historie" class="view-section">
-        <div class="card" style="padding:10px; overflow-x:auto;">
-            <h4>JOURNAL HISTORIE</h4>
-            <table>
-                <thead><tr><th>Datum</th><th>Asset</th><th>Ergebnis</th><th>Links</th><th></th></tr></thead>
-                <tbody id="tradeBody"></tbody>
-            </table>
+        <div class="card" style="padding:0;">
+            <div style="padding:15px 15px 0 15px;"><h4>JOURNAL</h4></div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Datum</th><th>Asset</th><th>P&L</th><th>Notiz</th><th>Links</th><th></th></tr></thead>
+                    <tbody id="tradeBody"></tbody>
+                </table>
+            </div>
         </div>
     </section>
 
     <section id="view-Lot-Rechner" class="view-section">
         <div class="card">
-            <h4>LOT SIZE CALCULATOR</h4>
-            <select id="cType">
-                <option value="forex">Forex (Standard)</option>
-                <option value="indices">Indizes / Gold</option>
-            </select>
-            <input type="number" id="cBal" placeholder="Kontostand (€)">
-            <input type="number" id="cRisk" placeholder="Risiko in %">
-            <input type="number" id="cEnt" placeholder="Entry Preis">
-            <input type="number" id="cSl" placeholder="Stop Loss Preis">
+            <h4>LOT RECHNER</h4>
+            <select id="cType"><option value="forex">Forex</option><option value="indices">Indizes / Gold</option></select>
+            <input type="number" id="cBal" placeholder="Konto (€)">
+            <input type="number" id="cRisk" placeholder="Risiko (%)">
+            <input type="number" id="cEnt" placeholder="Entry">
+            <input type="number" id="cSl" placeholder="Stop Loss">
             <button onclick="calcLots()" class="btn-primary">BERECHNEN</button>
             <div id="cRes" style="font-size:2rem; text-align:center; margin-top:20px; color:var(--success); font-weight:bold;">0.00</div>
         </div>
@@ -168,10 +187,10 @@
 
     <section id="view-Einstellungen" class="view-section">
         <div class="card">
-            <h4>ADMIN EINSTELLUNGEN</h4>
-            <input type="email" id="admEmail" placeholder="E-Mail Adresse">
-            <button onclick="admAdd()" class="btn-primary" style="margin-bottom:20px;">Hinzufügen</button>
-            <div id="admList"></div>
+            <h4>ADMIN</h4>
+            <input type="email" id="admEmail" placeholder="E-Mail">
+            <button onclick="admAdd()" class="btn-primary">Hinzufügen</button>
+            <div id="admList" style="margin-top:20px;"></div>
         </div>
     </section>
 </div>
@@ -183,26 +202,21 @@
 
     let trades = [], ovChart = null, currentFilter = 'all';
 
-    // AUTH & START
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             document.getElementById('auth-overlay').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
             document.getElementById('main-header').classList.remove('hidden');
             document.getElementById('user-greeting').innerText = `HALLO ${user.displayName?.split(' ')[0].toUpperCase() || 'TRADER'}`;
-            
-            // Admin Check
             if(user.email.toLowerCase() === "leon.luca.lauterbach@gmail.com") {
                 document.getElementById('admin-link').classList.remove('hidden');
                 admLoad();
             }
-            
             await loadTrades();
-            setInterval(loadTrades, 5000); // 5 Sekunden Sync
+            setInterval(loadTrades, 5000);
         }
     });
 
-    // DATEN LADEN
     async function loadTrades() {
         if(!auth.currentUser) return;
         const snap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
@@ -210,9 +224,7 @@
         render();
     }
 
-    // RENDERING & LOGIK
     function render() {
-        // Offene Trades
         const open = trades.filter(t => t.status === 'Aktiv');
         document.getElementById('open-trades-list').innerHTML = open.length ? open.map(t => `
             <div class="open-trade-item">
@@ -220,63 +232,34 @@
                     <span style="color:var(--accent); font-weight:bold;">${t.asset}</span> <br>
                     <small style="color:#888;">${t.date.split('T')[0]}</small>
                 </div>
-                <div>
-                     ${t.imgSetup ? `<a href="${t.imgSetup}" target="_blank" class="link-badge">S</a>` : ''}
-                </div>
+                <div>${t.imgSetup ? `<a href="${t.imgSetup}" target="_blank" class="link-badge">S</a>` : ''}</div>
                 <button onclick="editTrade('${t.id}', true)" class="chart-btn" style="color:var(--success); border-color:var(--success);">CLOSE</button>
             </div>
         `).join('') : '<p style="color:#555;">Keine aktiven Trades.</p>';
 
-        // Filter & Chart
         let closed = trades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
         const now = new Date();
-        
         if(currentFilter === 'today') closed = closed.filter(t => new Date(t.date).toDateString() === now.toDateString());
         if(currentFilter === 'week') { let d = new Date(); d.setDate(d.getDate()-7); closed = closed.filter(t => new Date(t.date) >= d); }
         if(currentFilter === 'month') closed = closed.filter(t => new Date(t.date).getMonth() === now.getMonth() && new Date(t.date).getFullYear() === now.getFullYear());
 
         let sum = 0, wins = 0;
         const points = closed.map(t => { sum += t.pnl; if(t.pnl > 0) wins++; return sum; });
-        
         document.getElementById('ovTotal').innerText = sum.toFixed(2) + " €";
         document.getElementById('ovTotal').style.color = sum >= 0 ? 'var(--success)' : 'var(--danger)';
         document.getElementById('ovWinRate').innerText = closed.length ? (wins/closed.length*100).toFixed(0) + "%" : "0%";
 
         const ctx = document.getElementById('ovChart').getContext('2d');
         if(ovChart) ovChart.destroy();
-        ovChart = new Chart(ctx, { 
-            type: 'line', 
-            data: { 
-                labels: closed.map(t => t.date.split('T')[0]), 
-                datasets: [{ 
-                    data: points, 
-                    borderColor: '#bb86fc', 
-                    backgroundColor: 'rgba(187, 134, 252, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.3 
-                }] 
-            }, 
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { x: { display: false }, y: { grid: { color: '#222' } } }
-            } 
-        });
+        ovChart = new Chart(ctx, { type: 'line', data: { labels: closed.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', backgroundColor: 'rgba(187, 134, 252, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } } });
 
-        // Historie Tabelle (MIT NEUEN LINKS S & E)
         document.getElementById('tradeBody').innerHTML = trades.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
             <tr>
                 <td>${t.date.split('T')[0]}</td>
                 <td><b>${t.asset}</b></td>
-                <td style="color:${t.status === 'Aktiv' ? 'var(--accent)' : (t.pnl >= 0 ? 'var(--success)' : 'var(--danger)')}">
-                    ${t.status === 'Aktiv' ? 'LAUFEND' : t.pnl.toFixed(2)+'€'}
-                </td>
-                <td>
-                    ${t.imgSetup ? `<a href="${t.imgSetup}" target="_blank" class="link-badge" title="Setup">S</a>` : ''}
-                    ${t.imgResult ? `<a href="${t.imgResult}" target="_blank" class="link-badge" title="Ergebnis">E</a>` : ''}
-                </td>
+                <td style="color:${t.status === 'Aktiv' ? 'var(--accent)' : (t.pnl >= 0 ? 'var(--success)' : 'var(--danger)')}">${t.status === 'Aktiv' ? 'OFFEN' : t.pnl.toFixed(2)}</td>
+                <td class="note-cell">${t.note || '-'}</td>
+                <td>${t.imgSetup ? `<a href="${t.imgSetup}" target="_blank" class="link-badge">S</a>` : ''}${t.imgResult ? `<a href="${t.imgResult}" target="_blank" class="link-badge">E</a>` : ''}</td>
                 <td>
                     <button class="chart-btn" onclick="editTrade('${t.id}')">✏️</button>
                     <button class="chart-btn" style="color:var(--danger); border-color:var(--danger);" onclick="delTrade('${t.id}')">X</button>
@@ -285,24 +268,20 @@
         `).join('');
     }
 
-    // CRUD FUNKTIONEN
     async function saveTrade() {
         const id = document.getElementById('editId').value;
         const assetVal = document.getElementById('assetInput').value.toUpperCase();
-        
         if(!assetVal) return alert("Bitte Asset eingeben!");
-
         const data = {
             date: document.getElementById('datetime').value,
             asset: assetVal,
             status: document.getElementById('status').value,
             pnl: parseFloat(document.getElementById('pnl').value) || 0,
             imgSetup: document.getElementById('imgSetup').value,
-            imgResult: document.getElementById('imgResult').value, // NEU
+            imgResult: document.getElementById('imgResult').value,
             note: document.getElementById('note').value,
             userId: auth.currentUser.uid
         };
-        
         id ? await db.collection('trades').doc(id).update(data) : await db.collection('trades').add(data);
         showView('Übersicht'); loadTrades();
     }
@@ -315,23 +294,14 @@
         document.getElementById('status').value = closeMode ? 'Geschlossen' : t.status;
         document.getElementById('pnl').value = t.pnl;
         document.getElementById('imgSetup').value = t.imgSetup || '';
-        document.getElementById('imgResult').value = t.imgResult || ''; // NEU
+        document.getElementById('imgResult').value = t.imgResult || '';
         document.getElementById('note').value = t.note || '';
-        
         document.getElementById('form-header').innerText = closeMode ? 'TRADE BEENDEN' : 'TRADE BEARBEITEN';
-        
-        togglePnl(); 
-        showView('Trade erstellen');
+        togglePnl(); showView('Trade erstellen');
     }
 
-    async function delTrade(id) {
-        if(confirm('Wirklich löschen?')) {
-            await db.collection('trades').doc(id).delete();
-            loadTrades();
-        }
-    }
+    async function delTrade(id) { if(confirm('Löschen?')) { await db.collection('trades').doc(id).delete(); loadTrades(); } }
 
-    // HELPER
     function prepareCreateView() { 
         document.getElementById('editId').value = ""; 
         document.getElementById('datetime').value = new Date().toISOString().slice(0,16); 
@@ -339,9 +309,9 @@
         document.getElementById('pnl').value = "";
         document.getElementById('imgSetup').value = "";
         document.getElementById('imgResult').value = "";
+        document.getElementById('note').value = "";
         document.getElementById('form-header').innerText = 'NEUER TRADE';
-        togglePnl(); 
-        showView('Trade erstellen'); 
+        togglePnl(); showView('Trade erstellen'); 
     }
 
     function showView(v) {
@@ -349,7 +319,6 @@
         document.getElementById('view-' + v.replace(/\s+/g, '-')).classList.add('active');
         document.getElementById('view-title').innerText = v.toUpperCase();
         document.getElementById('navDrawer').classList.remove('open');
-        
         if(v === 'News') {
             const b = document.getElementById('news-box'); b.innerHTML = '';
             const s = document.createElement('script'); s.src = "https://s3.tradingview.com/external-embedding/embed-widget-events.js"; s.async = true;
@@ -369,26 +338,11 @@
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function handleLogout() { auth.signOut().then(() => location.reload()); }
-    
     function calcLots() {
-        const b = parseFloat(document.getElementById('cBal').value);
-        const r = parseFloat(document.getElementById('cRisk').value)/100;
-        const e = parseFloat(document.getElementById('cEnt').value);
-        const s = parseFloat(document.getElementById('cSl').value);
-        const t = document.getElementById('cType').value;
-        
-        if(b && r && e && s) {
-            const riskAmt = b * r;
-            const diff = Math.abs(e - s);
-            const res = t === 'forex' ? riskAmt / (diff * 100000) : riskAmt / diff;
-            document.getElementById('cRes').innerText = res.toFixed(2);
-        }
+        const b = parseFloat(document.getElementById('cBal').value), r = parseFloat(document.getElementById('cRisk').value)/100, e = parseFloat(document.getElementById('cEnt').value), s = parseFloat(document.getElementById('cSl').value), t = document.getElementById('cType').value;
+        if(b && r && e && s) document.getElementById('cRes').innerText = (t === 'forex' ? (b*r)/(Math.abs(e-s)*100000) : (b*r)/Math.abs(e-s)).toFixed(2);
     }
-
-    async function admLoad() {
-        const s = await db.collection('members').get();
-        document.getElementById('admList').innerHTML = s.docs.map(d => `<div style="padding:10px; border-bottom:1px solid #333;">${d.data().email} <button onclick="admDel('${d.id}')" style="color:red; background:none; border:none; float:right; cursor:pointer;">Löschen</button></div>`).join('');
-    }
+    async function admLoad() { const s = await db.collection('members').get(); document.getElementById('admList').innerHTML = s.docs.map(d => `<div style="padding:10px; border-bottom:1px solid #333;">${d.data().email} <button onclick="admDel('${d.id}')" style="color:red; background:none; border:none; float:right;">X</button></div>`).join(''); }
     async function admAdd() { await db.collection('members').add({email: document.getElementById('admEmail').value}); admLoad(); }
     async function admDel(id) { await db.collection('members').doc(id).delete(); admLoad(); }
 </script>
