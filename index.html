@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Final</title>
+    <title>TradeCloud Pro - Calendar Color & Popup</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -77,8 +77,9 @@
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; }
         .btn-cancel { background: #333; color: white; margin-top: 10px; font-size: 0.9rem; padding: 10px; }
 
-        .btn-close-trade { background: transparent; border: 1px solid var(--success); color: var(--success); padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-close-trade:hover { background: var(--success); color: black; }
+        /* Close Button RED */
+        .btn-close-trade { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-close-trade:hover { background: var(--danger); color: white; }
 
         /* --- TABLE --- */
         .table-wrapper { overflow-x: auto; }
@@ -96,12 +97,29 @@
         /* --- POPUPS --- */
         #auth-overlay, #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         
-        /* Calendar */
+        /* Calendar Styling */
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
         .cal-cell { background: var(--input-bg); height: 80px; border-radius: 6px; padding: 5px; position: relative; font-size: 0.8rem; border: 1px solid transparent; }
-        .cal-cell.has-trade { border-color: var(--border); cursor: pointer; }
+        
+        .cal-cell.day-win { background: rgba(0, 200, 83, 0.2); border: 1px solid var(--success); cursor: pointer; }
+        .cal-cell.day-loss { background: rgba(255, 61, 0, 0.2); border: 1px solid var(--danger); cursor: pointer; }
+        
         .cal-date { position: absolute; top: 5px; right: 5px; color: var(--text-muted); }
         .cal-val { position: absolute; bottom: 5px; width: 100%; text-align: center; font-weight: bold; left:0; }
+
+        /* Day Detail View (Full Cover) */
+        .day-view-container { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: var(--bg-dark); z-index: 500; overflow-y: auto; 
+            display: none; padding-bottom: 50px;
+        }
+        .day-view-container.open { display: block; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .dv-header { padding: 20px; display: flex; gap: 15px; background: var(--bg-dark); position: sticky; top:0; z-index:10; border-bottom: 1px solid var(--border); align-items: center; }
+        .dv-trade-item { background: var(--input-bg); border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid transparent; }
+        .dv-trade-win { border-left-color: var(--success); }
+        .dv-trade-loss { border-left-color: var(--danger); }
 
     </style>
 </head>
@@ -150,42 +168,23 @@
 
     <section id="view-Übersicht" class="view-section active">
         <h1 id="user-greeting" style="font-size: 1.8rem; font-weight: 800; margin-bottom: 20px;">HALLO TRADER</h1>
-        <div id="dashboard-container">
-            </div>
+        <div id="dashboard-container"></div>
     </section>
 
     <section id="view-Trade-erstellen" class="view-section">
         <div class="card">
             <h3 id="form-header">Trade erfassen</h3>
             <input type="hidden" id="editId">
-            
-            <label>1. Journal wählen</label>
-            <select id="inpJournalSelect"></select> <label>2. Status</label>
-            <select id="inpStatus" onchange="toggleFields()">
-                <option value="Aktiv" selected>Offen (Laufend)</option>
-                <option value="Geschlossen">Geschlossen</option>
-            </select>
-
-            <label>3. Datum & Uhrzeit</label>
-            <input type="datetime-local" id="inpDate">
-
-            <label>4. Asset</label>
-            <input type="text" id="inpAsset" placeholder="z.B. EURUSD" style="text-transform:uppercase;">
-
-            <label>5. Setup (Link)</label>
-            <input type="url" id="inpSetup" placeholder="https://...">
-
+            <label>1. Journal wählen</label><select id="inpJournalSelect"></select>
+            <label>2. Status</label><select id="inpStatus" onchange="toggleFields()"><option value="Aktiv" selected>Offen (Laufend)</option><option value="Geschlossen">Geschlossen</option></select>
+            <label>3. Datum & Uhrzeit</label><input type="datetime-local" id="inpDate">
+            <label>4. Asset</label><input type="text" id="inpAsset" placeholder="z.B. EURUSD" style="text-transform:uppercase;">
+            <label>5. Setup (Link)</label><input type="url" id="inpSetup" placeholder="https://...">
             <div id="closedFields" class="hidden">
-                <label>6. Ergebnis (Link)</label>
-                <input type="url" id="inpResult" placeholder="https://...">
-                
-                <label>7. P&L (€)</label>
-                <input type="number" id="inpPnl" step="0.01" placeholder="0.00">
+                <label>6. Ergebnis (Link)</label><input type="url" id="inpResult" placeholder="https://...">
+                <label>7. P&L (€)</label><input type="number" id="inpPnl" step="0.01" placeholder="0.00">
             </div>
-
-            <label>8. Notiz</label>
-            <textarea id="inpNote" rows="3"></textarea>
-
+            <label>8. Notiz</label><textarea id="inpNote" rows="3"></textarea>
             <button onclick="saveTrade()" class="btn-primary" style="margin-top:15px;">SPEICHERN</button>
             <button onclick="showView('Übersicht')" class="btn-cancel">Abbrechen</button>
         </div>
@@ -195,13 +194,9 @@
         <div class="card">
             <div class="js-header">
                 <h3 id="cal-month" style="margin:0;">-</h3>
-                <div>
-                    <button class="icon-btn" onclick="changeCalMonth(-1)">❮</button>
-                    <button class="icon-btn" onclick="changeCalMonth(1)">❯</button>
-                </div>
+                <div><button class="icon-btn" onclick="changeCalMonth(-1)">❮</button><button class="icon-btn" onclick="changeCalMonth(1)">❯</button></div>
             </div>
             <div style="font-size:0.8rem; color:var(--accent); margin-bottom:10px;" id="cal-filter-label"></div>
-            
             <div class="cal-grid" style="grid-template-rows:20px;">
                 <div style="text-align:center; color:#666;">Mo</div><div style="text-align:center; color:#666;">Di</div><div style="text-align:center; color:#666;">Mi</div>
                 <div style="text-align:center; color:#666;">Do</div><div style="text-align:center; color:#666;">Fr</div><div style="text-align:center; color:#666;">Sa</div><div style="text-align:center; color:#666;">So</div>
@@ -209,6 +204,27 @@
             <div id="cal-body" class="cal-grid"></div>
         </div>
     </section>
+
+    <div id="day-detail-view" class="day-view-container">
+        <div class="dv-header">
+            <button class="icon-btn" onclick="closeDayDetail()" style="font-size:1.5rem;">❮</button>
+            <h2 id="dv-date-title" style="margin:0;">Datum</h2>
+        </div>
+        
+        <div class="container">
+            <div class="card" style="height:250px;">
+                <canvas id="dayChart"></canvas>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
+                <div class="stat-box"><div class="stat-val" id="dv-pnl">0€</div><div class="stat-lbl">Tages P&L</div></div>
+                <div class="stat-box"><div class="stat-val" id="dv-wr">0%</div><div class="stat-lbl">Winrate</div></div>
+            </div>
+
+            <h4 style="color:var(--accent);">Trades</h4>
+            <div id="dv-list"></div>
+        </div>
+    </div>
 
     <section id="view-Historie" class="view-section">
         <div class="card">
@@ -251,9 +267,7 @@
         <div class="card">
             <h3>Journals Verwalten</h3>
             <div id="settings-journals-list"></div>
-            
             <hr style="border-color:var(--border); opacity:0.3; margin:20px 0;">
-            
             <h4 id="settings-form-title">Neues Journal erstellen</h4>
             <input type="hidden" id="editJournalId">
             <input type="text" id="newJName" placeholder="Name (z.B. Main Account)">
@@ -302,6 +316,7 @@
     let currentFilter = ''; 
     let calDate = new Date();
     let journalCharts = {}; 
+    let dayChart = null;
 
     if(localStorage.getItem('theme')==='light') document.body.classList.add('light-mode');
 
@@ -322,7 +337,6 @@
                 document.getElementById('navDrawer').classList.remove('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
                 
-                // Set Greeting
                 document.getElementById('user-greeting').innerText = `HALLO ${user.displayName ? user.displayName.split(' ')[0].toUpperCase() : 'TRADER'}`;
                 
                 if(isAdmin) {
@@ -340,7 +354,6 @@
     async function loadData() {
         const uid = auth.currentUser.uid;
         
-        // 1. Load Journals
         const jSnap = await db.collection('journals').where('userId','==',uid).get();
         myJournals = jSnap.docs.map(d => ({id:d.id, ...d.data()}));
         
@@ -353,11 +366,9 @@
             currentFilter = myJournals[0].id;
         }
 
-        // 2. Load Trades
         const tSnap = await db.collection('trades').where('userId','==',uid).get();
         myTrades = tSnap.docs.map(d => ({id:d.id, ...d.data()}));
 
-        // --- MIGRATION ---
         const batch = db.batch();
         let migrated = false;
         myTrades.forEach(t => {
@@ -377,13 +388,11 @@
         if(active === 'view-Historie') renderHistory();
     }
 
-    // --- DASHBOARD RENDERER ---
+    // --- DASHBOARD ---
     function renderDashboard() {
         const container = document.getElementById('dashboard-container');
         container.innerHTML = '';
-        
         journalCharts = {};
-
         const visibleJournals = myJournals.filter(j => !j.hidden);
 
         visibleJournals.forEach(j => {
@@ -391,7 +400,6 @@
             const closed = jTrades.filter(t => t.status === 'Geschlossen').sort((a,b)=>new Date(a.date)-new Date(b.date));
             const open = jTrades.filter(t => t.status === 'Aktiv');
 
-            // Drawdown Check
             let warningHTML = '';
             if(j.maxLoss > 0) {
                 const today = new Date().toDateString();
@@ -404,9 +412,7 @@
             const section = document.createElement('div');
             section.className = 'journal-section';
             section.innerHTML = `
-                <div class="js-header">
-                    <h2 class="js-title">${j.name}</h2>
-                </div>
+                <div class="js-header"><h2 class="js-title">${j.name}</h2></div>
                 ${warningHTML}
                 <div class="js-grid">
                     <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:8px; padding:10px; height:250px;">
@@ -559,7 +565,7 @@
         if(confirm("Löschen?")) { await db.collection('trades').doc(id).delete(); loadData(); }
     }
 
-    // --- SIDEBAR & FILTERS ---
+    // --- SIDEBAR ---
     function populateSelectors() {
         const sb = document.getElementById('sidebarJournalSelect');
         sb.innerHTML = myJournals.map(j => `<option value="${j.id}">${j.name}</option>`).join('');
@@ -650,24 +656,72 @@
 
     // --- CALENDAR & HISTORY ---
     function changeCalMonth(dir) { calDate.setMonth(calDate.getMonth()+dir); renderCalendar(); }
+    
     function renderCalendar() {
         const y=calDate.getFullYear(), m=calDate.getMonth();
         document.getElementById('cal-month').innerText = new Date(y,m).toLocaleDateString('de-DE', {month:'long', year:'numeric'});
         const grid = document.getElementById('cal-body'); grid.innerHTML = '';
         const fd = new Date(y,m,1).getDay(); const start = fd===0?6:fd-1; const ld = new Date(y,m+1,0).getDate();
         const filtered = myTrades.filter(t => t.journalId === currentFilter);
+        
         for(let i=0; i<start; i++) grid.innerHTML += '<div></div>';
+        
         for(let d=1; d<=ld; d++) {
             const dateStr = new Date(y,m,d).toDateString();
             const dayTrades = filtered.filter(t => t.status==='Geschlossen' && new Date(t.date).toDateString()===dateStr);
             let sum=0; dayTrades.forEach(t=>sum+=t.pnl);
+            
             let html = `<div class="cal-date">${d}</div>`;
+            let classes = "cal-cell";
+            let clickAttr = "";
+
             if(dayTrades.length > 0) {
                 html += `<div class="cal-val ${sum>=0?'pnl-pos':'pnl-neg'}">${sum.toFixed(0)}</div>`;
-                grid.innerHTML += `<div class="cal-cell has-trade">${html}</div>`;
-            } else grid.innerHTML += `<div class="cal-cell">${html}</div>`;
+                classes += sum >= 0 ? " day-win" : " day-loss";
+                clickAttr = `onclick="openDayDetail('${y}-${m+1}-${d}')"`;
+            }
+
+            grid.innerHTML += `<div class="${classes}" ${clickAttr}>${html}</div>`;
         }
     }
+
+    // --- DAY DETAIL POPUP ---
+    function openDayDetail(dateStr) {
+        const d = new Date(dateStr);
+        document.getElementById('dv-date-title').innerText = d.toLocaleDateString();
+        
+        // Filter trades for this day AND current active journal
+        const dayTrades = myTrades.filter(t => {
+            return t.journalId === currentFilter && 
+                   t.status === 'Geschlossen' && 
+                   new Date(t.date).toDateString() === d.toDateString();
+        }).sort((a,b)=> new Date(a.date)-new Date(b.date));
+
+        // Stats
+        let sum=0; let wins=0;
+        const points = dayTrades.map(t=>{sum+=t.pnl; if(t.pnl>0)wins++; return sum;});
+        
+        document.getElementById('dv-pnl').innerText = sum.toFixed(2) + ' €';
+        document.getElementById('dv-pnl').className = `stat-val ${sum>=0?'pnl-pos':'pnl-neg'}`;
+        document.getElementById('dv-wr').innerText = dayTrades.length ? (wins/dayTrades.length*100).toFixed(0)+'%' : '0%';
+
+        // Chart
+        const ctx = document.getElementById('dayChart').getContext('2d');
+        if(dayChart) dayChart.destroy();
+        dayChart = new Chart(ctx, { type:'line', data:{labels:dayTrades.map(t=>''), datasets:[{data:points, borderColor:'#fff', tension:0.1}]}, options:{plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}}} });
+
+        // List
+        document.getElementById('dv-list').innerHTML = dayTrades.map(t => `
+            <div class="dv-trade-item ${t.pnl>=0?'dv-trade-win':'dv-trade-loss'}">
+                <div><b style="color:var(--accent)">${t.asset}</b> <small>${t.date.split('T')[1]}</small></div>
+                <div class="${t.pnl>=0?'pnl-pos':'pnl-neg'}">${t.pnl.toFixed(2)}</div>
+            </div>
+        `).join('');
+
+        document.getElementById('day-detail-view').classList.add('open');
+    }
+    function closeDayDetail() { document.getElementById('day-detail-view').classList.remove('open'); }
+
     function renderHistory() {
         const filtered = myTrades.filter(t => t.journalId === currentFilter).sort((a,b)=>new Date(b.date)-new Date(a.date));
         document.getElementById('hist-body').innerHTML = filtered.map(t => `
