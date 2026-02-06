@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Multi Journal</title>
+    <title>TradeCloud Pro - Ultimate</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -92,12 +92,33 @@
         .dv-trade-list { padding: 0 15px; }
         .dv-trade-item { background: var(--cell-bg); border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
         
+        /* --- BUTTON LINKS (S & E) --- */
+        .link-badge { 
+            background: #252525; 
+            color: var(--accent); 
+            padding: 6px 14px; 
+            border-radius: 6px; 
+            text-decoration: none; 
+            font-weight: 900; 
+            font-size: 0.85rem; 
+            margin-right: 12px; 
+            border: 1px solid #444; 
+            display: inline-block; 
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .link-badge:hover { background: #333; transform: scale(1.1); color: white; border-color: var(--accent); }
+
         .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 500px; }
         th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
         .icon-btn { background: none; border: none; cursor: pointer; padding: 5px; color: #888; }
         .icon-trash { color: var(--danger); }
         #img-preview { position: fixed; display: none; width: 300px; height: 180px; background-size: cover; background-position: center; border: 2px solid var(--accent); border-radius: 8px; z-index: 999; pointer-events: none; background-color:#000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* Select Styling */
+        .journal-dropdown { width: auto; margin: 0; padding: 8px 12px; border: 1px solid var(--accent); color: var(--accent); font-weight: bold; border-radius: 6px; cursor:pointer; background: var(--bg-dark); }
     </style>
 </head>
 <body>
@@ -138,9 +159,7 @@
     <section id="view-Übersicht" class="view-section active">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h1 id="user-greeting" style="font-size: 1.5rem; font-weight: 800; margin:0;">DASHBOARD</h1>
-            <select id="journalSelect" onchange="changeJournal()" style="width:auto; margin:0; padding:8px; border-color:var(--accent); color:var(--accent); font-weight:bold;">
-                <option value="Standard">Standard</option>
-            </select>
+            <select id="journalSelect" class="journal-dropdown" onchange="changeJournal()"></select>
         </div>
         
         <div id="dd-banner" class="card dd-alert hidden"><h3 style="margin:0;">⚠️ TAGES-LIMIT ERREICHT ⚠️</h3><p>Stop Trading für heute!</p></div>
@@ -183,7 +202,7 @@
                     </div>
                 </div>
                 <div style="text-align:right;">
-                    <span style="color:var(--accent); font-size:0.8rem; font-weight:bold; display:block;">Active Journal:</span>
+                    <span style="color:var(--accent); font-size:0.8rem; font-weight:bold; display:block;">Active:</span>
                     <span id="calActiveJournal" style="font-size:0.9rem;">Standard</span>
                 </div>
             </div>
@@ -218,9 +237,8 @@
         <div class="card">
             <h4 id="form-header">TRADE ERFASSEN</h4>
             <input type="hidden" id="editId">
-            
-            <label>Journal wählen</label>
-            <select id="createJournalSelect"></select> <label>Status</label><select id="status" onchange="toggleFormFields()"><option value="Aktiv" selected>Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
+            <label>Journal wählen</label><select id="createJournalSelect"></select>
+            <label>Status</label><select id="status" onchange="toggleFormFields()"><option value="Aktiv" selected>Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
             <label>Asset</label><input type="text" id="assetInput" placeholder="z.B. XAUUSD" required>
             <label>Datum & Zeit</label><input type="datetime-local" id="datetime">
             <label>Setup Link (Bild)</label><input type="url" id="imgSetup" placeholder="https://...">
@@ -236,9 +254,9 @@
 
     <section id="view-Historie" class="view-section">
         <div class="card" style="padding:0;">
-            <div style="padding:15px; display:flex; justify-content:space-between;">
+            <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
                 <h4>JOURNAL</h4>
-                <span id="histActiveJournal" style="color:var(--accent); font-weight:bold;">Standard</span>
+                <select id="historyJournalSelect" class="journal-dropdown" onchange="changeJournal('history')"></select>
             </div>
             <div class="table-wrapper">
                 <table>
@@ -252,9 +270,8 @@
     <section id="view-Einstellungen" class="view-section">
         <div class="card">
             <h4>JOURNALE VERWALTEN</h4>
-            <p style="color:#888; font-size:0.9rem;">Erstelle neue Journale (z.B. Live, Demo).</p>
             <div style="display:flex; gap:10px;">
-                <input type="text" id="newJournalName" placeholder="Name (z.B. Scalping Challenge)">
+                <input type="text" id="newJournalName" placeholder="Name (z.B. Scalping)">
                 <button onclick="addJournal()" class="chart-btn" style="background:var(--success); color:black; font-weight:bold;">+</button>
             </div>
             <div id="settingsJournalList" style="margin-top:15px;"></div>
@@ -298,8 +315,6 @@
 
     let trades = [], ovChart = null, dayChart = null, currentFilter = 'all', calDate = new Date();
     let privacyMode = false;
-    
-    // --- MULTI JOURNAL STATE ---
     let journals = JSON.parse(localStorage.getItem('myJournals')) || ['Standard'];
     let activeJournal = localStorage.getItem('activeJournal') || 'Standard';
 
@@ -320,103 +335,107 @@
                 document.getElementById('app-content').classList.remove('hidden');
                 document.getElementById('main-header').classList.remove('hidden');
                 if(email === "leon.luca.lauterbach@gmail.com") { document.getElementById('admin-link').classList.remove('hidden'); admLoad(); }
-                
                 if(localStorage.getItem('startCap')) document.getElementById('settingStartCap').value = localStorage.getItem('startCap');
                 if(localStorage.getItem('maxLoss')) document.getElementById('settingMaxLoss').value = localStorage.getItem('maxLoss');
                 if(localStorage.getItem('lossType')) document.getElementById('settingLossType').value = localStorage.getItem('lossType');
-                
-                initJournalUI(); // Init Dropdowns
+                initJournalUI(); 
                 await loadTrades(); 
                 setInterval(loadTrades, 5000);
             } else { alert("Kein Zugriff."); await auth.signOut(); location.reload(); }
         }
     });
 
-    // --- JOURNAL LOGIC ---
-    function initJournalUI() {
-        updateJournalSelects();
-        renderJournalSettingsList();
-    }
+    // --- JOURNAL MANAGEMENT ---
+    function initJournalUI() { updateJournalSelects(); renderJournalSettingsList(); }
 
     function updateJournalSelects() {
-        const dashSelect = document.getElementById('journalSelect');
-        const createSelect = document.getElementById('createJournalSelect');
-        
-        // Clear options
-        dashSelect.innerHTML = '';
-        createSelect.innerHTML = '';
-
-        journals.forEach(j => {
-            // Dashboard Select
-            const opt1 = document.createElement('option');
-            opt1.value = j; opt1.innerText = j;
-            if(j === activeJournal) opt1.selected = true;
-            dashSelect.appendChild(opt1);
-
-            // Create Trade Select
-            const opt2 = document.createElement('option');
-            opt2.value = j; opt2.innerText = j;
-            if(j === activeJournal) opt2.selected = true; // Default to active
-            createSelect.appendChild(opt2);
+        const selects = ['journalSelect', 'historyJournalSelect', 'createJournalSelect'];
+        selects.forEach(id => {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.innerHTML = '';
+            journals.forEach(j => {
+                const opt = document.createElement('option');
+                opt.value = j; opt.innerText = j;
+                if(j === activeJournal) opt.selected = true;
+                el.appendChild(opt);
+            });
         });
-        
-        // Update Labels in other views
         document.getElementById('calActiveJournal').innerText = activeJournal;
-        document.getElementById('histActiveJournal').innerText = activeJournal;
     }
 
-    function changeJournal() {
-        activeJournal = document.getElementById('journalSelect').value;
+    function changeJournal(source) {
+        // Find which select triggered it, or use default
+        let newVal;
+        if(source === 'history') newVal = document.getElementById('historyJournalSelect').value;
+        else newVal = document.getElementById('journalSelect').value;
+        
+        activeJournal = newVal;
         localStorage.setItem('activeJournal', activeJournal);
         
-        // Update Create Select to match
-        document.getElementById('createJournalSelect').value = activeJournal;
-        document.getElementById('calActiveJournal').innerText = activeJournal;
-        document.getElementById('histActiveJournal').innerText = activeJournal;
-
+        // Sync all selects
+        updateJournalSelects();
         render(); renderCalendar(); checkDrawdown();
     }
 
     function addJournal() {
         const name = document.getElementById('newJournalName').value.trim();
         if(name && !journals.includes(name)) {
-            journals.push(name);
+            journals.push(name); localStorage.setItem('myJournals', JSON.stringify(journals));
+            document.getElementById('newJournalName').value = ""; initJournalUI(); alert("Erstellt: " + name);
+        }
+    }
+
+    async function renameJournal(oldName) {
+        const newName = prompt("Neuer Name für " + oldName + ":", oldName);
+        if(!newName || newName === oldName || journals.includes(newName)) return;
+        
+        if(confirm(`Journal "${oldName}" zu "${newName}" umbenennen? Alle Trades werden verschoben.`)) {
+            // 1. Update List
+            const idx = journals.indexOf(oldName);
+            journals[idx] = newName;
             localStorage.setItem('myJournals', JSON.stringify(journals));
-            document.getElementById('newJournalName').value = "";
-            initJournalUI();
-            alert("Journal erstellt: " + name);
+
+            // 2. Update Active Var
+            if(activeJournal === oldName) { activeJournal = newName; localStorage.setItem('activeJournal', newName); }
+
+            // 3. Batch Update Firestore (IMPORTANT)
+            const snap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).where('journal', '==', oldName).get();
+            const batch = db.batch();
+            snap.forEach(doc => { batch.update(doc.ref, { journal: newName }); });
+            await batch.commit();
+
+            // 4. Refresh
+            initJournalUI(); loadTrades();
         }
     }
 
     function deleteJournal(name) {
         if(name === 'Standard') return alert("Standard kann nicht gelöscht werden.");
-        if(confirm(`Journal "${name}" löschen?`)) {
+        if(confirm(`Journal "${name}" unwiderruflich löschen?`)) {
             journals = journals.filter(j => j !== name);
             localStorage.setItem('myJournals', JSON.stringify(journals));
             if(activeJournal === name) { activeJournal = 'Standard'; localStorage.setItem('activeJournal', 'Standard'); }
-            initJournalUI();
-            render(); renderCalendar();
+            initJournalUI(); render(); renderCalendar();
         }
     }
 
     function renderJournalSettingsList() {
         const div = document.getElementById('settingsJournalList');
         div.innerHTML = journals.map(j => `
-            <div style="padding:10px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-                <span>${j} ${j===activeJournal ? '(Aktiv)' : ''}</span>
-                ${j !== 'Standard' ? `<button onclick="deleteJournal('${j}')" class="icon-btn icon-trash">🗑️</button>` : ''}
+            <div style="padding:12px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:bold; color:${j===activeJournal? 'var(--accent)':'white'}">${j}</span>
+                <div>
+                    <button onclick="renameJournal('${j}')" class="icon-btn" title="Umbenennen">✏️</button>
+                    ${j !== 'Standard' ? `<button onclick="deleteJournal('${j}')" class="icon-btn icon-trash" title="Löschen">🗑️</button>` : ''}
+                </div>
             </div>
         `).join('');
     }
 
-    // Helper to get trades for current journal
-    function getFilteredTrades() {
-        return trades.filter(t => {
-            const tJournal = t.journal || 'Standard'; // Legacy support
-            return tJournal === activeJournal;
-        });
-    }
+    function getFilteredTrades() { return trades.filter(t => (t.journal || 'Standard') === activeJournal); }
 
+    // --- CORE ---
     async function loadTrades() {
         if(!auth.currentUser) return;
         try {
@@ -426,12 +445,10 @@
         } catch(e){}
     }
 
-    // --- RENDER DASHBOARD (Uses getFilteredTrades) ---
     function render() {
         const currentJournalTrades = getFilteredTrades();
-        
         const open = currentJournalTrades.filter(t => t.status === 'Aktiv');
-        document.getElementById('open-trades-list').innerHTML = open.length ? open.map(t => `<div class="open-trade-item"><div><span style="color:var(--accent); font-weight:bold;">${t.asset}</span><br><small>${t.date.split('T')[0]}</small></div><button onclick="editTrade('${t.id}', true)" class="chart-btn" style="color:var(--success);">CLOSE</button></div>`).join('') : '<p>Keine offenen Trades in "' + activeJournal + '".</p>';
+        document.getElementById('open-trades-list').innerHTML = open.length ? open.map(t => `<div class="open-trade-item"><div><span style="color:var(--accent); font-weight:bold;">${t.asset}</span><br><small>${t.date.split('T')[0]}</small></div><button onclick="editTrade('${t.id}', true)" class="chart-btn" style="color:var(--success);">CLOSE</button></div>`).join('') : '<p>Keine offenen Trades.</p>';
 
         let closed = currentJournalTrades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
         const now = new Date(); const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -448,38 +465,43 @@
         document.getElementById('ovWinRate').innerText = closed.length ? (wins/closed.length*100).toFixed(0) + "%" : "0%";
         const ctx = document.getElementById('ovChart').getContext('2d'); if(ovChart) ovChart.destroy();
         ovChart = new Chart(ctx, { type: 'line', data: { labels: closed.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', backgroundColor: 'rgba(187, 134, 252, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } } });
-        document.getElementById('tradeBody').innerHTML = currentJournalTrades.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `<tr><td>${t.date.split('T')[0]}</td><td><b>${t.asset}</b></td><td class="sensitive" style="color:${t.status==='Aktiv'?'var(--accent)':(t.pnl>=0?'var(--success)':'var(--danger)')}">${t.status==='Aktiv'?'RUN':t.pnl.toFixed(2)}</td><td>${t.imgSetup ? `<span class="link-badge" onclick="window.open('${t.imgSetup}')" onmouseover="showPreview('${t.imgSetup}', event)" onmouseout="hidePreview()">S</span>` : ''}${t.imgResult ? `<span class="link-badge" onclick="window.open('${t.imgResult}')" onmouseover="showPreview('${t.imgResult}', event)" onmouseout="hidePreview()">E</span>` : ''}</td><td><button class="icon-btn" onclick="editTrade('${t.id}')">✏️</button><button class="icon-btn icon-trash" onclick="delTrade('${t.id}')">🗑️</button></td></tr>`).join('');
+        
+        // Render Journal Table
+        document.getElementById('tradeBody').innerHTML = currentJournalTrades.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
+            <tr>
+                <td>${t.date.split('T')[0]}</td>
+                <td><b>${t.asset}</b></td>
+                <td class="sensitive" style="color:${t.status==='Aktiv'?'var(--accent)':(t.pnl>=0?'var(--success)':'var(--danger)')}">${t.status==='Aktiv'?'RUN':t.pnl.toFixed(2)}</td>
+                <td>
+                    ${t.imgSetup ? `<a href="${t.imgSetup}" target="_blank" class="link-badge">S</a>` : ''}
+                    ${t.imgResult ? `<a href="${t.imgResult}" target="_blank" class="link-badge">E</a>` : ''}
+                </td>
+                <td><button class="icon-btn" onclick="editTrade('${t.id}')">✏️</button><button class="icon-btn icon-trash" onclick="delTrade('${t.id}')">🗑️</button></td>
+            </tr>
+        `).join('');
     }
 
-    // --- CALENDAR RENDER ---
+    // --- UTILS ---
     function changeCalMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
     function renderCalendar() {
         const y = calDate.getFullYear(), m = calDate.getMonth();
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        document.getElementById('cal-month-title').innerText = `${monthNames[m]} ${y}`;
+        document.getElementById('cal-month-title').innerText = new Date(y,m).toLocaleString('en-GB', {month:'long', year:'numeric'});
         const grid = document.getElementById('cal-days-grid'); grid.innerHTML = "";
         const firstDay = new Date(y, m, 1).getDay(); const lastDay = new Date(y, m + 1, 0).getDate();
-        
-        // Filter by Journal!
         const journalTrades = getFilteredTrades();
         let monthTrades = journalTrades.filter(t => t.status==='Geschlossen' && new Date(t.date).getMonth() === m && new Date(t.date).getFullYear() === y);
-        
         let monthPnl = monthTrades.reduce((a, b) => a + b.pnl, 0);
         let uniqueDays = [...new Set(monthTrades.map(t => new Date(t.date).toDateString()))].length;
         document.getElementById('cal-trading-days').innerText = `${uniqueDays} Trading days`;
-        const pnlEl = document.getElementById('cal-total-pnl');
-        pnlEl.innerText = (monthPnl < 0 ? '-' : '+') + '€' + Math.abs(monthPnl).toFixed(2);
+        const pnlEl = document.getElementById('cal-total-pnl'); pnlEl.innerText = (monthPnl < 0 ? '-' : '+') + '€' + Math.abs(monthPnl).toFixed(2);
         pnlEl.className = `cal-stat-pnl sensitive ${monthPnl >= 0 ? 'text-green' : 'text-red'}`;
 
         for(let i=0; i<firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`;
         for(let d=1; d<=lastDay; d++) {
             const dateStr = new Date(y, m, d).toDateString();
             const dayTrades = journalTrades.filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === dateStr);
-            let dayPnl = dayTrades.reduce((a,b) => a + b.pnl, 0);
-            let count = dayTrades.length;
-            let cellHtml = `<div class="cal-date">${d}</div>`;
-            let cssClass = "cal-cell";
-            let clickAttr = "";
+            let dayPnl = dayTrades.reduce((a,b) => a + b.pnl, 0); let count = dayTrades.length;
+            let cellHtml = `<div class="cal-date">${d}</div>`; let cssClass = "cal-cell"; let clickAttr = "";
             if(count > 0) {
                 clickAttr = `onclick="openDayDetail('${y}-${m+1}-${d}')"`;
                 if(dayPnl > 0) cssClass += " profit"; else if(dayPnl < 0) cssClass += " loss";
@@ -489,36 +511,22 @@
             grid.innerHTML += `<div class="${cssClass}" ${clickAttr}>${cellHtml}</div>`;
         }
     }
-
+    
     function openDayDetail(dateStr) {
         const dateObj = new Date(dateStr);
-        // Filter by Journal
         const dayTrades = getFilteredTrades().filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === dateObj.toDateString()).sort((a,b) => new Date(a.date) - new Date(b.date));
-        
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('dv-date-title').innerText = dateObj.toLocaleDateString('en-GB', options); 
-        let pnl = dayTrades.reduce((a,b)=>a+b.pnl,0);
-        let wins = dayTrades.filter(t=>t.pnl>0).length;
-        let grossProfit = dayTrades.filter(t=>t.pnl>0).reduce((a,b)=>a+b.pnl,0);
-        let grossLoss = Math.abs(dayTrades.filter(t=>t.pnl<0).reduce((a,b)=>a+b.pnl,0));
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }; document.getElementById('dv-date-title').innerText = dateObj.toLocaleDateString('en-GB', options); 
+        let pnl = dayTrades.reduce((a,b)=>a+b.pnl,0); let wins = dayTrades.filter(t=>t.pnl>0).length;
+        let grossProfit = dayTrades.filter(t=>t.pnl>0).reduce((a,b)=>a+b.pnl,0); let grossLoss = Math.abs(dayTrades.filter(t=>t.pnl<0).reduce((a,b)=>a+b.pnl,0));
         let pf = grossLoss === 0 ? (grossProfit>0?99:0) : (grossProfit/grossLoss);
-        
-        document.getElementById('dv-pnl').innerText = (pnl<0?'-':'+') + '€' + Math.abs(pnl).toFixed(2);
-        document.getElementById('dv-pnl').className = `sensitive ${pnl>=0?'text-green':'text-red'}`;
+        document.getElementById('dv-pnl').innerText = (pnl<0?'-':'+') + '€' + Math.abs(pnl).toFixed(2); document.getElementById('dv-pnl').className = `sensitive ${pnl>=0?'text-green':'text-red'}`;
         document.getElementById('dv-winrate').innerText = dayTrades.length ? ((wins/dayTrades.length)*100).toFixed(2)+'%' : '0%';
-        document.getElementById('dv-pf').innerText = pf.toFixed(2);
-        document.getElementById('dv-count').innerText = dayTrades.length;
-
+        document.getElementById('dv-pf').innerText = pf.toFixed(2); document.getElementById('dv-count').innerText = dayTrades.length;
         let running = 0; const chartData = dayTrades.map(t => { running += t.pnl; return running; });
         const chartLabels = dayTrades.map(t => t.date.split('T')[1].slice(0,5)); 
-        const ctx = document.getElementById('dayChart').getContext('2d');
-        if(dayChart) dayChart.destroy();
-        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        if(pnl >= 0) { gradient.addColorStop(0, 'rgba(0, 200, 83, 0.2)'); gradient.addColorStop(1, 'rgba(0, 200, 83, 0)'); }
-        else { gradient.addColorStop(0, 'rgba(255, 61, 0, 0.2)'); gradient.addColorStop(1, 'rgba(255, 61, 0, 0)'); }
-
+        const ctx = document.getElementById('dayChart').getContext('2d'); if(dayChart) dayChart.destroy();
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400); if(pnl >= 0) { gradient.addColorStop(0, 'rgba(0, 200, 83, 0.2)'); gradient.addColorStop(1, 'rgba(0, 200, 83, 0)'); } else { gradient.addColorStop(0, 'rgba(255, 61, 0, 0.2)'); gradient.addColorStop(1, 'rgba(255, 61, 0, 0)'); }
         dayChart = new Chart(ctx, { type: 'line', data: { labels: chartLabels, datasets: [{ data: chartData, borderColor: pnl >= 0 ? '#00c853' : '#ff3d00', backgroundColor: gradient, borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' }, ticks: { color: '#666' } } } } });
-
         document.getElementById('dv-list').innerHTML = dayTrades.map(t => {
             const isWin = t.pnl >= 0; const arrow = isWin ? '↗' : '↘'; const arrowClass = isWin ? 'text-green' : 'text-red';
             return `<div class="dv-trade-item"><div class="dv-trade-left"><div class="dv-arrow ${arrowClass}">${arrow}</div><div><div class="dv-time">${t.date.replace('T', ' ')}</div><div class="dv-symbol">${t.asset}</div></div></div><div style="display:flex; align-items:center;"><div class="dv-pnl sensitive ${arrowClass}">${t.pnl.toFixed(2)}</div><div class="dv-chevron">›</div></div></div>`;
@@ -526,72 +534,16 @@
         document.getElementById('day-detail-view').classList.add('open');
     }
     function closeDayDetail() { document.getElementById('day-detail-view').classList.remove('open'); }
-
-    /* --- STANDARD --- */
     function toggleFormFields() { const s = document.getElementById('status').value; document.getElementById('closedFields').classList.toggle('hidden', s === 'Aktiv'); }
-    function checkDrawdown() { 
-        const val = parseFloat(localStorage.getItem('maxLoss')); const type = localStorage.getItem('lossType') || 'eur'; const startCap = parseFloat(localStorage.getItem('startCap')) || 0; if(!val) return; 
-        let limit = type === 'eur' ? val : (startCap > 0 ? startCap * (val / 100) : 0); if(limit === 0) return; 
-        const today = new Date().toDateString(); 
-        // Filter by Journal too!
-        let todayPnL = getFilteredTrades().filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === today).reduce((a,b)=>a+b.pnl,0); 
-        const banner = document.getElementById('dd-banner'); 
-        if(todayPnL <= -Math.abs(limit)) { banner.classList.remove('hidden'); banner.querySelector('p').innerText = `Limit (${limit.toFixed(2)}€) erreicht!`; } else banner.classList.add('hidden'); 
-    }
-    
-    function prepareCreateView() { 
-        document.getElementById('editId').value=""; document.getElementById('datetime').value=new Date().toISOString().slice(0,16); document.getElementById('assetInput').value=""; document.getElementById('pnl').value=""; document.getElementById('imgSetup').value=""; document.getElementById('imgResult').value=""; document.getElementById('note').value=""; document.getElementById('status').value = "Aktiv"; document.getElementById('form-header').innerText='NEUER TRADE'; 
-        // Select Active Journal
-        document.getElementById('createJournalSelect').value = activeJournal;
-        toggleFormFields(); showView('Trade erstellen'); 
-    }
-    
+    function checkDrawdown() { const val = parseFloat(localStorage.getItem('maxLoss')); const type = localStorage.getItem('lossType') || 'eur'; const startCap = parseFloat(localStorage.getItem('startCap')) || 0; if(!val) return; let limit = type === 'eur' ? val : (startCap > 0 ? startCap * (val / 100) : 0); if(limit === 0) return; const today = new Date().toDateString(); let todayPnL = getFilteredTrades().filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === today).reduce((a,b)=>a+b.pnl,0); const banner = document.getElementById('dd-banner'); if(todayPnL <= -Math.abs(limit)) { banner.classList.remove('hidden'); banner.querySelector('p').innerText = `Limit (${limit.toFixed(2)}€) erreicht!`; } else banner.classList.add('hidden'); }
+    function prepareCreateView() { document.getElementById('editId').value=""; document.getElementById('datetime').value=new Date().toISOString().slice(0,16); document.getElementById('assetInput').value=""; document.getElementById('pnl').value=""; document.getElementById('imgSetup').value=""; document.getElementById('imgResult').value=""; document.getElementById('note').value=""; document.getElementById('status').value = "Aktiv"; document.getElementById('form-header').innerText='NEUER TRADE'; document.getElementById('createJournalSelect').value = activeJournal; toggleFormFields(); showView('Trade erstellen'); }
     function togglePrivacy() { document.documentElement.style.setProperty('--blur', privacyMode ? '0px' : '6px'); privacyMode = !privacyMode; }
     function setTheme(mode) { if(mode==='light')document.body.classList.add('light-mode'); else document.body.classList.remove('light-mode'); localStorage.setItem('tradeTheme', mode); }
     function saveUserSettings() { localStorage.setItem('maxLoss', document.getElementById('settingMaxLoss').value); localStorage.setItem('startCap', document.getElementById('settingStartCap').value); localStorage.setItem('lossType', document.getElementById('settingLossType').value); alert("Gespeichert!"); checkDrawdown(); }
     function showPreview(url, e) { const el=document.getElementById('img-preview'); el.style.display='block'; el.style.backgroundImage=`url('${url}')`; el.style.top=(e.clientY+10)+'px'; el.style.left=(e.clientX-150)+'px'; }
     function hidePreview() { document.getElementById('img-preview').style.display='none'; }
-    
-    async function saveTrade() { 
-        const id = document.getElementById('editId').value; 
-        const asset = document.getElementById('assetInput').value.toUpperCase(); 
-        const selectedJournal = document.getElementById('createJournalSelect').value;
-        if(!asset) return; 
-        const data = { 
-            date: document.getElementById('datetime').value, 
-            asset, 
-            status: document.getElementById('status').value, 
-            pnl: parseFloat(document.getElementById('pnl').value)||0, 
-            imgSetup: document.getElementById('imgSetup').value, 
-            imgResult: document.getElementById('imgResult').value, 
-            note: document.getElementById('note').value, 
-            journal: selectedJournal, // Save Journal Name
-            userId: auth.currentUser.uid 
-        }; 
-        id ? await db.collection('trades').doc(id).update(data) : await db.collection('trades').add(data); 
-        // Switch view to the journal of the new trade
-        if(selectedJournal !== activeJournal) {
-            document.getElementById('journalSelect').value = selectedJournal;
-            changeJournal();
-        }
-        showView('Übersicht'); loadTrades(); 
-    }
-    
-    function editTrade(id, c) { 
-        const t = trades.find(x => x.id === id); 
-        document.getElementById('editId').value = t.id; 
-        document.getElementById('datetime').value = t.date; 
-        document.getElementById('assetInput').value = t.asset; 
-        document.getElementById('status').value = c ? 'Geschlossen' : t.status; 
-        document.getElementById('pnl').value = t.pnl; 
-        document.getElementById('imgSetup').value = t.imgSetup||''; 
-        document.getElementById('imgResult').value = t.imgResult||''; 
-        document.getElementById('note').value = t.note||''; 
-        document.getElementById('form-header').innerText=c?'BEENDEN':'BEARBEITEN'; 
-        // Set Journal
-        document.getElementById('createJournalSelect').value = t.journal || 'Standard';
-        toggleFormFields(); showView('Trade erstellen'); 
-    }
+    async function saveTrade() { const id = document.getElementById('editId').value; const asset = document.getElementById('assetInput').value.toUpperCase(); const selectedJournal = document.getElementById('createJournalSelect').value; if(!asset) return; const data = { date: document.getElementById('datetime').value, asset, status: document.getElementById('status').value, pnl: parseFloat(document.getElementById('pnl').value)||0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value, journal: selectedJournal, userId: auth.currentUser.uid }; id ? await db.collection('trades').doc(id).update(data) : await db.collection('trades').add(data); if(selectedJournal !== activeJournal) { document.getElementById('journalSelect').value = selectedJournal; changeJournal(); } showView('Übersicht'); loadTrades(); }
+    function editTrade(id, c) { const t = trades.find(x => x.id === id); document.getElementById('editId').value = t.id; document.getElementById('datetime').value = t.date; document.getElementById('assetInput').value = t.asset; document.getElementById('status').value = c ? 'Geschlossen' : t.status; document.getElementById('pnl').value = t.pnl; document.getElementById('imgSetup').value = t.imgSetup||''; document.getElementById('imgResult').value = t.imgResult||''; document.getElementById('note').value = t.note||''; document.getElementById('form-header').innerText=c?'BEENDEN':'BEARBEITEN'; document.getElementById('createJournalSelect').value = t.journal || 'Standard'; toggleFormFields(); showView('Trade erstellen'); }
     async function delTrade(id) { if(confirm('Löschen?')) { await db.collection('trades').doc(id).delete(); loadTrades(); } }
     function showView(v) { document.querySelectorAll('.view-section').forEach(s=>s.classList.remove('active')); document.getElementById('view-'+v.replace(/\s+/g, '-')).classList.add('active'); document.getElementById('view-title').innerText=v.toUpperCase(); document.getElementById('navDrawer').classList.remove('open'); if(v==='News'){const b=document.getElementById('news-box'); b.innerHTML=''; const s=document.createElement('script'); s.src="https://s3.tradingview.com/external-embedding/embed-widget-events.js"; s.async=true; s.innerHTML=JSON.stringify({"colorTheme":document.body.classList.contains('light-mode')?'light':'dark',"width":"100%","height":"100%","locale":"de"}); b.appendChild(s);} if(v==='Kalender') renderCalendar(); }
     function setFilter(f,b) { currentFilter=f; document.querySelectorAll('#filter-container .chart-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); render(); }
