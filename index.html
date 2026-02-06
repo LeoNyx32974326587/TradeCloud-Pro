@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud Pro - Dashboard Fix</title>
+    <title>TradeCloud Pro - Smart Finish</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -14,7 +14,7 @@
         .hidden { display: none !important; }
         header { display: flex; align-items: center; padding: 15px 20px; background: #161616; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
         .menu-btn { cursor: pointer; font-size: 1.6rem; color: var(--accent); background: none; border: none; padding: 10px; }
-        h4 { color: var(--accent); font-weight: 600; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1.5px; margin-bottom: 15px; margin-top: 0; }
+        h4 { color: var(--accent); font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1.5px; margin-bottom: 15px; margin-top: 0; }
         #user-greeting { font-size: 2.2rem; font-weight: 800; margin: 0; background: linear-gradient(45deg, var(--accent), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .nav-drawer { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #161616; border-right: 1px solid var(--border); transition: 0.3s ease; z-index: 200; padding-top: 80px; }
         .nav-drawer.open { left: 0; }
@@ -34,7 +34,7 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
         a { color: var(--accent); text-decoration: none; font-weight: bold; }
-        .open-trade-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #222; }
+        .open-trade-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #222; }
         .open-trade-item:last-child { border-bottom: none; }
     </style>
 </head>
@@ -80,10 +80,10 @@
             <button class="btn-small" onclick="prepareCreateView()">+ Trade erstellen</button>
         </div>
         
-        <div class="card" style="border-left: 4px solid var(--info);">
+        <div class="card" style="border-left: 4px solid var(--info); padding: 20px;">
             <h4>📍 OFFENE POSITIONEN</h4>
             <div id="open-trades-list">
-                <p style="color:#666; font-size: 0.9rem;">Keine laufenden Trades.</p>
+                <p style="color:#666; font-size: 0.85rem;">Keine laufenden Trades.</p>
             </div>
         </div>
 
@@ -99,6 +99,7 @@
             </div>
             <div style="height: 300px;"><canvas id="ovChart"></canvas></div>
         </div>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div class="card"><div>PROFIT</div><div id="ovTotal" style="font-size:2rem; font-weight:800;">0.00 €</div></div>
             <div class="card"><div>WIN RATE</div><div id="ovWinRate" style="font-size:2rem; font-weight:800;">0%</div></div>
@@ -107,13 +108,12 @@
 
     <section id="view-Trade-erstellen" class="view-section">
         <div class="card">
-            <h4>TRADE LOGGER</h4>
+            <h4 id="form-header">TRADE LOGGER</h4>
             <input type="hidden" id="editId">
             <input type="datetime-local" id="datetime">
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <select id="assetDropdown" style="flex:1; margin:0;"></select>
                 <button type="button" onclick="openAssetPopup()" class="chart-btn">+</button>
-                <button type="button" onclick="deleteCurrentAsset()" class="chart-btn" style="color:var(--danger)">X</button>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
                 <select id="status" onchange="toggleOutcomeFields()"><option value="Aktiv">Offen</option><option value="Geschlossen">Geschlossen</option></select>
@@ -136,25 +136,6 @@
                 <tbody id="tradeBody"></tbody>
             </table>
         </div>
-    </section>
-
-    <section id="view-Lot-Rechner" class="view-section">
-        <div class="card">
-            <h4>LOT RECHNER</h4>
-            <select id="calcType" onchange="calcLots()"><option value="forex">Forex (100k)</option><option value="gold">Gold (100oz)</option><option value="indices">Indizes (1.0)</option></select>
-            <input type="number" id="calcBal" placeholder="Kontostand (€)" oninput="calcLots()">
-            <input type="number" id="calcRisk" placeholder="Risiko (%)" oninput="calcLots()">
-            <input type="number" id="calcEnt" placeholder="Einstieg" oninput="calcLots()">
-            <input type="number" id="calcSl" placeholder="Stop Loss" oninput="calcLots()">
-            <div style="background:#000; padding:20px; border-radius:12px; text-align:center; margin-top:10px;">
-                <div id="lotResult" style="font-size:2.5rem; color:var(--success); font-weight:800;">0.00</div>
-                <div>LOTS</div>
-            </div>
-        </div>
-    </section>
-
-    <section id="view-News" class="view-section">
-        <div class="card" style="height:650px; padding:10px;"><div id="news-container" style="height:100%;"></div></div>
     </section>
 
     <section id="view-Einstellungen" class="view-section">
@@ -182,11 +163,7 @@
             document.getElementById('app-content').classList.remove('hidden');
             document.getElementById('main-header').classList.remove('hidden');
             document.getElementById('user-greeting').innerText = `HALLO ${user.displayName?.split(' ')[0].toUpperCase() || 'TRADER'}`;
-            
-            if(user.email.toLowerCase() === "leon.luca.lauterbach@gmail.com") {
-                document.getElementById('admin-link').classList.remove('hidden');
-                adminLoad();
-            }
+            if(user.email.toLowerCase() === "leon.luca.lauterbach@gmail.com") document.getElementById('admin-link').classList.remove('hidden');
             await syncAssets();
             loadTrades();
         }
@@ -195,7 +172,6 @@
     async function syncAssets() {
         const doc = await db.collection('userAssets').doc(auth.currentUser.uid).get();
         if(doc.exists && doc.data().assets) userAssets = doc.data().assets;
-        else await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
         updateAssetDropdown();
     }
 
@@ -211,24 +187,15 @@
     }
 
     function renderDashboard() {
-        // Offene Trades für die Übersicht filtern
         const activeTrades = trades.filter(t => t.status === 'Aktiv');
         const openList = document.getElementById('open-trades-list');
-        if(activeTrades.length > 0) {
-            openList.innerHTML = activeTrades.map(t => `
-                <div class="open-trade-item">
-                    <div>
-                        <span style="font-weight:bold; color:var(--info);">${t.asset}</span> 
-                        <span style="font-size:0.75rem; color:#888; margin-left:10px;">${t.date.split('T')[0]}</span>
-                    </div>
-                    <button onclick="editTrade('${t.id}')" class="btn-small" style="padding: 5px 10px; font-size:0.7rem;">Abschließen</button>
-                </div>
-            `).join('');
-        } else {
-            openList.innerHTML = `<p style="color:#666; font-size: 0.9rem;">Keine laufenden Trades.</p>`;
-        }
+        openList.innerHTML = activeTrades.length > 0 ? activeTrades.map(t => `
+            <div class="open-trade-item">
+                <div><span style="font-weight:bold; color:var(--info);">${t.asset}</span> <span style="font-size:0.75rem; color:#888; margin-left:10px;">${t.date.split('T')[0]}</span></div>
+                <button onclick="editTrade('${t.id}', true)" class="btn-small" style="padding: 4px 8px; font-size:0.65rem;">BEENDEN</button>
+            </div>
+        `).join('') : `<p style="color:#666; font-size: 0.85rem;">Keine laufenden Trades.</p>`;
 
-        // Statistik nur für geschlossene Trades
         let closedTrades = trades.filter(t => t.status === 'Geschlossen');
         const now = new Date();
         if(currentFilter === 'today') closedTrades = closedTrades.filter(t => new Date(t.date).toDateString() === now.toDateString());
@@ -245,43 +212,58 @@
         if(ovChart) ovChart.destroy();
         ovChart = new Chart(ctx, { type: 'line', data: { labels: closedTrades.map(t => t.date.split('T')[0]), datasets: [{ data: data, borderColor: '#bb86fc', tension: 0.3, fill: true, backgroundColor: 'rgba(187,134,252,0.1)' }] }, options: { responsive: true, maintainAspectRatio: false } });
         
-        // Historie Tabelle
         document.getElementById('tradeBody').innerHTML = trades.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
             <tr>
                 <td>${t.date.split('T')[0]}</td>
                 <td>${t.asset}</td>
                 <td><span style="color:${t.status === 'Aktiv' ? 'var(--info)' : '#888'}">${t.status === 'Aktiv' ? 'OFFEN' : 'ZUGU.'}</span></td>
-                <td style="color:${t.status === 'Aktiv' ? 'var(--text-main)' : (t.pnl >= 0 ? 'var(--success)' : 'var(--danger)')}">
-                    ${t.status === 'Aktiv' ? '-' : (t.pnl || 0).toFixed(2) + '€'}
-                </td>
-                <td>
-                    ${t.imgSetup ? `<a href="${t.imgSetup}" target="_blank">S</a>` : ''} 
-                    ${t.imgResult ? `| <a href="${t.imgResult}" target="_blank">R</a>` : ''}
-                </td>
+                <td style="color:${t.status === 'Aktiv' ? 'var(--text-main)' : (t.pnl >= 0 ? 'var(--success)' : 'var(--danger)')}">${t.status === 'Aktiv' ? '-' : (t.pnl || 0).toFixed(2) + '€'}</td>
+                <td>${t.imgSetup ? `<a href="${t.imgSetup}" target="_blank">S</a>` : ''} ${t.imgResult ? `| <a href="${t.imgResult}" target="_blank">R</a>` : ''}</td>
                 <td><button onclick="editTrade('${t.id}')" style="background:none;border:none;cursor:pointer;">✏️</button> <button onclick="deleteTrade('${t.id}')" style="background:none;border:none;cursor:pointer;">🗑️</button></td>
             </tr>
         `).join('');
     }
 
-    async function saveTrade() {
-        const id = document.getElementById('editId').value;
-        const obj = { date: document.getElementById('datetime').value, asset: document.getElementById('assetDropdown').value, status: document.getElementById('status').value, mindset: document.getElementById('mindset').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value || "", note: document.getElementById('note').value, userId: auth.currentUser.uid };
-        id ? await db.collection('trades').doc(id).update(obj) : await db.collection('trades').add(obj);
-        loadTrades(); showView('Übersicht');
-    }
-
-    function editTrade(id) {
+    // FIX: autoClose Parameter hinzugefügt
+    function editTrade(id, autoClose = false) {
         const t = trades.find(x => x.id === id);
         document.getElementById('editId').value = t.id;
         document.getElementById('datetime').value = t.date;
         updateAssetDropdown();
         document.getElementById('assetDropdown').value = t.asset;
-        document.getElementById('status').value = t.status;
+        document.getElementById('mindset').value = t.mindset || "Neutral";
         document.getElementById('pnl').value = t.pnl;
         document.getElementById('imgSetup').value = t.imgSetup || "";
         document.getElementById('imgResult').value = t.imgResult || "";
         document.getElementById('note').value = t.note || "";
-        toggleOutcomeFields(); showView('Trade erstellen');
+
+        if(autoClose) {
+            document.getElementById('status').value = 'Geschlossen';
+            document.getElementById('form-header').innerText = 'TRADE ABSCHLIESSEN';
+        } else {
+            document.getElementById('status').value = t.status;
+            document.getElementById('form-header').innerText = 'TRADE LOGGER';
+        }
+
+        toggleOutcomeFields(); 
+        showView('Trade erstellen');
+    }
+
+    async function saveTrade() {
+        const id = document.getElementById('editId').value;
+        const obj = { 
+            date: document.getElementById('datetime').value, 
+            asset: document.getElementById('assetDropdown').value, 
+            status: document.getElementById('status').value, 
+            mindset: document.getElementById('mindset').value, 
+            pnl: parseFloat(document.getElementById('pnl').value) || 0, 
+            imgSetup: document.getElementById('imgSetup').value, 
+            imgResult: document.getElementById('imgResult').value || "", 
+            note: document.getElementById('note').value, 
+            userId: auth.currentUser.uid 
+        };
+        id ? await db.collection('trades').doc(id).update(obj) : await db.collection('trades').add(obj);
+        loadTrades(); showView('Übersicht');
     }
 
     function showView(v) {
@@ -290,7 +272,9 @@
         if(document.getElementById(targetId)) document.getElementById(targetId).classList.add('active');
         document.getElementById('view-title').innerText = v.toUpperCase();
         document.getElementById('navDrawer').classList.remove('open');
-        if(v === 'Trade erstellen' || v === 'Übersicht') updateAssetDropdown();
+        if(v === 'Trade erstellen') {
+            if(!document.getElementById('editId').value) document.getElementById('form-header').innerText = 'TRADE LOGGER';
+        }
     }
 
     function openAssetPopup() { document.getElementById('asset-popup').classList.remove('hidden'); }
@@ -303,37 +287,20 @@
             document.getElementById('newAssetName').value = ''; closeAssetPopup();
         }
     }
-    async function deleteCurrentAsset() {
-        const val = document.getElementById('assetDropdown').value;
-        if(val && confirm(`${val} löschen?`)) {
-            userAssets = userAssets.filter(a => a !== val); updateAssetDropdown();
-            await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
-        }
-    }
 
     function setQuickFilter(f, btn) { currentFilter = f; document.querySelectorAll('#filter-container .chart-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderDashboard(); }
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
     function toggleOutcomeFields() { document.getElementById('pnlWrapper').classList.toggle('hidden', document.getElementById('status').value !== 'Geschlossen'); }
-    function prepareCreateView() { document.getElementById('editId').value = ""; document.getElementById('datetime').value = new Date().toISOString().slice(0,16); updateAssetDropdown(); toggleOutcomeFields(); showView('Trade erstellen'); }
+    function prepareCreateView() { 
+        document.getElementById('editId').value = ""; 
+        document.getElementById('form-header').innerText = 'TRADE LOGGER';
+        document.getElementById('datetime').value = new Date().toISOString().slice(0,16); 
+        document.getElementById('status').value = 'Aktiv';
+        updateAssetDropdown(); toggleOutcomeFields(); showView('Trade erstellen'); 
+    }
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function handleLogout() { auth.signOut().then(() => location.reload()); }
     async function deleteTrade(id) { if(confirm('Löschen?')) { await db.collection('trades').doc(id).delete(); loadTrades(); } }
-    
-    function calcLots() {
-        const bal = parseFloat(document.getElementById('calcBal').value), risk = parseFloat(document.getElementById('calcRisk').value), ent = parseFloat(document.getElementById('calcEnt').value), sl = parseFloat(document.getElementById('calcSl').value), type = document.getElementById('calcType').value;
-        if(bal && ent && sl && ent !== sl) {
-            const riskEur = bal * (risk/100), diff = Math.abs(ent - sl);
-            let lots = (type === 'forex') ? riskEur / (diff * 100000) : (type === 'gold' ? riskEur / (diff * 100) : riskEur / diff);
-            document.getElementById('lotResult').innerText = lots.toFixed(2);
-        }
-    }
-
-    async function adminLoad() {
-        const snap = await db.collection('members').get();
-        document.getElementById('admin-list').innerHTML = snap.docs.map(doc => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #333;"><span>${doc.data().email}</span><button onclick="adminDel('${doc.id}')" style="background:none; border:none; color:var(--danger); cursor:pointer;">Del</button></div>`).join('');
-    }
-    async function adminAdd() { const e = document.getElementById('adminEmailInput').value.toLowerCase().trim(); if(e) { await db.collection('members').add({ email: e }); document.getElementById('adminEmailInput').value = ''; adminLoad(); } }
-    async function adminDel(id) { if(confirm('Löschen?')) { await db.collection('members').doc(id).delete(); adminLoad(); } }
 </script>
 </body>
 </html>
