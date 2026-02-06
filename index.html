@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Filter & Calc Fix</title>
+    <title>TradeCloud Pro - Secure Login</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -32,7 +32,7 @@
         /* BUTTONS & INPUTS */
         input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; font-family: inherit; font-size: 16px; }
         
-        /* Filter Button Style - etwas kompakter für Mobile */
+        /* Filter Button Style */
         .chart-btn { background: #222; border: 1px solid #333; color: white; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; text-decoration: none; display: inline-block; margin: 2px 0; min-width: 30px; text-align: center; }
         .chart-btn.active { background: var(--accent); color: black; font-weight: bold; }
         
@@ -61,6 +61,7 @@
     <div class="card" style="text-align: center; width: 300px; border: 1px solid var(--accent);">
         <h2 style="color: var(--accent); letter-spacing: 2px;">TRADECLOUD</h2>
         <button onclick="loginGoogle()" class="btn-primary">LOGIN</button>
+        <p style="color: #666; font-size: 0.8rem; margin-top: 10px;">Nur für zugelassene Mitglieder</p>
     </div>
 </div>
 
@@ -206,7 +207,8 @@
     <section id="view-Einstellungen" class="view-section">
         <div class="card">
             <h4>ADMIN</h4>
-            <input type="email" id="admEmail" placeholder="E-Mail">
+            <p style="color:#888; font-size:0.9rem;">Füge Mitglieder hinzu, damit sie sich einloggen können.</p>
+            <input type="email" id="admEmail" placeholder="E-Mail des Mitglieds">
             <button onclick="admAdd()" class="btn-primary">Hinzufügen</button>
             <div id="admList" style="margin-top:20px;"></div>
         </div>
@@ -220,18 +222,44 @@
 
     let trades = [], ovChart = null, currentFilter = 'all';
 
+    // AUTH CHECK MIT WHITELIST
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            document.getElementById('auth-overlay').classList.add('hidden');
-            document.getElementById('app-content').classList.remove('hidden');
-            document.getElementById('main-header').classList.remove('hidden');
-            document.getElementById('user-greeting').innerText = `HALLO ${user.displayName?.split(' ')[0].toUpperCase() || 'TRADER'}`;
-            if(user.email.toLowerCase() === "leon.luca.lauterbach@gmail.com") {
-                document.getElementById('admin-link').classList.remove('hidden');
-                admLoad();
+            // Check Admin Hardcode
+            const isAdmin = user.email.toLowerCase() === "leon.luca.lauterbach@gmail.com";
+            
+            let isAllowed = isAdmin;
+            
+            if(!isAllowed) {
+                // Check Firestore Whitelist
+                try {
+                    const snap = await db.collection('members').where('email', '==', user.email).get();
+                    if(!snap.empty) isAllowed = true;
+                } catch(e) {
+                    console.error("Auth check failed", e);
+                }
             }
-            await loadTrades();
-            setInterval(loadTrades, 5000);
+
+            if(isAllowed) {
+                // ZUGRIFF ERLAUBT
+                document.getElementById('auth-overlay').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+                document.getElementById('main-header').classList.remove('hidden');
+                document.getElementById('user-greeting').innerText = `HALLO ${user.displayName?.split(' ')[0].toUpperCase() || 'TRADER'}`;
+                
+                if(isAdmin) {
+                    document.getElementById('admin-link').classList.remove('hidden');
+                    admLoad();
+                }
+                
+                await loadTrades();
+                setInterval(loadTrades, 5000);
+            } else {
+                // ZUGRIFF VERWEIGERT
+                alert("Kein Zugriff! Dein Account wurde vom Admin nicht freigeschaltet.");
+                await auth.signOut();
+                location.reload();
+            }
         }
     });
 
@@ -243,7 +271,6 @@
     }
 
     function render() {
-        // Offene Trades
         const open = trades.filter(t => t.status === 'Aktiv');
         document.getElementById('open-trades-list').innerHTML = open.length ? open.map(t => `
             <div class="open-trade-item">
@@ -256,7 +283,6 @@
             </div>
         `).join('') : '<p style="color:#555;">Keine aktiven Trades.</p>';
 
-        // Filter Logic
         let closed = trades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -275,7 +301,6 @@
             closed = closed.filter(t => new Date(t.date).getFullYear() === now.getFullYear());
         }
 
-        // Stats & Chart
         let sum = 0, wins = 0;
         const points = closed.map(t => { sum += t.pnl; if(t.pnl > 0) wins++; return sum; });
         document.getElementById('ovTotal').innerText = sum.toFixed(2) + " €";
@@ -286,7 +311,6 @@
         if(ovChart) ovChart.destroy();
         ovChart = new Chart(ctx, { type: 'line', data: { labels: closed.map(t => t.date.split('T')[0]), datasets: [{ data: points, borderColor: '#bb86fc', backgroundColor: 'rgba(187, 134, 252, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } } });
 
-        // Table
         document.getElementById('tradeBody').innerHTML = trades.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
             <tr>
                 <td>${t.date.split('T')[0]}</td>
@@ -302,7 +326,6 @@
         `).join('');
     }
 
-    // CRUD & Other
     async function saveTrade() {
         const id = document.getElementById('editId').value;
         const assetVal = document.getElementById('assetInput').value.toUpperCase();
@@ -374,7 +397,6 @@
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function handleLogout() { auth.signOut().then(() => location.reload()); }
     
-    // CALCULATOR LOGIC
     function updateContractSize() {
         const type = document.getElementById('cType').value;
         const sizeInput = document.getElementById('cSize');
@@ -392,11 +414,7 @@
         if(bal && riskPerc && entry && sl && size) {
             const riskAmount = bal * (riskPerc / 100);
             const distance = Math.abs(entry - sl);
-            // Formel: Risk / (Distanz * ContractSize)
-            // Beispiel Forex: 100€ Risk / (0.0010 Dist * 100000) = 1 Lot
-            // Beispiel DAX: 100€ Risk / (20 Punkte * 1) = 5 Lots (bei 1€ Punktwert)
             const lots = riskAmount / (distance * size);
-            
             document.getElementById('cRes').innerText = lots.toFixed(2) + " Lot";
             document.getElementById('cRiskAmount').innerText = "Risiko Betrag: " + riskAmount.toFixed(2) + " €";
         }
