@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeCloud Pro LeoNyx</title>
+    <title>TradeCloud LeoNyx</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -31,8 +31,16 @@
         input, select, textarea { background: #0a0a0a; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; }
         .btn-primary { background: var(--accent); color: black; padding: 16px; border: none; font-weight: 800; cursor: pointer; border-radius: 10px; width: 100%; }
         .btn-small { background: var(--accent); color: black; padding: 10px 20px; border: none; font-weight: 700; cursor: pointer; border-radius: 8px; font-size: 0.9rem; text-transform: uppercase; }
+        
+        /* Asset Manager Styles */
         .asset-manager { display: flex; gap: 8px; align-items: center; }
-        .asset-manager button { background: #222; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; cursor: pointer; }
+        .asset-manager button { background: #222; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .asset-manager button:hover { background: #333; border-color: var(--accent); }
+        
+        /* Asset Popup Styles */
+        #asset-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        .popup-content { background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--accent); width: 300px; text-align: center; }
+        
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         .btn-close-trade { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
@@ -40,9 +48,20 @@
 </head>
 <body>
 
+<div id="asset-popup" class="hidden">
+    <div class="popup-content">
+        <h4 style="margin-bottom: 20px;">Asset hinzufügen</h4>
+        <input type="text" id="newAssetName" placeholder="z.B. NAS100" style="margin-bottom: 20px; text-align: center; text-transform: uppercase;">
+        <div style="display: flex; gap: 10px;">
+            <button onclick="closeAssetPopup()" class="chart-btn" style="flex: 1;">Abbrechen</button>
+            <button onclick="confirmAddAsset()" class="btn-small" style="flex: 1;">OK</button>
+        </div>
+    </div>
+</div>
+
 <div id="auth-overlay">
     <div class="auth-box">
-        <h2 style="color: var(--accent); margin-bottom: 30px;">TradeCloud LeoNyx</h2>
+        <h2 style="color: var(--accent); margin-bottom: 30px;">TradeCloud</h2>
         <button onclick="loginGoogle()" class="btn-primary" style="background:white; color:#444; display:flex; align-items:center; justify-content:center; gap:10px;">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Login
         </button>
@@ -101,7 +120,7 @@
                 
                 <div class="asset-manager">
                     <select id="assetDropdown"></select>
-                    <button type="button" onclick="addNewAsset()" title="Asset hinzufügen">+</button>
+                    <button type="button" onclick="openAssetPopup()" title="Asset hinzufügen">+</button>
                     <button type="button" onclick="deleteCurrentAsset()" title="Asset löschen">🗑️</button>
                 </div>
 
@@ -159,10 +178,7 @@
             document.getElementById('app-content').classList.remove('hidden');
             document.getElementById('main-header').classList.remove('hidden');
             document.getElementById('user-greeting').innerText = `HALLO ${user.displayName?.split(' ')[0].toUpperCase() || 'TRADER'}`;
-            if(user.email.toLowerCase() === adminEmail) {
-                document.getElementById('admin-link').classList.remove('hidden');
-                loadMembers();
-            }
+            if(user.email.toLowerCase() === adminEmail) loadMembers();
             await loadUserAssets();
             loadTrades();
             updateNewsWidget();
@@ -171,7 +187,30 @@
         }
     });
 
-    // ASSET LOGIK
+    // ASSET POPUP LOGIK
+    function openAssetPopup() {
+        document.getElementById('asset-popup').classList.remove('hidden');
+        document.getElementById('newAssetName').focus();
+    }
+
+    function closeAssetPopup() {
+        document.getElementById('asset-popup').classList.add('hidden');
+        document.getElementById('newAssetName').value = '';
+    }
+
+    async function confirmAddAsset() {
+        const name = document.getElementById('newAssetName').value.toUpperCase().trim();
+        if (name && !userAssets.includes(name)) {
+            userAssets.push(name);
+            await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
+            renderAssetDropdown();
+            document.getElementById('assetDropdown').value = name;
+            closeAssetPopup();
+        } else if (userAssets.includes(name)) {
+            alert("Asset existiert bereits!");
+        }
+    }
+
     async function loadUserAssets() {
         const snap = await db.collection('userAssets').doc(auth.currentUser.uid).get();
         if (snap.exists && snap.data().assets) {
@@ -183,19 +222,6 @@
     function renderAssetDropdown() {
         const dd = document.getElementById('assetDropdown');
         dd.innerHTML = userAssets.map(a => `<option value="${a}">${a}</option>`).join('');
-    }
-
-    async function addNewAsset() {
-        const name = prompt("Neues Asset Name (z.B. NAS100):");
-        if (name && name.trim() !== "") {
-            const upperName = name.toUpperCase().trim();
-            if(!userAssets.includes(upperName)) {
-                userAssets.push(upperName);
-                await db.collection('userAssets').doc(auth.currentUser.uid).set({ assets: userAssets });
-                renderAssetDropdown();
-                document.getElementById('assetDropdown').value = upperName;
-            }
-        }
     }
 
     async function deleteCurrentAsset() {
@@ -211,7 +237,7 @@
     function setQuickFilter(m) {
         const now = new Date(); let start = new Date();
         document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
+        if(event) event.target.classList.add('active');
         
         if(m==='today') start.setHours(0,0,0,0);
         else if(m==='week') start.setDate(now.getDate()-7);
@@ -278,7 +304,6 @@
         });
     }
 
-    // AUTH & HELPER
     async function saveTrade() {
         const id = document.getElementById('editId').value;
         const data = { date: document.getElementById('datetime').value, asset: document.getElementById('assetDropdown').value, status: document.getElementById('status').value, mindset: document.getElementById('mindset').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value, userId: auth.currentUser.uid };
