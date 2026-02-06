@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Multi Journal</title>
+    <title>TradeCloud Pro - Single Select & Edit</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -70,6 +70,7 @@
         
         .btn-primary { background: var(--accent); color: #000; padding: 14px; border: none; font-weight: 800; border-radius: 8px; width: 100%; cursor: pointer; text-transform: uppercase; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; }
+        .btn-cancel { background: #333; color: white; margin-top: 10px; font-size: 0.9rem; padding: 10px; }
         
         /* --- TABLE --- */
         .table-wrapper { overflow-x: auto; }
@@ -82,6 +83,7 @@
         .icon-btn { background: none; border: none; cursor: pointer; padding: 5px; color: var(--text-muted); font-size: 1.1rem; }
         .icon-btn:hover { color: var(--text-main); }
         .trash-btn:hover { color: var(--danger); }
+        .edit-btn:hover { color: var(--accent); }
         
         /* --- POPUPS --- */
         #auth-overlay, #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -117,7 +119,7 @@
     
     <div class="nav-sep"></div>
     
-    <div class="nav-label">Journal Filter</div>
+    <div class="nav-label">Journal Auswahl</div>
     <select id="sidebarJournalSelect" class="journal-select" onchange="changeSidebarFilter(this.value)">
         </select>
     
@@ -188,7 +190,7 @@
                     <button class="icon-btn" onclick="changeCalMonth(1)">❯</button>
                 </div>
             </div>
-            <div style="font-size:0.8rem; color:var(--accent); margin-bottom:10px;" id="cal-filter-label">Filter: Alle</div>
+            <div style="font-size:0.8rem; color:var(--accent); margin-bottom:10px;" id="cal-filter-label"></div>
             
             <div class="cal-grid" style="grid-template-rows:20px;">
                 <div style="text-align:center; color:#666;">Mo</div><div style="text-align:center; color:#666;">Di</div><div style="text-align:center; color:#666;">Mi</div>
@@ -201,7 +203,7 @@
     <section id="view-Historie" class="view-section">
         <div class="card">
             <h3>Journal Historie</h3>
-            <div style="font-size:0.8rem; color:var(--accent); margin-bottom:15px;" id="hist-filter-label">Filter: Alle</div>
+            <div style="font-size:0.8rem; color:var(--accent); margin-bottom:15px;" id="hist-filter-label"></div>
             <div class="table-wrapper">
                 <table>
                     <thead><tr><th>Datum</th><th>Asset</th><th>Status</th><th>P&L</th><th>Action</th></tr></thead>
@@ -242,15 +244,16 @@
             
             <hr style="border-color:var(--border); opacity:0.3; margin:20px 0;">
             
-            <h4>Neues Journal erstellen</h4>
-            <input type="text" id="newJName" placeholder="Name (z.B. Main Account)">
+            <h4 id="settings-form-title">Neues Journal erstellen</h4>
+            <input type="hidden" id="editJournalId"> <input type="text" id="newJName" placeholder="Name (z.B. Main Account)">
             <input type="number" id="newJStart" placeholder="Startkapital (€)">
             <label style="font-size:0.8rem;">Max Tagesverlust Warnung</label>
             <div style="display:flex; gap:10px;">
                 <input type="number" id="newJMaxLoss" placeholder="Wert">
                 <select id="newJLossType" style="width:100px;"><option value="eur">€</option><option value="perc">%</option></select>
             </div>
-            <button onclick="addJournal()" class="btn-primary">Erstellen</button>
+            <button onclick="saveJournalConfig()" id="btn-save-journal" class="btn-primary">Erstellen</button>
+            <button onclick="cancelEditJournal()" id="btn-cancel-edit" class="btn-cancel hidden">Abbrechen</button>
         </div>
     </section>
 
@@ -283,9 +286,9 @@
     const auth = firebase.auth(), db = firebase.firestore();
 
     // STATE
-    let myJournals = []; // [{id, name, hidden, maxLoss, lossType, startCap}]
+    let myJournals = []; 
     let myTrades = [];
-    let currentFilter = 'ALL'; // Journal ID for sidebar filter
+    let currentFilter = ''; // ID des aktiven Journals
     let calDate = new Date();
 
     // INIT
@@ -296,7 +299,6 @@
             const email = user.email.toLowerCase();
             const isAdmin = email === 'leon.luca.lauterbach@gmail.com';
             
-            // Check Access
             let allowed = isAdmin;
             if(!allowed) {
                 const s = await db.collection('members').where('email','==',email).get();
@@ -334,6 +336,11 @@
             myJournals.push({id:ref.id, name:'Main Account', hidden:false, startCap:0, maxLoss:0, lossType:'eur'});
         }
 
+        // Set default filter to first journal if not set or invalid
+        if(!currentFilter || !myJournals.find(j=>j.id===currentFilter)) {
+            currentFilter = myJournals[0].id;
+        }
+
         // 2. Load Trades
         const tSnap = await db.collection('trades').where('userId','==',uid).get();
         myTrades = tSnap.docs.map(d => ({id:d.id, ...d.data()}));
@@ -343,21 +350,18 @@
         renderDashboard();
     }
 
-    // --- DASHBOARD RENDERER ---
+    // --- DASHBOARD RENDERER (ALL STACKED) ---
     function renderDashboard() {
         const container = document.getElementById('dashboard-container');
         container.innerHTML = '';
 
-        // Filter out hidden journals
         const visibleJournals = myJournals.filter(j => !j.hidden);
 
         visibleJournals.forEach(j => {
-            // Get trades for this journal
             const jTrades = myTrades.filter(t => t.journalId === j.id);
             const closed = jTrades.filter(t => t.status === 'Geschlossen').sort((a,b)=>new Date(a.date)-new Date(b.date));
             const open = jTrades.filter(t => t.status === 'Aktiv');
 
-            // Stats
             let pnl = 0; let wins = 0;
             const dataPoints = closed.map(t => { pnl+=t.pnl; if(t.pnl>0)wins++; return pnl; });
             const winRate = closed.length ? (wins/closed.length*100).toFixed(0) : 0;
@@ -367,7 +371,6 @@
             if(j.maxLoss > 0) {
                 const today = new Date().toDateString();
                 const todayPnl = closed.filter(t => new Date(t.date).toDateString() === today).reduce((acc, t) => acc + t.pnl, 0);
-                
                 let limit = j.maxLoss;
                 if(j.lossType === 'perc' && j.startCap > 0) limit = j.startCap * (j.maxLoss/100);
 
@@ -376,7 +379,6 @@
                 }
             }
 
-            // HTML Structure
             const section = document.createElement('div');
             section.className = 'journal-section';
             section.innerHTML = `
@@ -389,7 +391,6 @@
                     <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:8px; padding:10px; height:250px;">
                         <canvas id="chart-${j.id}"></canvas>
                     </div>
-                    
                     <div>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
                             <div class="stat-box"><div class="stat-val" style="color:${pnl>=0?'var(--success)':'var(--danger)'}">${pnl.toFixed(2)}€</div><div class="stat-lbl">Gesamt P&L</div></div>
@@ -409,7 +410,6 @@
             `;
             container.appendChild(section);
 
-            // Chart Init
             new Chart(document.getElementById(`chart-${j.id}`), {
                 type: 'line',
                 data: { labels: closed.map(t=>''), datasets: [{ data: dataPoints, borderColor: '#bb86fc', tension: 0.1, pointRadius:0 }] },
@@ -430,9 +430,10 @@
         document.getElementById('inpStatus').value = "Aktiv";
         toggleFields();
         
-        // Journal Select füllen
+        // Populate Journal Select - Default to current sidebar filter
         const sel = document.getElementById('inpJournalSelect');
         sel.innerHTML = myJournals.map(j => `<option value="${j.id}">${j.name}</option>`).join('');
+        if(currentFilter && myJournals.find(j=>j.id===currentFilter)) sel.value = currentFilter;
         
         showView('Trade-erstellen');
     }
@@ -469,8 +470,6 @@
     function editTrade(id) {
         const t = myTrades.find(x => x.id === id);
         document.getElementById('editId').value = t.id;
-        
-        // Ensure Journal Select Options exist
         const sel = document.getElementById('inpJournalSelect');
         sel.innerHTML = myJournals.map(j => `<option value="${j.id}">${j.name}</option>`).join('');
         sel.value = t.journalId;
@@ -491,13 +490,14 @@
         if(confirm("Löschen?")) { await db.collection('trades').doc(id).delete(); loadData(); }
     }
 
-    // --- SIDEBAR FILTER & VIEWS ---
+    // --- SIDEBAR & FILTERS ---
     function populateSelectors() {
-        // Sidebar Select
+        // Sidebar: ONLY existing journals (No "All")
         const sb = document.getElementById('sidebarJournalSelect');
-        sb.innerHTML = `<option value="ALL">Alle Journals</option>` + myJournals.map(j => `<option value="${j.id}">${j.name}</option>`).join('');
-        
-        // Settings List
+        sb.innerHTML = myJournals.map(j => `<option value="${j.id}">${j.name}</option>`).join('');
+        sb.value = currentFilter;
+
+        // Settings List with EDIT functionality
         const sl = document.getElementById('settings-journals-list');
         sl.innerHTML = myJournals.map(j => `
             <div style="background:var(--input-bg); padding:10px; margin-bottom:5px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
@@ -506,6 +506,7 @@
                     <small>Start: ${j.startCap}€ | Limit: ${j.maxLoss}${j.lossType==='eur'?'€':'%'}</small>
                 </div>
                 <div>
+                    <button class="icon-btn edit-btn" onclick="prepareEditJournal('${j.id}')">✏️</button>
                     <button class="icon-btn" onclick="toggleHideJournal('${j.id}', ${!j.hidden})">${j.hidden?'👁️':'🚫'}</button>
                     <button class="icon-btn trash-btn" onclick="deleteJournal('${j.id}')">🗑️</button>
                 </div>
@@ -515,18 +516,88 @@
 
     function changeSidebarFilter(val) {
         currentFilter = val;
-        // Update Label
-        const name = val === 'ALL' ? 'Alle' : myJournals.find(j=>j.id===val)?.name;
-        const els = document.querySelectorAll('#cal-filter-label, #hist-filter-label');
-        els.forEach(e => e.innerText = "Filter: " + name);
+        // Update Filter Labels
+        const name = myJournals.find(j=>j.id===val)?.name || '-';
+        document.getElementById('cal-filter-label').innerText = "Aktives Journal: " + name;
+        document.getElementById('hist-filter-label').innerText = "Aktives Journal: " + name;
         
-        // Refresh active view
         const active = document.querySelector('.view-section.active').id;
         if(active === 'view-Kalender') renderCalendar();
         if(active === 'view-Historie') renderHistory();
     }
 
-    // --- CALENDAR & HISTORY ---
+    // --- JOURNAL SETTINGS (CREATE & EDIT) ---
+    function prepareEditJournal(id) {
+        const j = myJournals.find(x => x.id === id);
+        if(!j) return;
+        
+        document.getElementById('editJournalId').value = id;
+        document.getElementById('newJName').value = j.name;
+        document.getElementById('newJStart').value = j.startCap;
+        document.getElementById('newJMaxLoss').value = j.maxLoss;
+        document.getElementById('newJLossType').value = j.lossType;
+        
+        document.getElementById('settings-form-title').innerText = "Journal bearbeiten";
+        document.getElementById('btn-save-journal').innerText = "Änderungen speichern";
+        document.getElementById('btn-cancel-edit').classList.remove('hidden');
+    }
+
+    function cancelEditJournal() {
+        document.getElementById('editJournalId').value = "";
+        document.getElementById('newJName').value = "";
+        document.getElementById('newJStart').value = "";
+        document.getElementById('newJMaxLoss').value = "";
+        document.getElementById('settings-form-title').innerText = "Neues Journal erstellen";
+        document.getElementById('btn-save-journal').innerText = "Erstellen";
+        document.getElementById('btn-cancel-edit').classList.add('hidden');
+    }
+
+    async function saveJournalConfig() {
+        const id = document.getElementById('editJournalId').value;
+        const name = document.getElementById('newJName').value;
+        if(!name) return alert("Name fehlt");
+        
+        const data = {
+            userId: auth.currentUser.uid,
+            name: name,
+            startCap: parseFloat(document.getElementById('newJStart').value)||0,
+            maxLoss: parseFloat(document.getElementById('newJMaxLoss').value)||0,
+            lossType: document.getElementById('newJLossType').value,
+        };
+
+        if(id) {
+            // Update existing
+            await db.collection('journals').doc(id).update(data);
+        } else {
+            // Create new
+            data.hidden = false;
+            await db.collection('journals').add(data);
+        }
+        
+        cancelEditJournal(); // Reset form
+        loadData();
+    }
+
+    async function toggleHideJournal(id, state) {
+        await db.collection('journals').doc(id).update({hidden: state});
+        loadData();
+    }
+
+    async function deleteJournal(id) {
+        if(confirm("Journal und ALLE TRADES löschen?")) {
+            await db.collection('journals').doc(id).delete();
+            const batch = db.batch();
+            const trades = await db.collection('trades').where('journalId','==',id).get();
+            trades.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            
+            // Falls das gelöschte das aktive war, reset filter
+            if(currentFilter === id) currentFilter = '';
+            loadData();
+        }
+    }
+
+    // --- CALENDAR & HISTORY (SINGLE JOURNAL ONLY) ---
     function changeCalMonth(dir) { calDate.setMonth(calDate.getMonth()+dir); renderCalendar(); }
     
     function renderCalendar() {
@@ -537,8 +608,8 @@
         const fd = new Date(y,m,1).getDay(); const start = fd===0?6:fd-1;
         const ld = new Date(y,m+1,0).getDate();
 
-        // Filter Trades
-        const filtered = myTrades.filter(t => currentFilter==='ALL' || t.journalId===currentFilter);
+        // STRICT FILTER: Only currentFilter Journal
+        const filtered = myTrades.filter(t => t.journalId === currentFilter);
 
         for(let i=0; i<start; i++) grid.innerHTML += '<div></div>';
         
@@ -558,7 +629,8 @@
     }
 
     function renderHistory() {
-        const filtered = myTrades.filter(t => currentFilter==='ALL' || t.journalId===currentFilter).sort((a,b)=>new Date(b.date)-new Date(a.date));
+        // STRICT FILTER
+        const filtered = myTrades.filter(t => t.journalId === currentFilter).sort((a,b)=>new Date(b.date)-new Date(a.date));
         
         document.getElementById('hist-body').innerHTML = filtered.map(t => `
             <tr>
@@ -572,41 +644,6 @@
                 </td>
             </tr>
         `).join('');
-    }
-
-    // --- JOURNAL SETTINGS ---
-    async function addJournal() {
-        const name = document.getElementById('newJName').value;
-        if(!name) return;
-        const data = {
-            userId: auth.currentUser.uid,
-            name: name,
-            startCap: parseFloat(document.getElementById('newJStart').value)||0,
-            maxLoss: parseFloat(document.getElementById('newJMaxLoss').value)||0,
-            lossType: document.getElementById('newJLossType').value,
-            hidden: false
-        };
-        await db.collection('journals').add(data);
-        // Clear
-        document.getElementById('newJName').value = "";
-        loadData();
-    }
-
-    async function toggleHideJournal(id, state) {
-        await db.collection('journals').doc(id).update({hidden: state});
-        loadData();
-    }
-
-    async function deleteJournal(id) {
-        if(confirm("Journal und alle zugehörigen Trades löschen?")) {
-            await db.collection('journals').doc(id).delete();
-            // Optional: Delete trades linked to this journal
-            const batch = db.batch();
-            const trades = await db.collection('trades').where('journalId','==',id).get();
-            trades.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-            loadData();
-        }
     }
 
     // --- UTILS & ADMIN ---
@@ -628,6 +665,19 @@
         }
     }
     
+    function changeSidebarFilter(val) {
+        currentFilter = val;
+        // Label Update
+        const name = myJournals.find(j=>j.id===val)?.name || '-';
+        document.getElementById('cal-filter-label').innerText = "Aktives Journal: " + name;
+        document.getElementById('hist-filter-label').innerText = "Aktives Journal: " + name;
+
+        // Refresh View
+        const active = document.querySelector('.view-section.active').id;
+        if(active === 'view-Kalender') renderCalendar();
+        if(active === 'view-Historie') renderHistory();
+    }
+
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); }
     function setTheme(m) { if(m==='light')document.body.classList.add('light-mode'); else document.body.classList.remove('light-mode'); localStorage.setItem('theme',m); }
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
