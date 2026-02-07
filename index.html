@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Final Clean</title>
+    <title>TradeCloud Pro - Dashboard Reset</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -87,12 +87,6 @@
         .ot-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         .loss-warning { background: rgba(255, 61, 0, 0.15); border-left: 4px solid var(--danger); color: var(--danger); padding: 10px 15px; font-size: 0.9rem; font-weight: bold; margin: 0 20px 10px 20px; display: flex; align-items: center; gap: 10px; border-radius: 4px; }
         
-        .card-filters { display: flex; gap: 5px; padding: 10px 20px; border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-        .card-filters::-webkit-scrollbar { display: none; }
-        .filter-pill { padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer; color: var(--text-sub); border: 1px solid transparent; background: transparent; transition: 0.2s; white-space: nowrap; text-transform: uppercase; }
-        .filter-pill:hover { background: rgba(255,255,255,0.05); }
-        .filter-pill.active { background: rgba(187, 134, 252, 0.15); color: var(--accent); border-color: var(--accent); }
-
         @media (max-width: 768px) { .jfc-body-grid { grid-template-columns: 1fr; } .jfc-chart-area { height: 220px; } }
 
         /* --- POPUPS & MODALS --- */
@@ -259,24 +253,6 @@
         </div>
         <div id="td-content">
             </div>
-    </div>
-
-    <div id="date-range-modal" class="modal-base hidden">
-        <div class="dv-header">
-            <span class="popup-title">Zeitraum wählen</span>
-            <button class="popup-close" onclick="closePopup()">✕</button>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:15px;">
-            <div>
-                <label style="display:block; margin-bottom:5px; color:var(--text-sub); font-size:0.8rem;">VON</label>
-                <input type="date" id="custom-start">
-            </div>
-            <div>
-                <label style="display:block; margin-bottom:5px; color:var(--text-sub); font-size:0.8rem;">BIS</label>
-                <input type="date" id="custom-end">
-            </div>
-            <button onclick="applyCustomDate()" class="btn-primary">ANWENDEN</button>
-        </div>
     </div>
 
     <div id="share-modal" class="modal-base hidden">
