@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Fixed Colors</title>
+    <title>TradeCloud Pro - Journal Fix</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- THEMES & COLORS (FIXED) --- */
+        /* --- THEMES & COLORS --- */
         :root { 
-            --bg-dark: #050505; /* Back to comfortable dark grey */
+            --bg-dark: #050505; 
             --card-bg: #121212; 
             --cell-bg: #1e1e1e;
             --text-main: #e0e0e0; 
@@ -21,7 +21,7 @@
             --danger: #ff3d00; 
             --border: #2c2c2c; 
             --blur: 0px;
-            --popup-bg: #181818; /* Popup slightly lighter than card */
+            --popup-bg: #1a1a1a; 
             
             --chat-me: #2a2a2a; 
             --chat-other: #111;
@@ -83,7 +83,7 @@
         /* --- POPUP OVERLAY --- */
         #popup-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
             z-index: 999; display: none; justify-content: center; align-items: center;
             opacity: 0; transition: opacity 0.3s ease;
         }
@@ -92,7 +92,7 @@
         /* --- MODAL BASE --- */
         .modal-base {
             width: 100%; max-width: 500px;
-            background: var(--popup-bg); /* Use Theme Color */
+            background: var(--popup-bg); /* Adaptive Theme Color */
             color: var(--text-main);
             border-radius: 16px;
             border: 1px solid var(--border);
@@ -102,29 +102,50 @@
             position: relative;
         }
 
-        /* --- POPUP SPECIFIC CONTENT --- */
+        /* --- CALENDAR POPUP SPECIAL DESIGN (Black) --- */
+        #day-detail-view {
+            background: #000000 !important; /* Force Black */
+            color: #ffffff !important;
+            border: 1px solid #333;
+        }
+        /* Override child elements in day view to be dark */
+        #day-detail-view .trades-list-card { background: #151517; border-color: #2c2c2e; }
+        #day-detail-view .trade-row, #day-detail-view .trade-row-header { border-bottom-color: #2c2c2e; }
+        #day-detail-view .tr-date, #day-detail-view .tr-sym, #day-detail-view .dv-stat-val, #day-detail-view .popup-title, #day-detail-view #dv-date-title { color: #ffffff; }
+
+        /* --- POPUP CONTENT --- */
         .dv-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .dv-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
         .dv-stat-item { display: flex; flex-direction: column; }
         .dv-stat-label { color: var(--text-sub); font-size: 0.85rem; margin-bottom: 4px; }
         .dv-stat-val { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+        .closed-trades-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; margin-top: 10px; }
+
+        /* --- JOURNAL TABLE FIX --- */
+        .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: var(--text-main); }
+        .hist-table th { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border); color: var(--text-sub); font-weight: 600; }
+        .hist-table td { padding: 10px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); }
+        .hist-table tr:hover { background: rgba(255,255,255,0.03); }
+        .hist-table tr:last-child td { border-bottom: none; }
         
-        .closed-trades-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; margin-top: 10px; color: var(--text-main); }
-        
-        /* Trade List in Popup */
+        .hist-thumb, .dash-thumb { width: 30px; height: 20px; object-fit: cover; border-radius: 3px; border: 1px solid var(--border); vertical-align: middle; margin: 0 5px; transition: transform 0.2s; cursor: pointer; }
+        .hist-thumb:hover, .dash-thumb:hover { transform: scale(3.5); z-index: 100; border-color: var(--accent); position: relative; }
+        .note-cell { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-sub); cursor: help; }
+        .time-sub { display: block; font-size: 0.7rem; color: var(--text-sub); margin-top: 2px; }
+
+        /* Popup List Styles (Calendar) */
         .trades-list-card { background: var(--cell-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
         .trade-row-header { display: flex; padding: 10px 15px; border-bottom: 1px solid var(--border); color: var(--text-sub); font-size: 0.8rem; }
         .trade-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid var(--border); cursor: pointer; }
         .trade-row:last-child { border-bottom: none; }
-        
         .tr-icon { width: 20px; font-size: 0.8rem; }
         .tr-date-col { display: flex; flex-direction: column; width: 100px; }
-        .tr-date { font-size: 0.85rem; font-weight: 500; color: var(--text-main); }
-        .tr-time { font-size: 0.75rem; color: var(--text-sub); }
-        .tr-sym { flex-grow: 1; font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
+        .tr-date { font-size: 0.85rem; font-weight: 500; }
+        .tr-time { font-size: 0.75rem; color: #888; }
+        .tr-sym { flex-grow: 1; font-weight: 600; font-size: 0.9rem; }
         .tr-pnl { font-weight: 700; font-size: 0.9rem; text-align: right; min-width: 70px; }
-        .tr-arrow { color: var(--text-sub); margin-left: 10px; font-size: 0.9rem; }
-        
+        .tr-arrow { color: #888; margin-left: 10px; font-size: 0.9rem; }
+
         /* --- CHAT STYLES --- */
         .chat-container { display: flex; flex-direction: column; height: calc(100vh - 140px); background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
         .chat-messages { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
@@ -138,7 +159,7 @@
         .msg-wrapper.other .msg-bubble { background: var(--chat-other); color: var(--text-main); border-bottom-left-radius: 2px; }
         .msg-time { font-size: 0.65rem; color: var(--text-sub); margin-top: 4px; text-align: right; display: block; }
         
-        .chat-trade-card { background: var(--cell-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; width: 240px; margin-top: 5px; cursor: pointer; }
+        .chat-trade-card { background: var(--cell-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; width: 240px; margin-top: 5px; cursor: pointer; }
         .ct-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
         .ct-img { width: 100%; height: 100px; object-fit: cover; border-radius: 4px; margin-top: 10px; pointer-events: none; }
         .ct-footer { margin-top: 8px; font-size: 0.75rem; color: var(--text-sub); display: flex; justify-content: space-between; }
@@ -172,34 +193,7 @@
         .loss-warning { background: rgba(255, 61, 0, 0.15); border-left: 4px solid var(--danger); color: var(--danger); padding: 10px 15px; font-size: 0.9rem; font-weight: bold; margin: 0 20px 10px 20px; display: flex; align-items: center; gap: 10px; border-radius: 4px; }
         @media (max-width: 768px) { .jfc-body-grid { grid-template-columns: 1fr; } .jfc-chart-area { height: 220px; } }
 
-        /* --- STATS LAYOUT --- */
-        .stats-grid-view { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .chart-card { height: 300px; padding: 10px; position: relative; }
-        .full-width { grid-column: span 2; }
-        @media (max-width: 768px) { .stats-grid-view { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
-
-        /* --- CALENDAR --- */
-        .cal-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .cal-cell { background: var(--cell-bg); border-radius: 6px; aspect-ratio: 1/0.85; position: relative; border: 1px solid transparent; cursor: pointer; transition: transform 0.1s; }
-        .cal-cell:active { transform: scale(0.95); }
-        .cal-cell.win { background: rgba(0, 200, 83, 0.15); border: 1px solid rgba(0, 200, 83, 0.3); }
-        .cal-cell.loss { background: rgba(255, 61, 0, 0.15); border: 1px solid rgba(255, 61, 0, 0.3); }
-        .cal-date { position: absolute; top: 2px; right: 4px; font-size: 0.7rem; font-weight: 600; color: var(--text-sub); }
-        .cal-pnl { position: absolute; bottom: 16px; width: 100%; text-align: center; font-size: 0.65rem; font-weight: bold; }
-        .cal-trades { position: absolute; bottom: 2px; width: 100%; text-align: center; font-size: 0.55rem; color: var(--text-sub); }
-
-        /* --- TABLE STYLES --- */
-        .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .hist-table th { text-align: left; padding: 10px; border-bottom: 1px solid #333; color: var(--text-sub); font-weight: 600; }
-        .hist-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        
-        .hist-thumb, .dash-thumb { width: 30px; height: 20px; object-fit: cover; border-radius: 3px; border: 1px solid var(--border); vertical-align: middle; margin: 0 5px; transition: transform 0.2s; cursor: pointer; }
-        .hist-thumb:hover, .dash-thumb:hover { transform: scale(3.5); z-index: 100; border-color: var(--accent); position: relative; }
-        .note-cell { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-sub); cursor: help; }
-        .time-sub { display: block; font-size: 0.7rem; color: var(--text-sub); margin-top: 2px; }
-
-        /* --- BUTTONS & UTILS --- */
+        /* --- UTILS --- */
         .text-green { color: var(--success) !important; }
         .text-red { color: var(--danger) !important; }
         .text-tp { color: var(--success); }
@@ -214,12 +208,25 @@
         .btn-share:hover { border-color: #00bcd4; color: #00bcd4; }
 
         .settings-list-item { display: flex; justify-content: space-between; align-items: center; background: var(--cell-bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
-        
+        .stats-grid-view { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .chart-card { height: 300px; padding: 10px; position: relative; }
+        .full-width { grid-column: span 2; }
+        @media (max-width: 768px) { .stats-grid-view { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+
+        .cal-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .cal-cell { background: var(--cell-bg); border-radius: 6px; aspect-ratio: 1/0.85; position: relative; border: 1px solid transparent; cursor: pointer; transition: transform 0.1s; }
+        .cal-cell:active { transform: scale(0.95); }
+        .cal-cell.win { background: rgba(0, 200, 83, 0.15); border: 1px solid rgba(0, 200, 83, 0.3); }
+        .cal-cell.loss { background: rgba(255, 61, 0, 0.15); border: 1px solid rgba(255, 61, 0, 0.3); }
+        .cal-date { position: absolute; top: 2px; right: 4px; font-size: 0.7rem; font-weight: 600; color: var(--text-sub); }
+        .cal-pnl { position: absolute; bottom: 16px; width: 100%; text-align: center; font-size: 0.65rem; font-weight: bold; }
+        .cal-trades { position: absolute; bottom: 2px; width: 100%; text-align: center; font-size: 0.55rem; color: var(--text-sub); }
+
         .share-opt { padding: 15px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
         .share-opt:hover { background: rgba(255,255,255,0.05); }
         .share-opt.selected { border-color: var(--accent); background: rgba(187, 134, 252, 0.1); }
         .share-opt.disabled { opacity: 0.4; cursor: not-allowed; }
-
         .signal-input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
         
         .sd-image { width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s; border: 1px solid var(--border); }
@@ -240,11 +247,11 @@
     
     <div id="day-detail-view" class="modal-base hidden">
         <div class="dv-header">
-            <button onclick="closePopup()" style="background:none; border:none; color:var(--accent); font-size:1rem; cursor:pointer; font-weight:600;">❮ Back</button>
-            <div id="dv-date-title" style="font-weight:700; font-size:1.1rem;">Date</div>
+            <button onclick="closePopup()" style="background:none; border:none; color:#0a84ff; font-size:1rem; cursor:pointer; font-weight:600;">❮ Back</button>
+            <div id="dv-date-title" style="font-weight:700; font-size:1.1rem; color:#ffffff;">Date</div>
             <div style="width: 40px;"></div>
         </div>
-        <div style="padding-bottom:20px; border-bottom:1px solid var(--border); margin-bottom:20px;">
+        <div style="padding-bottom:20px; border-bottom:1px solid #2c2c2e; margin-bottom:20px;">
             <div style="height:180px;"><canvas id="dayChart"></canvas></div>
         </div>
         <div class="dv-stats-grid">
@@ -299,19 +306,16 @@
             <button onclick="closeDeleteModal()" class="btn-small" style="flex:1;">Abbrechen</button>
         </div>
     </div>
-
+    
     <div id="member-detail-view" class="modal-base hidden">
         <div class="dv-header">
-            <span class="popup-title" id="mem-title">Mitglied</span>
+            <span class="popup-title" id="mem-title">Member</span>
             <button class="popup-close" onclick="closePopup()">✕</button>
         </div>
         <div class="dv-stats-grid">
-            <div class="dv-stat-item"><span class="dv-stat-label">Total PnL</span><div class="dv-stat-val sensitive">0.00 €</div></div>
-            <div class="dv-stat-item"><span class="dv-stat-label">Win rate</span><div class="dv-stat-val">0%</div></div>
-            <div class="dv-stat-item"><span class="dv-stat-label">Trades</span><div class="dv-stat-val">0</div></div>
-            <div class="dv-stat-item"><span class="dv-stat-label">Status</span><div class="dv-stat-val text-green">Aktiv</div></div>
+            <div class="stat-box"><span class="stat-label">Total PnL</span><div class="stat-value sensitive">0.00 €</div></div>
+            <div class="stat-box"><span class="stat-label">Status</span><div class="stat-value text-green">Aktiv</div></div>
         </div>
-        <div style="padding: 20px; text-align: center; color: var(--text-sub); font-size: 0.9rem;"><p>Detaillierte Handelsdaten sind für dieses Mitglied aktuell nicht verknüpft.</p></div>
     </div>
 
 </div>
@@ -669,7 +673,7 @@
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 chartInstances[canvasId] = new Chart(ctx, {
                     type: 'line',
-                    data: { labels: equityCurve.map(x => ''), datasets: [{ data: equityCurve, borderColor: '#bb86fc', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: true, backgroundColor: 'rgba(187, 134, 252, 0.05)' }] },
+                    data: { labels: equityCurve.map(x => ''), datasets: [{ data: equityCurve, borderColor: '#0a84ff', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: true, backgroundColor: 'rgba(10, 132, 255, 0.05)' }] },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } }
                 });
             }, 50);
@@ -692,13 +696,13 @@
         
         const ctxA = document.getElementById('assetChart').getContext('2d');
         if(assetChartInstance) assetChartInstance.destroy();
-        assetChartInstance = new Chart(ctxA, { type: 'bar', data: { labels: sortedAssets, datasets: [{ label: 'PnL', data: sortedAssets.map(a => assetMap[a]), backgroundColor: sortedAssets.map(a => assetMap[a] >= 0 ? 'rgba(0, 200, 83, 0.5)' : 'rgba(255, 61, 0, 0.5)'), borderColor: sortedAssets.map(a => assetMap[a] >= 0 ? '#00c853' : '#ff3d00'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
+        assetChartInstance = new Chart(ctxA, { type: 'bar', data: { labels: sortedAssets, datasets: [{ label: 'PnL', data: sortedAssets.map(a => assetMap[a]), backgroundColor: sortedAssets.map(a => assetMap[a] >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: sortedAssets.map(a => assetMap[a] >= 0 ? '#30d158' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
         const ctxW = document.getElementById('weekdayChart').getContext('2d');
         if(weekdayChartInstance) weekdayChartInstance.destroy();
-        weekdayChartInstance = new Chart(ctxW, { type: 'bar', data: { labels: dayLabels, datasets: [{ label: 'PnL', data: [0,1,2,3,4,5,6].map(d => daysMap[d]), backgroundColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? 'rgba(0, 200, 83, 0.5)' : 'rgba(255, 61, 0, 0.5)'), borderColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? '#00c853' : '#ff3d00'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
+        weekdayChartInstance = new Chart(ctxW, { type: 'bar', data: { labels: dayLabels, datasets: [{ label: 'PnL', data: [0,1,2,3,4,5,6].map(d => daysMap[d]), backgroundColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? '#30d158' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
         const ctxH = document.getElementById('hourChart').getContext('2d');
         if(hourChartInstance) hourChartInstance.destroy();
-        hourChartInstance = new Chart(ctxH, { type: 'bar', data: { labels: hourLabels, datasets: [{ label: 'PnL', data: hourMap, backgroundColor: hourMap.map(v => v >= 0 ? 'rgba(0, 200, 83, 0.5)' : 'rgba(255, 61, 0, 0.5)'), borderColor: hourMap.map(v => v >= 0 ? '#00c853' : '#ff3d00'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
+        hourChartInstance = new Chart(ctxH, { type: 'bar', data: { labels: hourLabels, datasets: [{ label: 'PnL', data: hourMap, backgroundColor: hourMap.map(v => v >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: hourMap.map(v => v >= 0 ? '#30d158' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
     }
 
     // --- CHAT LOGIC ---
@@ -944,7 +948,7 @@
         let r=0; const data = dayTrades.map(t=>{r+=t.pnl; return r;});
         dayChart = new Chart(ctx, { 
             type:'line', 
-            data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#00c853' : '#ff3d00', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 61, 0, 0.1)', tension: 0.1, pointRadius: 0 }] }, 
+            data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#00c853' : '#ff3d00', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, 
             options:{ responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{grid:{color:'#333'}}} } 
         });
     }
@@ -952,7 +956,7 @@
     // Close logic for all modals
     function closePopup() { 
         document.getElementById('popup-overlay').classList.remove('open');
-        document.querySelectorAll('.standard-modal, .modal-base').forEach(el => {
+        document.querySelectorAll('.standard-modal, .modal-base, #day-detail-view').forEach(el => {
             el.classList.add('hidden');
             el.classList.remove('open');
         }); 
@@ -965,6 +969,45 @@
         const modal = document.getElementById('member-detail-view');
         modal.classList.remove('hidden');
         modal.classList.add('open');
+    }
+
+    // --- HISTORIE ---
+    function renderHistory() {
+        if(!activeJournal) return;
+        document.getElementById('hist-title').innerText = `Trade Historie (${activeJournal})`;
+        const filtered = trades.filter(t => (t.journal||'Main') === activeJournal).sort((a,b)=>new Date(b.date)-new Date(a.date));
+        
+        if(filtered.length === 0) {
+            document.getElementById('tradeBody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-sub);">Keine Trades gefunden</td></tr>';
+            return;
+        }
+
+        document.getElementById('tradeBody').innerHTML = filtered.map(t => {
+            const time = t.date.split('T')[1]; 
+            const date = t.date.split('T')[0];
+            let mediaHtml = '';
+            if(t.imgSetup) mediaHtml += `<a href="${t.imgSetup}" target="_blank"><img src="${t.imgSetup}" class="hist-thumb" title="Setup"></a>`;
+            if(t.imgResult) mediaHtml += `<a href="${t.imgResult}" target="_blank"><img src="${t.imgResult}" class="hist-thumb" title="Result"></a>`;
+            
+            const hasLink = t.imgSetup || t.imgResult;
+            const shareBtn = hasLink ? `<button class="btn-icon btn-share" onclick="shareTrade('${t.id}')" title="Share">🚀</button>` : '';
+
+            let pnlHtml = t.status === 'Aktiv' ? '<span style="color:var(--text-sub); font-style:italic;">Offen</span>' : `<span class="sensitive" style="color:${t.pnl >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${t.pnl.toFixed(2)}</span>`;
+            
+            return `
+            <tr>
+                <td>${date}<span class="time-sub">${time}</span></td>
+                <td><b>${t.asset}</b></td>
+                <td>${mediaHtml}</td>
+                <td class="note-cell" title="${t.note || ''}">${t.note || '-'}</td>
+                <td style="text-align:right;">${pnlHtml}</td>
+                <td style="text-align:right;">
+                    ${shareBtn}
+                    <button class="btn-icon" onclick="editTrade('${t.id}')">✏️</button>
+                    <button class="btn-icon btn-danger-hover" onclick="delTrade('${t.id}')">🗑️</button>
+                </td>
+            </tr>`;
+        }).join('');
     }
 
     // --- UTILS remain unchanged ---
