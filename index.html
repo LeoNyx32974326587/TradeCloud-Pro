@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Scroll & Close</title>
+    <title>TradeCloud Pro - Accurate Calculator</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -44,25 +44,9 @@
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* --- NAV DRAWER & OVERLAY --- */
-        /* Dark backdrop when menu is open */
-        #menu-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
-            z-index: 199; display: none; backdrop-filter: blur(2px);
-        }
-        #menu-overlay.open { display: block; }
-
-        .nav-drawer { 
-            position: fixed; top: 0; left: -280px; width: 260px; height: 100%; 
-            background: var(--card-bg); border-right: 1px solid var(--border); 
-            transition: 0.3s; z-index: 200; 
-            padding-top: 10px; padding-bottom: 50px; /* Space for scrolling */
-            box-shadow: 2px 0 10px rgba(0,0,0,0.5); 
-            overflow-y: auto; /* Enable Vertical Scrolling */
-            display: flex; flex-direction: column;
-        }
+        /* --- NAV DRAWER --- */
+        .nav-drawer { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: var(--card-bg); border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.5); overflow-y: auto; }
         .nav-drawer.open { left: 0; }
-        
         .nav-drawer button { display: block; width: 100%; padding: 15px 25px; text-align: left; background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 1rem; transition: 0.2s; }
         .nav-drawer button:hover { background: rgba(255,255,255,0.05); }
         .nav-active { border-left: 3px solid var(--accent); background: rgba(187, 134, 252, 0.1) !important; }
@@ -70,14 +54,6 @@
         .nav-selector-container { padding: 10px 25px; }
         .nav-selector-label { font-size: 0.75rem; color: #888; margin-bottom: 5px; display: block; font-weight: bold; letter-spacing: 1px; }
         #navJournalSelect { width: 100%; padding: 10px; background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; cursor: pointer; }
-
-        /* Close Button in Nav */
-        .nav-close-btn {
-            text-align: right !important; padding: 10px 20px !important; 
-            font-size: 1.5rem !important; color: #888 !important;
-            display: flex; justify-content: flex-end;
-        }
-        .nav-close-btn:hover { color: var(--danger) !important; background: none !important; }
 
         /* --- DASHBOARD LAYOUT --- */
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
@@ -105,15 +81,6 @@
 
         @media (max-width: 768px) { .jfc-body-grid { grid-template-columns: 1fr; } .jfc-chart-area { height: 220px; } }
 
-        /* --- STATS LAYOUT --- */
-        .stats-grid-view { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .chart-card { height: 300px; padding: 10px; position: relative; }
-        .full-width { grid-column: span 2; }
-        @media (max-width: 768px) { 
-            .stats-grid-view { grid-template-columns: 1fr; } 
-            .full-width { grid-column: span 1; }
-        }
-
         /* --- CALENDAR --- */
         .cal-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
@@ -136,18 +103,10 @@
         .hist-table th { text-align: left; padding: 10px; border-bottom: 1px solid #333; color: #888; font-weight: 600; }
         .hist-table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
         
-        .hist-thumb {
-            width: 40px; height: 30px; object-fit: cover; border-radius: 4px;
-            border: 1px solid var(--border); vertical-align: middle; margin-right: 5px;
-            cursor: pointer; transition: transform 0.2s ease;
-        }
+        .hist-thumb { width: 40px; height: 30px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); vertical-align: middle; margin-right: 5px; cursor: pointer; transition: transform 0.2s ease; }
         .hist-thumb:hover { transform: scale(2.5); z-index: 100; position: relative; border-color: var(--accent); }
         
-        .dash-thumb {
-            width: 30px; height: 20px; object-fit: cover; border-radius: 3px; 
-            border: 1px solid var(--border); margin-left: 8px; vertical-align: middle;
-            transition: transform 0.2s;
-        }
+        .dash-thumb { width: 30px; height: 20px; object-fit: cover; border-radius: 3px; border: 1px solid var(--border); margin-left: 8px; vertical-align: middle; transition: transform 0.2s; }
         .dash-thumb:hover { transform: scale(3); z-index: 100; border-color: var(--accent); }
 
         .note-cell { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #aaa; cursor: help; }
@@ -200,6 +159,11 @@
         .btn-danger-hover:hover { border-color: var(--danger); color: var(--danger); }
 
         .settings-list-item { display: flex; justify-content: space-between; align-items: center; background: var(--cell-bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+        
+        .stats-grid-view { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .chart-card { height: 300px; padding: 10px; position: relative; }
+        .full-width { grid-column: span 2; }
+        @media (max-width: 768px) { .stats-grid-view { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
     </style>
 </head>
 <body>
@@ -253,13 +217,7 @@
     <button class="btn-icon" style="padding:8px; font-size:1.2rem;" onclick="togglePrivacy()">👁️</button>
 </header>
 
-<div id="menu-overlay" onclick="toggleMenu()"></div>
-
 <nav class="nav-drawer" id="navDrawer">
-    <div class="nav-close-btn">
-        <button class="btn-icon" onclick="toggleMenu()" style="border:none; background:none; font-size:1.5rem; color:#888;">✕</button>
-    </div>
-
     <button onclick="showView('Übersicht')" id="btn-Übersicht">🏠 Dashboard</button>
     <button onclick="prepareCreateView()" style="color:var(--accent);">➕ Neuer Trade</button>
     <div class="nav-separator"></div>
@@ -367,9 +325,25 @@
     <section id="view-Lot-Rechner" class="view-section">
         <div class="card">
             <h3>Lot Rechner</h3>
-            <select id="cType"><option value="forex">Forex</option><option value="indices">Indizes</option></select>
-            <input type="number" id="cBal" placeholder="Konto"><input type="number" id="cRisk" placeholder="Risk %">
-            <div style="display:flex; gap:10px;"><input type="number" id="cEnt" placeholder="Entry"><input type="number" id="cSl" placeholder="SL"></div>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <select id="cType" onchange="updateContractSize()" style="flex:1;">
+                    <option value="100000">Forex (Standard)</option>
+                    <option value="1">Indizes (1 Lot = 1 Unit)</option>
+                    <option value="100">Gold (100 oz)</option>
+                    <option value="custom">Benutzerdefiniert</option>
+                </select>
+                <div style="flex:1;">
+                    <input type="number" id="cContract" value="100000" placeholder="Kontraktgröße">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="cBal" placeholder="Konto">
+                <input type="number" id="cRisk" placeholder="Risk %">
+            </div>
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="cEnt" placeholder="Entry">
+                <input type="number" id="cSl" placeholder="SL">
+            </div>
             <button onclick="calcLots()" class="btn-primary">Berechnen</button>
             <div id="cRes" style="text-align:center; font-size:1.5rem; margin-top:15px; color:var(--success);">0.00 Lot</div>
         </div>
@@ -518,7 +492,6 @@
         if(activeId === 'view-Historie') renderHistory();
         if(activeId === 'view-Statistik') renderStatistics();
         document.getElementById('navDrawer').classList.remove('open');
-        document.getElementById('menu-overlay').classList.remove('open');
     }
 
     // --- DASHBOARD ---
@@ -782,6 +755,32 @@
         }).join('');
     }
 
+    // --- LOT CALCULATOR LOGIC (UPDATED) ---
+    function updateContractSize() {
+       const val = document.getElementById('cType').value;
+       if(val !== 'custom') document.getElementById('cContract').value = val;
+    }
+
+    function calcLots() {
+       const bal = parseFloat(document.getElementById('cBal').value);
+       const r = parseFloat(document.getElementById('cRisk').value);
+       const ent = parseFloat(document.getElementById('cEnt').value);
+       const sl = parseFloat(document.getElementById('cSl').value);
+       const contractSize = parseFloat(document.getElementById('cContract').value);
+
+       if(bal && r && ent && sl && contractSize) {
+           const riskAmt = bal * (r / 100);
+           const dist = Math.abs(ent - sl);
+           // Generic Formula: Risk / (Distance * ContractSize)
+           // For Forex: dist is decimal (e.g. 0.0020), size 100000 -> 20 pips * 10 = 200 risk units.
+           // For Indices: dist is points (e.g. 50), size 1 -> 50 * 1 = 50 risk units.
+           const lot = riskAmt / (dist * contractSize);
+           document.getElementById('cRes').innerText = lot.toFixed(2) + " Lot";
+       } else {
+           document.getElementById('cRes').innerText = "0.00 Lot";
+       }
+    }
+
     // --- JOURNAL MANAGEMENT ---
     async function saveJournalInput() {
         const name = document.getElementById('newJName').value.trim();
@@ -875,7 +874,7 @@
         document.getElementById('view-' + v.replace(/\s+/g, '-')).classList.add('active');
         document.getElementById('view-title').innerText = v.toUpperCase();
         document.getElementById('navDrawer').classList.remove('open');
-        document.getElementById('menu-overlay').classList.remove('open'); // Close Overlay
+        document.getElementById('menu-overlay').classList.remove('open');
         document.querySelectorAll('.nav-drawer button').forEach(b => b.classList.remove('nav-active'));
         const btn = document.getElementById('btn-' + v); if(btn) btn.classList.add('nav-active');
 
@@ -945,11 +944,9 @@
             document.body.classList.add('light-mode');
             localStorage.setItem('tradeTheme', 'light');
         }
-        // Reload widgets if News view is active
+        // Reload widgets
         if(document.getElementById('view-Statistik').classList.contains('active')) renderStatistics();
     }
-    
-    function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerText = lot.toFixed(2) + " Lot"; } }
     
     async function admLoad() { 
         try { 
