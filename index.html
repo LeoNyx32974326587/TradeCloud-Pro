@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Final Admin</title>
+    <title>TradeCloud Pro - Color Calendar</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -73,7 +73,6 @@
         .ot-title { font-size: 0.9rem; color: #888; margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 5px;}
         .ot-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
         
-        /* WARNING BANNER */
         .loss-warning {
             background: rgba(255, 61, 0, 0.15); border-left: 4px solid #ff3d00;
             color: #ff3d00; padding: 10px 15px; font-size: 0.9rem; font-weight: bold;
@@ -84,11 +83,23 @@
 
         /* --- CALENDAR --- */
         .cal-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .cal-cell { background: var(--cell-bg); border-radius: 6px; aspect-ratio: 1/1.1; position: relative; border: 1px solid transparent; cursor: pointer; }
-        .cal-date { position: absolute; top: 6px; right: 6px; font-size: 0.9rem; font-weight: 600; color: #666; }
-        .cal-pnl { position: absolute; bottom: 20px; width: 100%; text-align: center; font-size: 0.8rem; font-weight: bold; }
-        .cal-trades { position: absolute; bottom: 4px; width: 100%; text-align: center; font-size: 0.65rem; color: #666; }
+        /* Smaller Fields: Increase gap from 6px to 10px */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        /* Smaller Fields: Aspect Ratio 1/1 (Square) instead of tall */
+        .cal-cell { 
+            background: var(--cell-bg); border-radius: 8px; aspect-ratio: 1/1; 
+            position: relative; border: 1px solid transparent; cursor: pointer; 
+            transition: transform 0.1s;
+        }
+        .cal-cell:active { transform: scale(0.95); }
+        
+        /* Win/Loss Backgrounds */
+        .cal-cell.win { background: rgba(0, 200, 83, 0.15); border: 1px solid rgba(0, 200, 83, 0.3); }
+        .cal-cell.loss { background: rgba(255, 61, 0, 0.15); border: 1px solid rgba(255, 61, 0, 0.3); }
+
+        .cal-date { position: absolute; top: 4px; right: 5px; font-size: 0.8rem; font-weight: 600; color: #888; }
+        .cal-pnl { position: absolute; bottom: 18px; width: 100%; text-align: center; font-size: 0.75rem; font-weight: bold; }
+        .cal-trades { position: absolute; bottom: 4px; width: 100%; text-align: center; font-size: 0.6rem; color: #999; }
         .text-green { color: var(--success); }
         .text-red { color: var(--danger); }
 
@@ -526,12 +537,20 @@
             const dateStr = new Date(y, m, d).toDateString();
             const dayTrades = filtered.filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === dateStr);
             let sum = 0, count = dayTrades.length; dayTrades.forEach(t => sum += t.pnl);
+            
+            // COLOR LOGIC
+            let cellClass = 'cal-cell';
+            if(count > 0) {
+                if(sum > 0) cellClass += ' win';
+                else if(sum < 0) cellClass += ' loss';
+            }
+
             let html = `<div class="cal-date">${d}</div>`;
             if(count > 0) {
                 const col = sum >= 0 ? 'text-green' : 'text-red';
                 html += `<div class="cal-pnl sensitive ${col}">${sum.toFixed(0)}</div><div class="cal-trades">${count} Trades</div>`;
             }
-            grid.innerHTML += `<div class="cal-cell" ${count > 0 ? `onclick="openDayDetail('${y}-${m+1}-${d}')"` : ''}>${html}</div>`;
+            grid.innerHTML += `<div class="${cellClass}" ${count > 0 ? `onclick="openDayDetail('${y}-${m+1}-${d}')"` : ''}>${html}</div>`;
         }
     }
     function openDayDetail(dateStr) {
@@ -616,7 +635,7 @@
         if(!j) return;
         document.getElementById('journal-form-title').innerText = "Journal Bearbeiten";
         document.getElementById('newJName').value = j.name;
-        document.getElementById('newJCap').value = j.startCap || 0;
+        document.getElementById('newJCap').value = j.startCap || '';
         document.getElementById('newJMaxDD').value = j.maxDD || '';
         document.getElementById('newJDDType').value = j.ddType || 'eur';
         document.getElementById('btn-save-journal').innerText = "Speichern";
@@ -655,10 +674,10 @@
             const isHidden = j.hidden === true;
             const opacity = isHidden ? '0.5' : '1';
             const eye = isHidden ? '🙈' : '👁️';
-            const limitInfo = j.maxDD ? `(Max Loss: ${j.maxDD}${j.ddType==='percent'?'%':'€'})` : '';
+            const limitInfo = j.maxDD ? `(Limit: ${j.maxDD}${j.ddType==='percent'?'%':'€'})` : '';
             return `
             <div class="settings-list-item" style="opacity:${opacity}">
-                <div><strong>${j.name}</strong> <small style="color:#888">Start: ${j.startCap}€ ${limitInfo}</small></div>
+                <div><strong>${j.name}</strong> <small style="color:#888">${j.startCap ? j.startCap+'€' : ''} ${limitInfo}</small></div>
                 <div>
                     <button class="btn-small" onclick="toggleJournalVisibility('${j.id}', ${isHidden})">${eye}</button>
                     <button class="btn-small" onclick="prepareEditJournal('${j.id}')">✎</button>
