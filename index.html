@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Multi Journal & New Popup</title>
+    <title>TradeCloud Pro - Final</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -15,7 +15,7 @@
             --text-main: #e0e0e0; --accent: #bb86fc; 
             --success: #00c853; --danger: #ff3d00; --border: #2c2c2c; 
             --blur: 0px;
-            --popup-bg: #1a1a1a; /* New background color for the popup */
+            --popup-bg: #1a1a1a; 
         }
         body.light-mode {
             --bg-dark: #f0f2f5; --card-bg: #ffffff; --cell-bg: #e4e6eb; --text-main: #1c1e21;
@@ -76,150 +76,51 @@
         .text-green { color: var(--success); }
         .text-red { color: var(--danger); }
 
-        /* --- POPUP (NEW STYLE) --- */
+        /* --- POPUP (FLOATING & BLUR) --- */
         #popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px); /* Unscharfer Hintergrund */
-            z-index: 999;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
+            z-index: 999; display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease;
         }
-        #popup-overlay.open {
-            display: flex;
-            opacity: 1;
-        }
+        #popup-overlay.open { display: flex; opacity: 1; }
 
         .day-view-container { 
-            position: relative; /* Not fixed anymore */
-            width: 90%;
-            max-width: 500px;
-            max-height: 85vh; /* Max height for scrolling */
-            background: var(--popup-bg); /* Use a distinct background */
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            overflow-y: auto;
-            /* z-index is handled by the overlay */
-            transform: translateY(20px);
-            opacity: 0;
-            transition: all 0.3s ease;
+            position: relative; width: 90%; max-width: 500px; max-height: 85vh;
+            background: var(--popup-bg); border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow-y: auto;
+            transform: translateY(20px); opacity: 0; transition: all 0.3s ease;
             border: 1px solid var(--border);
         }
-        #popup-overlay.open .day-view-container {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        #popup-overlay.open .day-view-container { transform: translateY(0); opacity: 1; }
 
         .dv-header { 
-            padding: 15px 20px; 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            background: var(--popup-bg); 
-            position: sticky; 
-            top:0; 
-            z-index:10; 
+            padding: 15px 20px; display: flex; align-items: center; gap: 15px; 
+            background: var(--popup-bg); position: sticky; top:0; z-index:10; 
             border-bottom: 1px solid var(--border);
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
+            border-top-left-radius: 16px; border-top-right-radius: 16px;
         }
-        .dv-back-btn {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0;
-            display: flex;
-            align-items: center;
-        }
-        .dv-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin: 0;
-            flex-grow: 1;
-            text-align: center; /* Center the date */
-        }
+        .dv-back-btn { background: none; border: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer; padding: 0; display: flex; align-items: center; }
+        .dv-title { font-size: 1.1rem; font-weight: 700; margin: 0; flex-grow: 1; text-align: center; }
         
-        /* Stats Grid like in image 2 */
-        .dv-stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 20px;
-        }
-        .dv-stat-box {
-            /* background: var(--cell-bg); */ /* Optional: Use cell-bg for boxes */
-            /* padding: 15px; */
-            /* border-radius: 12px; */
-            text-align: left;
-        }
-        .dv-stat-label {
-            font-size: 0.8rem;
-            color: #888;
-            margin-bottom: 5px;
-            display: block;
-        }
-        .dv-stat-value {
-            font-size: 1.3rem;
-            font-weight: 800;
-        }
+        .dv-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .dv-stat-box { text-align: left; }
+        .dv-stat-label { font-size: 0.8rem; color: #888; margin-bottom: 5px; display: block; }
+        .dv-stat-value { font-size: 1.3rem; font-weight: 800; }
 
-        /* Trades List like in image 2 */
-        .dv-trades-list-container {
-            padding: 0 20px 20px 20px;
-        }
-        .dv-list-header {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
+        .dv-trades-list-container { padding: 0 20px 20px 20px; }
+        .dv-list-header { font-size: 1rem; font-weight: 700; margin-bottom: 15px; }
         .dv-trade-item { 
-            background: var(--cell-bg); 
-            border-radius: 12px; 
-            padding: 12px 15px; 
-            margin-bottom: 10px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+            background: var(--cell-bg); border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; 
+            display: flex; justify-content: space-between; align-items: center; 
         }
-        .dv-trade-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .dv-trade-icon {
-            font-size: 1.2rem;
-        }
-        .dv-trade-info {
-            display: flex;
-            flex-direction: column;
-        }
-        .dv-trade-time {
-            font-size: 0.75rem;
-            color: #888;
-        }
-        .dv-trade-asset {
-            font-weight: 700;
-            font-size: 1rem;
-        }
-        .dv-trade-pnl {
-            font-weight: 800;
-            font-size: 1rem;
-            text-align: right;
-        }
-        .dv-trade-arrow {
-             color: #888;
-             font-size: 1.2rem;
-             margin-left: 10px;
-        }
+        .dv-trade-left { display: flex; align-items: center; gap: 12px; }
+        .dv-trade-icon { font-size: 1.2rem; }
+        .dv-trade-info { display: flex; flex-direction: column; }
+        .dv-trade-time { font-size: 0.75rem; color: #888; }
+        .dv-trade-asset { font-weight: 700; font-size: 1rem; }
+        .dv-trade-pnl { font-weight: 800; font-size: 1rem; text-align: right; }
+        .dv-trade-arrow { color: #888; font-size: 1.2rem; margin-left: 10px; }
 
         /* --- UTILS --- */
         input, select, textarea { background: var(--bg-dark); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
@@ -239,26 +140,15 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </button>
             <h2 id="dv-date-title" class="dv-title">Date</h2>
-            <div style="width: 24px;"></div> </div>
+            <div style="width: 24px;"></div>
+        </div>
         <div style="padding:20px; height:220px;"><canvas id="dayChart"></canvas></div>
         
         <div class="dv-stats-grid">
-            <div class="dv-stat-box">
-                <span class="dv-stat-label">PnL</span>
-                <div id="dv-pnl" class="dv-stat-value sensitive">-</div>
-            </div>
-            <div class="dv-stat-box">
-                <span class="dv-stat-label">Win rate</span>
-                <div id="dv-winrate" class="dv-stat-value">-</div>
-            </div>
-            <div class="dv-stat-box">
-                <span class="dv-stat-label">Profit factor</span>
-                <div id="dv-pf" class="dv-stat-value">-</div>
-            </div>
-            <div class="dv-stat-box">
-                <span class="dv-stat-label">Trades count</span>
-                <div id="dv-count" class="dv-stat-value">-</div>
-            </div>
+            <div class="dv-stat-box"><span class="dv-stat-label">PnL</span><div id="dv-pnl" class="dv-stat-value sensitive">-</div></div>
+            <div class="dv-stat-box"><span class="dv-stat-label">Win rate</span><div id="dv-winrate" class="dv-stat-value">-</div></div>
+            <div class="dv-stat-box"><span class="dv-stat-label">Profit factor</span><div id="dv-pf" class="dv-stat-value">-</div></div>
+            <div class="dv-stat-box"><span class="dv-stat-label">Trades count</span><div id="dv-count" class="dv-stat-value">-</div></div>
         </div>
         
         <div class="dv-trades-list-container">
@@ -291,8 +181,7 @@
     <div class="nav-separator"></div>
     <div class="nav-selector-container">
         <label class="nav-selector-label">JOURNAL AUSWÄHLEN ⌄</label>
-        <select id="navJournalSelect" onchange="changeJournalFilter(this.value)">
-            </select>
+        <select id="navJournalSelect" onchange="changeJournalFilter(this.value)"></select>
     </div>
     <button onclick="showView('Kalender')" id="btn-Kalender">📅 Kalender</button>
     <button onclick="showView('Historie')" id="btn-Historie">📜 Journal</button>
@@ -309,7 +198,6 @@
     
     <section id="view-Übersicht" class="view-section active">
         <h2 style="margin-top:0;">Global Performance</h2>
-        
         <div class="dash-grid">
             <div class="card" style="height:300px; display:flex; flex-direction:column;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -321,15 +209,12 @@
 
             <div class="card" style="height:300px; overflow-y:auto;">
                 <h4 style="margin-top:0; margin-bottom:10px; color:var(--accent);">Offene Trades</h4>
-                <div id="dash-open-list">
-                    <p style="color:#555; font-size:0.9rem;">Keine offenen Trades.</p>
-                </div>
+                <div id="dash-open-list"><p style="color:#555; font-size:0.9rem;">Keine offenen Trades.</p></div>
             </div>
         </div>
 
         <h3>Deine Journals</h3>
-        <div id="journal-cards-container" class="journal-grid">
-            </div>
+        <div id="journal-cards-container" class="journal-grid"></div>
     </section>
 
     <section id="view-Kalender" class="view-section">
@@ -356,28 +241,13 @@
         <div class="card">
             <h3 style="margin-top:0;">Neuer Trade</h3>
             <input type="hidden" id="editId">
-            
-            <label>Journal Name</label>
-            <input type="text" id="inpJournal" list="journalList" placeholder="z.B. Main, Challenge, Test">
-            <datalist id="journalList"></datalist>
-
-            <label>Status</label>
-            <select id="status" onchange="toggleFormFields()">
-                <option value="Aktiv">Laufend (Offen)</option>
-                <option value="Geschlossen">Geschlossen</option>
-            </select>
-
+            <label>Journal Name</label><input type="text" id="inpJournal" list="journalList" placeholder="z.B. Main, Challenge, Test"><datalist id="journalList"></datalist>
+            <label>Status</label><select id="status" onchange="toggleFormFields()"><option value="Aktiv">Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
             <label>Asset</label><input type="text" id="assetInput" placeholder="EURUSD" style="text-transform:uppercase;">
             <label>Datum</label><input type="datetime-local" id="datetime">
-            
             <label>Setup (Bild Link)</label><input type="url" id="imgSetup">
             <label>Notiz</label><textarea id="note" rows="2"></textarea>
-            
-            <div id="closedFields" class="hidden">
-                <label style="color:var(--success)">PnL (€)</label><input type="number" id="pnl" step="0.01">
-                <label>Result (Bild Link)</label><input type="url" id="imgResult">
-            </div>
-
+            <div id="closedFields" class="hidden"><label style="color:var(--success)">PnL (€)</label><input type="number" id="pnl" step="0.01"><label>Result (Bild Link)</label><input type="url" id="imgResult"></div>
             <button onclick="saveTrade()" class="btn-primary" style="margin-top:15px;">SPEICHERN</button>
             <button onclick="showView('Übersicht')" style="width:100%; padding:15px; background:none; border:1px solid #333; color:#888; border-radius:8px; margin-top:10px; cursor:pointer;">Abbrechen</button>
         </div>
@@ -444,10 +314,8 @@
             document.getElementById('auth-overlay').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
             document.getElementById('main-header').classList.remove('hidden');
-            
             if(localStorage.getItem('startCap')) document.getElementById('settingStartCap').value = localStorage.getItem('startCap');
             if(localStorage.getItem('maxLoss')) document.getElementById('settingMaxLoss').value = localStorage.getItem('maxLoss');
-
             await loadTrades();
         }
     });
@@ -463,10 +331,8 @@
     function showView(v) {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.getElementById('view-' + v.replace(/\s+/g, '-')).classList.add('active');
-        
         document.getElementById('view-title').innerText = v.toUpperCase();
         document.getElementById('navDrawer').classList.remove('open');
-        
         document.querySelectorAll('.nav-drawer button').forEach(b => b.classList.remove('nav-active'));
         const btn = document.getElementById('btn-' + v);
         if(btn) btn.classList.add('nav-active');
@@ -608,7 +474,6 @@
     
     function changeCalMonth(d) { calDate.setMonth(calDate.getMonth() + d); renderCalendar(); }
 
-    // --- DAY DETAIL POPUP (NEW LOGIC) ---
     function openDayDetail(dateStr) {
         const d = new Date(dateStr);
         // Format date like "Friday, 16 January 2026"
@@ -637,7 +502,6 @@
         if(dayChart) dayChart.destroy();
         let r=0; const data = dayTrades.map(t=>{r+=t.pnl; return r;});
         
-        // Gradient for chart
         let gradient = ctx.createLinearGradient(0, 0, 0, 300);
         if(sum >= 0) { gradient.addColorStop(0, 'rgba(0, 200, 83, 0.2)'); gradient.addColorStop(1, 'rgba(0, 200, 83, 0)'); }
         else { gradient.addColorStop(0, 'rgba(255, 61, 0, 0.2)'); gradient.addColorStop(1, 'rgba(255, 61, 0, 0)'); }
@@ -691,7 +555,6 @@
     }
     function closeDayDetail() { document.getElementById('popup-overlay').classList.remove('open'); }
 
-    // --- HISTORY LIST (FILTERED) ---
     function renderHistory() {
         const filtered = trades.filter(t => {
             if(currentJournalFilter !== 'All' && (t.journal || 'Main') !== currentJournalFilter) return false;
@@ -713,7 +576,6 @@
         `).join('');
     }
 
-    // --- TRADE ACTIONS ---
     function prepareCreateView() {
         document.getElementById('editId').value = "";
         document.getElementById('datetime').value = new Date().toISOString().slice(0,16);
@@ -751,7 +613,6 @@
     async function delTrade(id) { if(confirm("Löschen?")) { await db.collection('trades').doc(id).delete(); loadTrades(); } }
     function toggleFormFields() { const s = document.getElementById('status').value; document.getElementById('closedFields').classList.toggle('hidden', s === 'Aktiv'); }
 
-    // --- UTILS ---
     function togglePrivacy() { privacyMode = !privacyMode; document.documentElement.style.setProperty('--blur', privacyMode ? '5px' : '0px'); }
     function handleLogout() { auth.signOut().then(()=>location.reload()); }
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
