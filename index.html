@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Final Design</title>
+    <title>TradeCloud Pro - Button Style</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -83,32 +83,28 @@
 
         /* --- CALENDAR --- */
         .cal-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        /* Tighter Grid */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         
         .cal-cell { 
-            background: var(--cell-bg); border-radius: 6px; 
-            aspect-ratio: 1/0.85; /* Slightly rectangular (shorter) */
+            background: var(--cell-bg); border-radius: 6px; aspect-ratio: 1/0.85; 
             position: relative; border: 1px solid transparent; cursor: pointer; 
             transition: transform 0.1s;
         }
         .cal-cell:active { transform: scale(0.95); }
         .cal-cell.win { background: rgba(0, 200, 83, 0.15); border: 1px solid rgba(0, 200, 83, 0.3); }
         .cal-cell.loss { background: rgba(255, 61, 0, 0.15); border: 1px solid rgba(255, 61, 0, 0.3); }
-        
-        /* Smaller fonts for compact look */
         .cal-date { position: absolute; top: 2px; right: 4px; font-size: 0.7rem; font-weight: 600; color: #888; }
         .cal-pnl { position: absolute; bottom: 16px; width: 100%; text-align: center; font-size: 0.65rem; font-weight: bold; }
         .cal-trades { position: absolute; bottom: 2px; width: 100%; text-align: center; font-size: 0.55rem; color: #999; }
-        
         .text-green { color: var(--success); }
         .text-red { color: var(--danger); }
 
-        /* --- TABLE STYLES (HISTORIE) --- */
+        /* --- TABLE STYLES --- */
         .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .hist-table th { text-align: left; padding: 10px; border-bottom: 1px solid #333; color: #888; font-weight: 600; }
         .hist-table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
         
+        /* Thumbnails */
         .hist-thumb {
             width: 40px; height: 30px; object-fit: cover; border-radius: 4px;
             border: 1px solid var(--border); vertical-align: middle; margin-right: 5px;
@@ -156,13 +152,35 @@
         .dv-trade-item { background: var(--cell-bg); border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .dv-trade-left { display: flex; align-items: center; gap: 12px; }
 
-        /* --- UTILS --- */
+        /* --- BUTTONS & UTILS --- */
         input, select, textarea { background: var(--bg-dark); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
         .btn-primary { background: var(--accent); color: black; padding: 15px; border: none; font-weight: 800; border-radius: 8px; width: 100%; cursor: pointer; }
-        .btn-small { padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-dark); color: var(--text-main); cursor: pointer; margin-left: 5px; }
-        .chart-btn { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        
+        /* UNIFIED BUTTON STYLES FOR EMOJIS */
+        .btn-icon, .btn-small, .chart-btn, .icon-btn {
+            padding: 6px 10px; 
+            font-size: 0.85rem; 
+            border-radius: 6px; 
+            border: 1px solid var(--border); 
+            background: var(--cell-bg); 
+            color: var(--text-main); 
+            cursor: pointer; 
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .btn-icon:hover, .btn-small:hover, .chart-btn:hover, .icon-btn:hover {
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.05);
+            transform: translateY(-1px);
+        }
         .chart-btn.active { background: var(--accent); color: black; }
-        .icon-btn { background:none; border:none; color:#888; cursor:pointer; }
+        
+        /* Danger Hover */
+        .btn-danger-hover:hover { border-color: var(--danger); color: var(--danger); }
+
         .settings-list-item { display: flex; justify-content: space-between; align-items: center; background: var(--cell-bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
     </style>
 </head>
@@ -214,7 +232,7 @@
         <button class="menu-btn" onclick="toggleMenu()">&#9776;</button>
         <div id="view-title">DASHBOARD</div>
     </div>
-    <button class="icon-btn" style="font-size:1.5rem;" onclick="togglePrivacy()">👁️</button>
+    <button class="btn-icon" style="padding:8px; font-size:1.2rem;" onclick="togglePrivacy()">👁️</button>
 </header>
 
 <nav class="nav-drawer" id="navDrawer">
@@ -836,8 +854,8 @@
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center; border-bottom:1px solid var(--border); padding-bottom:5px;">
                     <span>${d.data().email}</span>
                     <div>
-                        <span onclick="openMemberDetail('${d.id}', '${d.data().email}')" style="cursor:pointer; margin-right:15px; font-size:1.2rem;">👁️</span>
-                        <span onclick="admDel('${d.id}')" style="cursor:pointer;color:red; font-weight:bold;">✕</span>
+                        <button class="btn-icon" onclick="openMemberDetail('${d.id}', '${d.data().email}')" style="font-size:1rem; margin-right:5px;">👁️</button>
+                        <button class="btn-icon btn-danger-hover" onclick="admDel('${d.id}')" style="font-size:1rem;">✕</button>
                     </div>
                 </div>`).join(''); 
         } catch(e){} 
