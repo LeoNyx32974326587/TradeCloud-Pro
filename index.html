@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Full Data</title>
+    <title>TradeCloud Pro - History Details</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -134,7 +134,12 @@
         .td-asset { font-size: 1.5rem; font-weight: 800; color: white; display:block; }
         .td-pnl { font-size: 2.5rem; font-weight: 900; margin-top: 5px; display:block; }
         
+        .td-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .td-box { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; }
         .td-label { color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .td-val { color: white; font-size: 1rem; font-weight: 600; }
+        .td-note { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; margin-bottom: 20px; font-style: italic; color: #ccc; font-size: 0.9rem; }
+        
         .td-img { width: 100%; border-radius: 8px; border: 1px solid #333; cursor: pointer; margin-top:5px; }
         .img-box { background: #151517; padding:15px; border-radius:12px; border:1px solid #2c2c2e; }
 
@@ -947,26 +952,26 @@
                 <span class="td-pnl" style="color:${t.status==='Aktiv'?'#0a84ff':(t.pnl>=0?'#30d158':'#ff453a')}">${t.status==='Aktiv'?'OPEN':t.pnl.toFixed(2)+'€'}</span>
             </div>
             
-            <div style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
+            <div class="td-grid">
+                <div class="td-box"><span class="td-label">Entry</span><span class="td-val">${t.entry || '-'}</span></div>
+                <div class="td-box"><span class="td-label">Stop Loss</span><span class="td-val" style="color:#ff453a">${t.sl || '-'}</span></div>
+                <div class="td-box"><span class="td-label">Take Profit 1</span><span class="td-val" style="color:#30d158">${t.tp1 || '-'}</span></div>
+                <div class="td-box"><span class="td-label">Take Profit 2</span><span class="td-val" style="color:#30d158">${t.tp2 || '-'}</span></div>
+                <div class="td-box"><span class="td-label">Take Profit 3</span><span class="td-val" style="color:#30d158">${t.tp3 || '-'}</span></div>
+                <div class="td-box"><span class="td-label">Date</span><span class="td-val">${t.date.split('T')[0]}</span></div>
+            </div>
         `;
         
+        if(t.note) {
+            html += `<div class="td-note">"${t.note}"</div>`;
+        }
+        
         if(t.imgSetup) {
-            html += `
-                <div class="img-box">
-                    <span class="td-label">Setup</span>
-                    <img src="${t.imgSetup}" class="td-img" onclick="window.open('${t.imgSetup}','_blank')">
-                </div>`;
+            html += `<div class="img-box"><span class="td-label">Setup</span><img src="${t.imgSetup}" class="td-img" onclick="window.open('${t.imgSetup}','_blank')"></div>`;
         }
-
         if(t.imgResult) {
-            html += `
-                <div class="img-box">
-                    <span class="td-label">Ergebnis</span>
-                    <img src="${t.imgResult}" class="td-img" onclick="window.open('${t.imgResult}','_blank')">
-                </div>`;
+            html += `<div class="img-box" style="margin-top:10px;"><span class="td-label">Ergebnis</span><img src="${t.imgResult}" class="td-img" onclick="window.open('${t.imgResult}','_blank')"></div>`;
         }
-
-        html += `</div>`;
         
         document.getElementById('td-content').innerHTML = html;
     }
@@ -974,7 +979,10 @@
     function closeTradeDetail() {
         document.getElementById('trade-detail-view').classList.remove('open');
         document.getElementById('trade-detail-view').classList.add('hidden');
-        document.getElementById('popup-overlay').classList.remove('open');
+        // Only close overlay if not coming from day detail
+        if(document.getElementById('day-detail-view').classList.contains('hidden')) {
+             document.getElementById('popup-overlay').classList.remove('open');
+        }
     }
     
     function copyText(val, btnId) {
@@ -1115,6 +1123,10 @@
             const hasLink = t.imgSetup || t.imgResult;
             const shareBtn = hasLink ? `<button class="btn-icon btn-share" onclick="shareTrade('${t.id}')" title="Share">🚀</button>` : '';
 
+            // INFO BUTTON ADDED HERE
+            const tradeDataString = encodeURIComponent(JSON.stringify(t));
+            const imgUrlString = encodeURIComponent(t.imgSetup || t.imgResult || '');
+
             let pnlHtml = t.status === 'Aktiv' ? '<span style="color:var(--text-sub); font-style:italic;">Offen</span>' : `<span class="sensitive" style="color:${t.pnl >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${t.pnl.toFixed(2)}</span>`;
             
             return `
@@ -1125,6 +1137,7 @@
                 <td class="note-cell" title="${t.note || ''}">${t.note || '-'}</td>
                 <td style="text-align:right;">${pnlHtml}</td>
                 <td style="text-align:right;">
+                    <button class="btn-icon" onclick="openSignalDetail('${tradeDataString}', '${imgUrlString}')" title="Details">ℹ️</button>
                     ${shareBtn}
                     <button class="btn-icon" onclick="editTrade('${t.id}')">✏️</button>
                     <button class="btn-icon btn-danger-hover" onclick="delTrade('${t.id}')">🗑️</button>
@@ -1142,16 +1155,16 @@
     function renderSettingsList() { document.getElementById('settings-journal-list').innerHTML = journals.map(j => { const isHidden = j.hidden === true; const opacity = isHidden ? '0.5' : '1'; const eye = isHidden ? '🙈' : '👁️'; return `<div class="settings-list-item" style="opacity:${opacity}"><div><strong>${j.name}</strong> <small style="color:var(--text-sub)">${j.startCap ? j.startCap+'€' : ''}</small></div><div><button class="btn-small" onclick="toggleJournalVisibility('${j.id}', ${isHidden})">${eye}</button><button class="btn-small" onclick="prepareEditJournal('${j.id}')">✎</button><button class="btn-small btn-danger-hover" onclick="deleteJournal('${j.id}', '${j.name}')">🗑</button></div></div>`; }).join(''); }
     function showView(v) { document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active')); document.getElementById('view-' + v.replace(/\s+/g, '-')).classList.add('active'); document.getElementById('view-title').innerText = v.toUpperCase(); document.getElementById('navDrawer').classList.remove('open'); document.getElementById('menu-overlay').classList.remove('open'); document.querySelectorAll('.nav-drawer button').forEach(b => b.classList.remove('nav-active')); const btn = document.getElementById('btn-' + v); if(btn) btn.classList.add('nav-active'); if(v === 'Übersicht') renderDashboard(); if(v === 'Kalender') renderCalendar(); if(v === 'Historie') renderHistory(); if(v === 'Statistik') renderStatistics(); if(v === 'Einstellungen') renderSettingsList(); if(v === 'News') { const b=document.getElementById('news-box'); b.innerHTML=''; const s=document.createElement('script'); s.src="https://s3.tradingview.com/external-embedding/embed-widget-events.js"; s.async=true; s.innerHTML=JSON.stringify({"colorTheme":document.body.classList.contains('light-mode')?'light':'dark',"width":"100%","height":"100%","locale":"de"}); b.appendChild(s); } }
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('open'); }
-    function prepareCreateView() { document.getElementById('editId').value = ""; const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); document.getElementById('datetime').value = now.toISOString().slice(0,16); document.getElementById('assetInput').value = ""; document.getElementById('pnl').value = ""; document.getElementById('note').value = ""; if(activeJournal) document.getElementById('inpJournalSelect').value = activeJournal; toggleFormFields(); showView('Trade-erstellen'); }
-    async function saveTrade() { const id = document.getElementById('editId').value; const asset = document.getElementById('assetInput').value.toUpperCase(); if(!asset) return alert("Asset fehlt!"); const data = { userId: auth.currentUser.uid, date: document.getElementById('datetime').value, asset: asset, journal: document.getElementById('inpJournalSelect').value, status: document.getElementById('status').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value }; if(id) await db.collection('trades').doc(id).update(data); else await db.collection('trades').add(data); await loadData(); showView('Übersicht'); }
-    function editTrade(id, closeNow) { const t = trades.find(x => x.id === id); document.getElementById('editId').value = t.id; document.getElementById('datetime').value = t.date; document.getElementById('assetInput').value = t.asset; document.getElementById('inpJournalSelect').value = t.journal || (journals[0] ? journals[0].name : 'Main'); document.getElementById('status').value = closeNow ? 'Geschlossen' : t.status; document.getElementById('pnl').value = t.pnl; document.getElementById('imgSetup').value = t.imgSetup || ''; document.getElementById('imgResult').value = t.imgResult || ''; document.getElementById('note').value = t.note || ''; toggleFormFields(); showView('Trade-erstellen'); }
+    function prepareCreateView() { document.getElementById('editId').value = ""; const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); document.getElementById('datetime').value = now.toISOString().slice(0,16); document.getElementById('assetInput').value = ""; document.getElementById('pnl').value = ""; document.getElementById('note').value = ""; document.getElementById('inpEntry').value = ""; document.getElementById('inpSL').value = ""; document.getElementById('inpTP1').value = ""; document.getElementById('inpTP2').value = ""; document.getElementById('inpTP3').value = ""; if(activeJournal) document.getElementById('inpJournalSelect').value = activeJournal; toggleFormFields(); showView('Trade-erstellen'); }
+    async function saveTrade() { const id = document.getElementById('editId').value; const asset = document.getElementById('assetInput').value.toUpperCase(); if(!asset) return alert("Asset fehlt!"); const data = { userId: auth.currentUser.uid, date: document.getElementById('datetime').value, asset: asset, journal: document.getElementById('inpJournalSelect').value, status: document.getElementById('status').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value, entry: document.getElementById('inpEntry').value, sl: document.getElementById('inpSL').value, tp1: document.getElementById('inpTP1').value, tp2: document.getElementById('inpTP2').value, tp3: document.getElementById('inpTP3').value }; if(id) await db.collection('trades').doc(id).update(data); else await db.collection('trades').add(data); await loadData(); showView('Übersicht'); }
+    function editTrade(id, closeNow) { const t = trades.find(x => x.id === id); document.getElementById('editId').value = t.id; document.getElementById('datetime').value = t.date; document.getElementById('assetInput').value = t.asset; document.getElementById('inpJournalSelect').value = t.journal || (journals[0] ? journals[0].name : 'Main'); document.getElementById('status').value = closeNow ? 'Geschlossen' : t.status; document.getElementById('pnl').value = t.pnl; document.getElementById('imgSetup').value = t.imgSetup || ''; document.getElementById('imgResult').value = t.imgResult || ''; document.getElementById('note').value = t.note || ''; document.getElementById('inpEntry').value = t.entry || ''; document.getElementById('inpSL').value = t.sl || ''; document.getElementById('inpTP1').value = t.tp1 || ''; document.getElementById('inpTP2').value = t.tp2 || ''; document.getElementById('inpTP3').value = t.tp3 || ''; toggleFormFields(); showView('Trade-erstellen'); }
     async function delTrade(id) { if(confirm("Löschen?")) { await db.collection('trades').doc(id).delete(); await loadData(); showView('Historie'); } }
     function toggleFormFields() { const s = document.getElementById('status').value; document.getElementById('closedFields').classList.toggle('hidden', s === 'Aktiv'); }
     function togglePrivacy() { privacyMode = !privacyMode; document.documentElement.style.setProperty('--blur', privacyMode ? '5px' : '0px'); }
     function handleLogout() { auth.signOut().then(()=>location.reload()); }
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function toggleTheme(isDark) { if(isDark) { document.body.classList.remove('light-mode'); localStorage.setItem('tradeTheme', 'dark'); } else { document.body.classList.add('light-mode'); localStorage.setItem('tradeTheme', 'light'); } if(document.getElementById('view-Statistik').classList.contains('active')) renderStatistics(); }
-    function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerText = lot.toFixed(2) + " Lot"; } }
+    function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); const finalLot = Math.max(lot, 0.01); document.getElementById('cRes').innerHTML = `<div style="font-size:2rem;">${finalLot.toFixed(2)} Lot</div><div style="font-size:0.9rem; color:#888;">Risk: ${riskAmt.toFixed(2)}€</div>`; } }
     function updateContractSize() { const val = document.getElementById('cType').value; if(val !== 'custom') document.getElementById('cContract').value = val; }
     async function admLoad() { try { const s = await db.collection('members').get(); document.getElementById('admList').innerHTML = s.docs.map(d => `<div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center; border-bottom:1px solid var(--border); padding-bottom:5px;"><span>${d.data().email}</span><div><button class="btn-icon" onclick="openMemberDetail('${d.id}', '${d.data().email}')" style="font-size:1rem; margin-right:5px;">👁️</button><button class="btn-icon btn-danger-hover" onclick="admDel('${d.id}')" style="font-size:1rem;">✕</button></div></div>`).join(''); } catch(e){} }
     async function admAdd() { const e=document.getElementById('admEmail').value.toLowerCase().trim(); if(e) { await db.collection('members').add({email:e}); document.getElementById('admEmail').value=''; admLoad(); } }
