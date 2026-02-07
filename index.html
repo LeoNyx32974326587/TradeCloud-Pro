@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Admin & Toggle</title>
+    <title>TradeCloud Pro - Local Time Fix</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -639,7 +639,11 @@
     }
 
     function prepareCreateView() {
-        document.getElementById('editId').value = ""; document.getElementById('datetime').value = new Date().toISOString().slice(0,16);
+        document.getElementById('editId').value = ""; 
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('datetime').value = now.toISOString().slice(0,16);
+        
         document.getElementById('assetInput').value = ""; document.getElementById('pnl').value = ""; document.getElementById('note').value = "";
         if(activeJournal) document.getElementById('inpJournalSelect').value = activeJournal;
         toggleFormFields(); showView('Trade-erstellen');
