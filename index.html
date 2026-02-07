@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Final</title>
+    <title>TradeCloud Pro - Independent Journals</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -50,21 +50,29 @@
         .nav-selector-label { font-size: 0.75rem; color: #888; margin-bottom: 5px; display: block; font-weight: bold; letter-spacing: 1px; }
         #navJournalSelect { width: 100%; padding: 10px; background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; cursor: pointer; }
 
-        /* --- DASHBOARD LAYOUT (ORIGINAL STYLE) --- */
+        /* --- DASHBOARD LAYOUT (STACKED CARDS) --- */
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
         .card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
         
-        .dash-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px; }
-        @media (max-width: 768px) { .dash-grid { grid-template-columns: 1fr; } }
+        /* Independent Journal Card Style */
+        .journal-full-card {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 12px; margin-bottom: 30px; overflow: hidden;
+            animation: fadeIn 0.4s;
+        }
+        .jfc-header {
+            padding: 15px 20px; background: var(--cell-bg); border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+        }
+        .jfc-title { font-size: 1.2rem; font-weight: 800; color: var(--accent); }
+        .jfc-stats-row { display: flex; gap: 20px; font-size: 0.9rem; }
+        .jfc-stat { display: flex; flex-direction: column; align-items: flex-end; }
+        .jfc-stat small { color: #888; font-size: 0.7rem; }
+        .jfc-content { padding: 20px; }
+        .jfc-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .jfc-grid { grid-template-columns: 1fr; } }
         
         .ot-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        
-        .journal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .journal-card { background: var(--cell-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); text-align: center; cursor: pointer; transition: 0.2s; }
-        .journal-card:hover { border-color: var(--accent); }
-        .j-name { font-weight: bold; margin-bottom: 5px; color: var(--accent); }
-        .j-pnl { font-size: 1.2rem; font-weight: 800; }
-        .j-win { font-size: 0.8rem; color: #888; }
 
         /* --- CALENDAR --- */
         .cal-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
@@ -163,8 +171,8 @@
     <div class="nav-separator"></div>
     
     <div class="nav-selector-container">
-        <label class="nav-selector-label">JOURNAL AUSWÄHLEN ⌄</label>
-        <select id="navJournalSelect" onchange="changeGlobalFilter(this.value)"></select>
+        <label class="nav-selector-label">AKTUELLES JOURNAL ⌄</label>
+        <select id="navJournalSelect" onchange="changeActiveJournal(this.value)"></select>
     </div>
     
     <div class="nav-separator"></div>
@@ -181,24 +189,7 @@
 <div id="app-content" class="container hidden">
     
     <section id="view-Übersicht" class="view-section active">
-        <h2 style="margin-top:0;" id="dash-main-title">Global Performance</h2>
-        <div class="dash-grid">
-            <div class="card" style="height:300px; display:flex; flex-direction:column;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <span style="font-weight:bold; color:#888;">Equity Curve</span>
-                    <div id="dashTotalPnl" class="sensitive" style="font-weight:800;">0.00 €</div>
-                </div>
-                <div style="flex:1; position:relative;"><canvas id="ovChart"></canvas></div>
-            </div>
-
-            <div class="card" style="height:300px; overflow-y:auto;">
-                <h4 style="margin-top:0; margin-bottom:10px; color:var(--accent);">Offene Trades</h4>
-                <div id="dash-open-list"><p style="color:#555; font-size:0.9rem;">Keine offenen Trades.</p></div>
-            </div>
-        </div>
-
-        <h3>Journal Übersicht</h3>
-        <div id="journal-cards-container" class="journal-grid"></div>
+        <div id="dashboard-journals-list"></div>
     </section>
 
     <section id="view-Kalender" class="view-section">
@@ -206,7 +197,7 @@
             <div class="cal-header-row">
                 <div>
                     <h2 id="cal-month-title" style="margin:0;">-</h2>
-                    <small id="cal-filter-hint" style="color:var(--accent); font-size:0.8rem;">Alle Journals</small>
+                    <small id="cal-filter-hint" style="color:var(--accent); font-size:0.8rem;">-</small>
                 </div>
                 <div>
                     <button class="chart-btn" onclick="changeCalMonth(-1)">❮</button>
@@ -304,11 +295,11 @@
 
     let trades = [];
     let journals = []; 
-    let ovChart = null; 
+    let chartInstances = {}; 
     let dayChart = null;
     let calDate = new Date();
     let privacyMode = false;
-    let currentGlobalFilter = 'All'; 
+    let activeJournal = null; // Currently selected journal for Calendar/History
 
     if(localStorage.getItem('tradeTheme') === 'light') document.body.classList.add('light-mode');
 
@@ -330,6 +321,7 @@
     async function loadData() {
         if(!auth.currentUser) return;
         
+        // Load Journals
         const jSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get();
         journals = jSnap.docs.map(d => ({id: d.id, ...d.data()}));
         if(journals.length === 0) {
@@ -338,145 +330,141 @@
             journals = newSnap.docs.map(d => ({id: d.id, ...d.data()}));
         }
 
+        // Set default active journal if none
+        if(!activeJournal && journals.length > 0) activeJournal = journals[0].name;
+
+        // Load Trades
         const tSnap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
         trades = tSnap.docs.map(d => ({id: d.id, ...d.data()}));
 
         populateSelectors();
-        renderDashboard();
+        renderDashboard(); // Dashboard shows ALL stacked
     }
 
     function populateSelectors() {
+        // Sidebar Filter (NO 'ALL' Option)
         const navSel = document.getElementById('navJournalSelect');
-        navSel.innerHTML = '<option value="All">Alle Journals</option>' + journals.map(j => `<option value="${j.name}">${j.name}</option>`).join('');
-        navSel.value = currentGlobalFilter;
+        navSel.innerHTML = journals.map(j => `<option value="${j.name}">${j.name}</option>`).join('');
+        if(activeJournal) navSel.value = activeJournal;
 
+        // Selector for Creating Trade
         const createSel = document.getElementById('inpJournalSelect');
         createSel.innerHTML = journals.map(j => `<option value="${j.name}">${j.name}</option>`).join('');
+        if(activeJournal) createSel.value = activeJournal;
     }
 
-    function changeGlobalFilter(val) {
-        currentGlobalFilter = val;
-        document.getElementById('cal-filter-hint').innerText = val === 'All' ? 'Alle Journals' : `Journal: ${val}`;
-        
+    function changeActiveJournal(val) {
+        activeJournal = val;
+        // Re-render specific views that depend on selection
+        // Dashboard IGNORES this selection (as per request)
         const activeId = document.querySelector('.view-section.active').id;
-        if(activeId === 'view-Übersicht') renderDashboard();
         if(activeId === 'view-Kalender') renderCalendar();
         if(activeId === 'view-Historie') renderHistory();
         
         document.getElementById('navDrawer').classList.remove('open');
     }
 
-    // --- DASHBOARD (SINGLE CHART LOGIC) ---
+    // --- DASHBOARD LOGIC (ALWAYS SHOWS ALL STACKED) ---
     function renderDashboard() {
-        const isAll = currentGlobalFilter === 'All';
-        const filteredTrades = trades.filter(t => isAll || (t.journal || 'Main') === currentGlobalFilter);
+        const container = document.getElementById('dashboard-journals-list');
+        container.innerHTML = '';
         
-        document.getElementById('dash-main-title').innerText = isAll ? "Global Performance" : `${currentGlobalFilter} Performance`;
+        // Cleanup charts
+        Object.values(chartInstances).forEach(c => c.destroy());
+        chartInstances = {};
 
-        // 1. Calculate Start Capital based on Filter
-        let startCap = 0;
-        if(isAll) {
-            startCap = journals.reduce((sum, j) => sum + (parseFloat(j.startCap)||0), 0);
-        } else {
-            const j = journals.find(x => x.name === currentGlobalFilter);
-            startCap = j ? (parseFloat(j.startCap)||0) : 0;
-        }
-
-        // 2. Chart Data
-        const closed = filteredTrades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
-        let runningBal = startCap;
-        const data = closed.map(t => { runningBal += t.pnl; return runningBal; });
-        
-        // Prepend Start Cap for chart niceness if we want, or just list trades. 
-        // Let's prepend the start point.
-        const chartData = [startCap, ...data];
-        const labels = ["Start", ...closed.map(t => "")];
-
-        document.getElementById('dashTotalPnl').innerText = runningBal.toFixed(2) + " €";
-        
-        const ctx = document.getElementById('ovChart').getContext('2d');
-        if(ovChart) ovChart.destroy();
-        ovChart = new Chart(ctx, {
-            type: 'line',
-            data: { 
-                labels: labels, 
-                datasets: [{ 
-                    data: chartData, 
-                    borderColor: '#bb86fc', 
-                    borderWidth: 2, 
-                    pointRadius: 0, 
-                    tension: 0.3,
-                    fill: true,
-                    backgroundColor: 'rgba(187, 134, 252, 0.05)'
-                }] 
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } }
-        });
-
-        // 3. Open Trades List
-        const open = filteredTrades.filter(t => t.status === 'Aktiv');
-        const list = document.getElementById('dash-open-list');
-        if(open.length === 0) list.innerHTML = '<p style="color:#666; font-style:italic;">Keine offenen Trades.</p>';
-        else {
-            list.innerHTML = open.map(t => `
-                <div class="ot-list-item">
-                    <div>
-                        <div style="font-weight:bold; color:var(--accent);">${t.asset}</div>
-                        <div style="font-size:0.75rem; color:#888;">${t.journal || 'Main'}</div>
-                    </div>
-                    <button class="chart-btn" onclick="editTrade('${t.id}', true)">Close</button>
-                </div>
-            `).join('');
-        }
-
-        // 4. Journal Breakdown Cards (Only if ALL is selected, otherwise show just the one?)
-        // Let's show all always so you can see status of others quickly.
-        const journalStats = {};
-        journals.forEach(j => { journalStats[j.name] = { pnl: 0, wins: 0, count: 0, id: j.id }; });
-        
-        trades.forEach(t => {
-            const jName = t.journal || 'Main';
-            if(journalStats[jName] && t.status === 'Geschlossen') {
-                journalStats[jName].pnl += t.pnl;
-                journalStats[jName].count++;
-                if(t.pnl > 0) journalStats[jName].wins++;
-            }
-        });
-
-        const cardContainer = document.getElementById('journal-cards-container');
-        cardContainer.innerHTML = '';
-        Object.keys(journalStats).forEach(jName => {
-            const s = journalStats[jName];
-            const wr = s.count > 0 ? (s.wins / s.count * 100).toFixed(0) : 0;
-            const pnlClass = s.pnl >= 0 ? 'text-green' : 'text-red';
-            // Highlight selected journal
-            const borderStyle = (currentGlobalFilter === jName) ? 'border: 2px solid var(--accent);' : '';
+        journals.forEach(journal => {
+            const jTrades = trades.filter(t => (t.journal || 'Main') === journal.name);
+            const closed = jTrades.filter(t => t.status === 'Geschlossen').sort((a,b) => new Date(a.date) - new Date(b.date));
+            const open = jTrades.filter(t => t.status === 'Aktiv');
             
-            cardContainer.innerHTML += `
-                <div class="journal-card" style="${borderStyle}" onclick="selectJournalFromCard('${jName}')">
-                    <div class="j-name">${jName}</div>
-                    <div class="j-pnl sensitive ${pnlClass}">${s.pnl.toFixed(2)} €</div>
-                    <div class="j-win">Winrate: ${wr}%</div>
+            const startCap = parseFloat(journal.startCap) || 0;
+            let currentEquity = startCap;
+            let totalPnL = 0;
+            let wins = 0;
+            
+            const equityCurve = [startCap];
+            closed.forEach(t => {
+                totalPnL += t.pnl;
+                currentEquity += t.pnl;
+                equityCurve.push(currentEquity);
+                if(t.pnl > 0) wins++;
+            });
+            
+            const winrate = closed.length > 0 ? ((wins / closed.length) * 100).toFixed(0) : 0;
+            const pnlColor = totalPnL >= 0 ? 'var(--success)' : 'var(--danger)';
+
+            const canvasId = `chart-${journal.id}`;
+            let openTradesHtml = '<p style="color:#666; font-style:italic; font-size:0.8rem;">Keine offenen Trades.</p>';
+            if(open.length > 0) {
+                openTradesHtml = open.map(t => `
+                    <div class="ot-list-item">
+                        <span style="font-weight:bold; color:var(--accent);">${t.asset}</span>
+                        <button class="btn-small" onclick="editTrade('${t.id}', true)">Close</button>
+                    </div>
+                `).join('');
+            }
+
+            const html = `
+                <div class="journal-full-card">
+                    <div class="jfc-header">
+                        <div class="jfc-title">${journal.name}</div>
+                        <div class="jfc-stats-row">
+                            <div class="jfc-stat"><small>Start</small><span>${startCap.toFixed(2)}€</span></div>
+                            <div class="jfc-stat"><small>Balance</small><span class="sensitive" style="font-weight:bold;">${currentEquity.toFixed(2)}€</span></div>
+                            <div class="jfc-stat"><small>Gewinn</small><span class="sensitive" style="color:${pnlColor}; font-weight:bold;">${totalPnL > 0 ? '+' : ''}${totalPnL.toFixed(2)}€</span></div>
+                            <div class="jfc-stat"><small>Winrate</small><span>${winrate}%</span></div>
+                        </div>
+                    </div>
+                    <div class="jfc-content">
+                        <div class="jfc-grid">
+                            <div style="height:250px;"><canvas id="${canvasId}"></canvas></div>
+                            <div>
+                                <h4 style="margin-top:0; font-size:0.9rem; color:#888;">OPEN TRADES</h4>
+                                ${openTradesHtml}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
+            container.innerHTML += html;
+
+            setTimeout(() => {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                chartInstances[canvasId] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: equityCurve.map(x => ''),
+                        datasets: [{
+                            data: equityCurve,
+                            borderColor: '#bb86fc', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: true,
+                            backgroundColor: 'rgba(187, 134, 252, 0.05)'
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { display: false }, y: { grid: { color: '#222' } } }
+                    }
+                });
+            }, 50);
         });
     }
 
-    function selectJournalFromCard(jName) {
-        document.getElementById('navJournalSelect').value = jName;
-        changeGlobalFilter(jName);
-        showView('Kalender'); // User might expect to go to details when clicking card
-    }
-
-    // --- CALENDAR ---
+    // --- CALENDAR (DEPENDS ON ACTIVE JOURNAL) ---
     function changeCalMonth(d) { calDate.setMonth(calDate.getMonth() + d); renderCalendar(); }
     
     function renderCalendar() {
+        // Only show trades for activeJournal
+        if(!activeJournal) return;
+        document.getElementById('cal-filter-hint').innerText = `Journal: ${activeJournal}`;
+
         const y = calDate.getFullYear(), m = calDate.getMonth();
         document.getElementById('cal-month-title').innerText = new Date(y, m).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
         const grid = document.getElementById('cal-days-grid'); grid.innerHTML = "";
         
-        const filtered = trades.filter(t => currentGlobalFilter === 'All' || (t.journal || 'Main') === currentGlobalFilter);
+        // Filter: STRICTLY activeJournal
+        const filtered = trades.filter(t => (t.journal || 'Main') === activeJournal);
 
         const firstDay = new Date(y, m, 1).getDay();
         const lastDay = new Date(y, m + 1, 0).getDate();
@@ -501,7 +489,7 @@
         document.getElementById('dv-date-title').innerText = d.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
         
         const dayTrades = trades.filter(t => {
-            if(currentGlobalFilter !== 'All' && (t.journal || 'Main') !== currentGlobalFilter) return false;
+            if((t.journal || 'Main') !== activeJournal) return false;
             return t.status === 'Geschlossen' && new Date(t.date).toDateString() === d.toDateString();
         }).sort((a,b)=> new Date(a.date)-new Date(b.date));
 
@@ -537,10 +525,12 @@
     }
     function closeDayDetail() { document.getElementById('popup-overlay').classList.remove('open'); }
 
-    // --- HISTORIE ---
+    // --- HISTORIE (DEPENDS ON ACTIVE JOURNAL) ---
     function renderHistory() {
-        const filtered = trades.filter(t => (currentGlobalFilter === 'All' || (t.journal||'Main') === currentGlobalFilter)).sort((a,b)=>new Date(b.date)-new Date(a.date));
-        document.getElementById('hist-title').innerText = currentGlobalFilter === 'All' ? 'Trade Historie (Alle)' : `Trade Historie (${currentGlobalFilter})`;
+        if(!activeJournal) return;
+        document.getElementById('hist-title').innerText = `Trade Historie (${activeJournal})`;
+        const filtered = trades.filter(t => (t.journal||'Main') === activeJournal).sort((a,b)=>new Date(b.date)-new Date(a.date));
+        
         document.getElementById('tradeBody').innerHTML = filtered.map(t => `
             <tr>
                 <td style="padding:10px;">${t.date.split('T')[0]}<br><small style="color:#666">${t.journal||'Main'}</small></td>
@@ -567,6 +557,9 @@
         const tQuery = await db.collection('trades').where('userId', '==', auth.currentUser.uid).where('journal', '==', name).get();
         tQuery.docs.forEach(doc => batch.delete(doc.ref));
         await batch.commit();
+        
+        // Reset active journal if we deleted it
+        if(activeJournal === name) activeJournal = null;
         await loadData(); renderSettingsList();
     }
     async function renameJournal(id, oldName) {
@@ -577,6 +570,8 @@
         const tQuery = await db.collection('trades').where('userId', '==', auth.currentUser.uid).where('journal', '==', oldName).get();
         tQuery.docs.forEach(doc => batch.update(doc.ref, { journal: newName }));
         await batch.commit();
+        
+        if(activeJournal === oldName) activeJournal = newName;
         await loadData(); renderSettingsList();
     }
     function renderSettingsList() {
@@ -611,7 +606,8 @@
     function prepareCreateView() {
         document.getElementById('editId').value = ""; document.getElementById('datetime').value = new Date().toISOString().slice(0,16);
         document.getElementById('assetInput').value = ""; document.getElementById('pnl').value = ""; document.getElementById('note').value = "";
-        if(journals.length > 0) document.getElementById('inpJournalSelect').value = journals[0].name;
+        // Default to activeJournal if available
+        if(activeJournal) document.getElementById('inpJournalSelect').value = activeJournal;
         toggleFormFields(); showView('Trade-erstellen');
     }
 
