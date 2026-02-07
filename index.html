@@ -129,6 +129,9 @@
         .chart-btn { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
         .chart-btn.active { background: var(--accent); color: black; }
         .icon-btn { background:none; border:none; color:#888; cursor:pointer; }
+        
+        /* ADMIN LIST STYLE */
+        .admin-member-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -190,7 +193,6 @@
     <button onclick="showView('News')" id="btn-News">📰 News</button>
     <div class="nav-separator"></div>
     <button onclick="showView('Einstellungen')" id="btn-Einstellungen">⚙️ Einstellungen</button>
-    <button id="admin-link" class="hidden" onclick="showView('Mitglieder')">👥 Mitglieder</button>
     <button onclick="handleLogout()" style="color: var(--danger); margin-top:20px;">🚪 Logout</button>
 </nav>
 
@@ -278,19 +280,34 @@
     
     <section id="view-Einstellungen" class="view-section">
         <div class="card">
-            <h3>Einstellungen</h3>
+            <h3>App Einstellungen</h3>
             <button onclick="setTheme('dark')" class="chart-btn" style="width:48%">Dark</button>
             <button onclick="setTheme('light')" class="chart-btn" style="width:48%">Light</button>
             <br><br>
             <label>Startkapital</label><input type="number" id="settingStartCap">
             <label>Max Tagesverlust</label><input type="number" id="settingMaxLoss">
             <button onclick="saveSettings()" class="btn-primary">Speichern</button>
+            
+            <div id="admin-panel" class="hidden" style="margin-top:40px; border-top:1px solid var(--border); padding-top:20px;">
+                <h3 style="color:var(--accent); display:flex; align-items:center;">
+                    <span style="margin-right:10px;">🛡️</span> Admin Bereich
+                </h3>
+                <p style="color:#888; font-size:0.9rem;">Mitgliederverwaltung</p>
+                
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <input id="admEmail" placeholder="Neues Mitglied (Email)" style="margin-bottom:0;">
+                    <button onclick="admAdd()" class="btn-primary" style="width:100px; padding:0;">Add</button>
+                </div>
+                
+                <div style="background:var(--cell-bg); border-radius:8px; border:1px solid var(--border); padding:10px;">
+                    <div id="admList" style="max-height:200px; overflow-y:auto;">
+                        <div style="color:#666; text-align:center; padding:10px;">Lade Liste...</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section id="view-Mitglieder" class="view-section">
-        <div class="card"><h3>Mitglieder</h3><input id="admEmail"><button onclick="admAdd()" class="btn-primary">Add</button><div id="admList"></div></div>
-    </section>
 </div>
 
 <script>
@@ -307,10 +324,15 @@
     auth.onAuthStateChanged(async (user) => {
         if(user) {
             const email = user.email.toLowerCase().trim();
+            // CHECK IF ADMIN
             if(email === "leon.luca.lauterbach@gmail.com") {
-                document.getElementById('admin-link').classList.remove('hidden');
-                admLoad();
+                const admPanel = document.getElementById('admin-panel');
+                if(admPanel) {
+                    admPanel.classList.remove('hidden');
+                    admLoad();
+                }
             }
+
             document.getElementById('auth-overlay').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
             document.getElementById('main-header').classList.remove('hidden');
@@ -476,7 +498,6 @@
 
     function openDayDetail(dateStr) {
         const d = new Date(dateStr);
-        // Format date like "Friday, 16 January 2026"
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dv-date-title').innerText = d.toLocaleDateString('en-GB', options);
         
@@ -620,9 +641,40 @@
     function saveSettings() { localStorage.setItem('startCap', document.getElementById('settingStartCap').value); localStorage.setItem('maxLoss', document.getElementById('settingMaxLoss').value); alert("Gespeichert"); }
     function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerText = lot.toFixed(2) + " Lot"; } }
     
-    async function admLoad() { const s = await db.collection('members').get(); document.getElementById('admList').innerHTML = s.docs.map(d => `<div>${d.data().email} <span onclick="admDel('${d.id}')" style="cursor:pointer;color:red;">X</span></div>`).join(''); }
-    async function admAdd() { const e=document.getElementById('admEmail').value.toLowerCase(); if(e) await db.collection('members').add({email:e}); admLoad(); }
-    async function admDel(id) { await db.collection('members').doc(id).delete(); admLoad(); }
+    // ADMIN FUNCTIONS
+    async function admLoad() { 
+        try {
+            const s = await db.collection('members').get(); 
+            const list = document.getElementById('admList');
+            if(s.docs.length === 0) {
+                list.innerHTML = '<div style="color:#666; text-align:center; padding:10px;">Keine Mitglieder gefunden.</div>';
+                return;
+            }
+            list.innerHTML = s.docs.map(d => `
+                <div class="admin-member-row">
+                    <span>${d.data().email}</span>
+                    <span onclick="admDel('${d.id}')" style="cursor:pointer; color:var(--danger); font-weight:bold;">✕</span>
+                </div>
+            `).join(''); 
+        } catch(e) {
+            console.error(e);
+            document.getElementById('admList').innerHTML = '<div style="color:red">Fehler beim Laden.</div>';
+        }
+    }
+    async function admAdd() { 
+        const e=document.getElementById('admEmail').value.toLowerCase().trim(); 
+        if(e) { 
+            await db.collection('members').add({email:e}); 
+            document.getElementById('admEmail').value = "";
+            admLoad(); 
+        } 
+    }
+    async function admDel(id) { 
+        if(confirm("Mitglied entfernen?")) {
+            await db.collection('members').doc(id).delete(); 
+            admLoad(); 
+        }
+    }
 </script>
 </body>
 </html>
