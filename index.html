@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Secured</title>
+    <title>TradeCloud Pro - Security Gate</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -83,7 +83,7 @@
         /* --- POPUP OVERLAY --- */
         #popup-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
             z-index: 999; display: none; justify-content: center; align-items: center;
             opacity: 0; transition: opacity 0.3s ease;
         }
@@ -92,7 +92,7 @@
         /* --- MODAL BASE --- */
         .modal-base {
             width: 100%; max-width: 500px;
-            background: var(--popup-bg); /* Adaptive Theme Color */
+            background: var(--popup-bg); 
             color: var(--text-main);
             border-radius: 16px;
             border: 1px solid var(--border);
@@ -104,7 +104,7 @@
 
         /* --- CALENDAR POPUP SPECIAL DESIGN (Black) --- */
         #day-detail-view {
-            background: #000000 !important; /* Force Black */
+            background: #000000 !important; 
             color: #ffffff !important;
             border: 1px solid #333;
         }
@@ -550,27 +550,41 @@
 
     auth.onAuthStateChanged(async (user) => {
         if(user) {
-            const firstName = user.email.split('@')[0].split('.')[0];
-            const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
-            currentUserName = capitalizedName;
-            document.getElementById('user-greeting-name').innerText = capitalizedName;
-
             const email = user.email.toLowerCase().trim();
             if(email === "leon.luca.lauterbach@gmail.com") {
+                // Admin access
                 isAdmin = true;
                 const admPanel = document.getElementById('admin-panel');
                 if(admPanel) { admPanel.classList.remove('hidden'); admLoad(); }
+                finishLogin(user);
             } else {
-                isAdmin = false;
+                // Check if Member
+                const memberSnap = await db.collection('members').where('email', '==', email).get();
+                if(!memberSnap.empty) {
+                    isAdmin = false;
+                    finishLogin(user);
+                } else {
+                    alert("Zugriff verweigert! Diese E-Mail ist nicht registriert.");
+                    auth.signOut();
+                    location.reload();
+                }
             }
-            document.getElementById('auth-overlay').classList.add('hidden');
-            document.getElementById('app-content').classList.remove('hidden');
-            document.getElementById('main-header').classList.remove('hidden');
-            
-            await loadData();
-            loadChat(); 
         }
     });
+
+    async function finishLogin(user) {
+        const firstName = user.email.split('@')[0].split('.')[0];
+        const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+        currentUserName = capitalizedName;
+        document.getElementById('user-greeting-name').innerText = capitalizedName;
+        
+        document.getElementById('auth-overlay').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        document.getElementById('main-header').classList.remove('hidden');
+        
+        await loadData();
+        loadChat();
+    }
 
     async function loadData() {
         if(!auth.currentUser) return;
@@ -946,7 +960,7 @@
         let r=0; const data = dayTrades.map(t=>{r+=t.pnl; return r;});
         dayChart = new Chart(ctx, { 
             type:'line', 
-            data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#30d158' : '#ff453a', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(48, 209, 88, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, 
+            data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#00c853' : '#ff3d00', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, 
             options:{ responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{grid:{color:'#333'}}} } 
         });
     }
