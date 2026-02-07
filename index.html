@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Trade Details</title>
+    <title>TradeCloud Pro - Clean Details</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -106,8 +106,8 @@
         #day-detail-view .trade-row, #day-detail-view .trade-row-header { border-bottom-color: #2c2c2e; }
         #day-detail-view .tr-date, #day-detail-view .tr-sym, #day-detail-view .dv-stat-val, #day-detail-view .popup-title, #day-detail-view #dv-date-title { color: #ffffff; }
 
-        /* TRADE DETAIL POPUP (Level 2) */
-        #trade-detail-view { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; z-index: 1001; } /* Higher Z-Index */
+        /* TRADE DETAIL POPUP (SPECIAL BLACK DESIGN - LEVEL 2) */
+        #trade-detail-view { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; z-index: 1001; } 
 
         /* Other Popup Content */
         .dv-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -133,13 +133,10 @@
         .td-hero { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #333; }
         .td-asset { font-size: 1.5rem; font-weight: 800; color: white; display:block; }
         .td-pnl { font-size: 2.5rem; font-weight: 900; margin-top: 5px; display:block; }
-        .td-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .td-box { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; }
+        
         .td-label { color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; display: block; }
-        .td-val { color: white; font-size: 1rem; font-weight: 600; }
-        .td-note { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; margin-bottom: 20px; font-style: italic; color: #ccc; font-size: 0.9rem; }
-        .td-img-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .td-img { width: 100%; border-radius: 8px; border: 1px solid #333; cursor: pointer; }
+        .td-img { width: 100%; border-radius: 8px; border: 1px solid #333; cursor: pointer; margin-top:5px; }
+        .img-box { background: #151517; padding:15px; border-radius:12px; border:1px solid #2c2c2e; }
 
         /* --- JOURNAL TABLE --- */
         .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: var(--text-main); }
@@ -554,7 +551,7 @@
     let shareTradeId = null;
     let shareType = null;
     let msgToDeleteId = null;
-    let configuringJournalId = null;
+    let configuringJournalId = null; // For date modal
 
     // THEME INIT
     const isLight = localStorage.getItem('tradeTheme') === 'light';
@@ -570,7 +567,6 @@
                 if(admPanel) { admPanel.classList.remove('hidden'); admLoad(); }
                 finishLogin(user);
             } else {
-                // SECURITY CHECK
                 const memberSnap = await db.collection('members').where('email', '==', email).get();
                 if(!memberSnap.empty) {
                     isAdmin = false;
@@ -736,6 +732,7 @@
                     <div class="jfc-header">
                         <div class="jfc-title">${journal.name}</div>
                     </div>
+                    
                     <div class="card-filters">
                         ${filterHtml}
                     </div>
@@ -805,7 +802,7 @@
         assetChartInstance = new Chart(ctxA, { type: 'bar', data: { labels: sortedAssets, datasets: [{ label: 'PnL', data: sortedAssets.map(a => assetMap[a]), backgroundColor: sortedAssets.map(a => assetMap[a] >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: sortedAssets.map(a => assetMap[a] >= 0 ? '#00c853' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
         const ctxW = document.getElementById('weekdayChart').getContext('2d');
         if(weekdayChartInstance) weekdayChartInstance.destroy();
-        weekdayChartInstance = new Chart(ctxW, { type: 'bar', data: { labels: dayLabels, datasets: [{ label: 'PnL', data: [0,1,2,3,4,5,6].map(d => daysMap[d]), backgroundColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? '#30d158' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
+        weekdayChartInstance = new Chart(ctxW, { type: 'bar', data: { labels: dayLabels, datasets: [{ label: 'PnL', data: [0,1,2,3,4,5,6].map(d => daysMap[d]), backgroundColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? '#00c853' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
         const ctxH = document.getElementById('hourChart').getContext('2d');
         if(hourChartInstance) hourChartInstance.destroy();
         hourChartInstance = new Chart(ctxH, { type: 'bar', data: { labels: hourLabels, datasets: [{ label: 'PnL', data: hourMap, backgroundColor: hourMap.map(v => v >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: hourMap.map(v => v >= 0 ? '#00c853' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
@@ -941,21 +938,26 @@
                 <span class="td-pnl" style="color:${t.status==='Aktiv'?'#0a84ff':(t.pnl>=0?'#30d158':'#ff453a')}">${t.status==='Aktiv'?'OPEN':t.pnl.toFixed(2)+'€'}</span>
             </div>
             
-            <div class="td-grid">
-                <div class="td-box"><span class="td-label">Entry</span><span class="td-val">${t.entry || '-'}</span></div>
-                <div class="td-box"><span class="td-label">Stop Loss</span><span class="td-val" style="color:#ff453a">${t.sl || '-'}</span></div>
-                <div class="td-box"><span class="td-label">Take Profit 1</span><span class="td-val" style="color:#30d158">${t.tp1 || '-'}</span></div>
-                <div class="td-box"><span class="td-label">Date</span><span class="td-val">${t.date.split('T')[0]}</span></div>
-            </div>
+            <div style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
         `;
         
-        if(t.note) {
-            html += `<div class="td-note">"${t.note}"</div>`;
+        if(t.imgSetup) {
+            html += `
+                <div class="img-box">
+                    <span class="td-label">Setup</span>
+                    <img src="${t.imgSetup}" class="td-img" onclick="window.open('${t.imgSetup}','_blank')">
+                </div>`;
         }
-        
-        if(imgUrl && imgUrl !== 'undefined') {
-            html += `<div class="td-img-container"><img src="${imgUrl}" class="td-img" onclick="window.open('${imgUrl}','_blank')"></div>`;
+
+        if(t.imgResult) {
+            html += `
+                <div class="img-box">
+                    <span class="td-label">Ergebnis</span>
+                    <img src="${t.imgResult}" class="td-img" onclick="window.open('${t.imgResult}','_blank')">
+                </div>`;
         }
+
+        html += `</div>`;
         
         document.getElementById('td-content').innerHTML = html;
     }
@@ -1060,7 +1062,7 @@
         let r=0; const data = dayTrades.map(t=>{r+=t.pnl; return r;});
         dayChart = new Chart(ctx, { 
             type:'line', 
-            data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#30d158' : '#ff453a', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, 
+            data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#00c853' : '#ff453a', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, 
             options:{ responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{grid:{color:'#333'}}} } 
         });
     }
