@@ -321,9 +321,11 @@
     async function loadData() {
         if(!auth.currentUser) return;
         
-        // Load Journals
+        // 1. Load Journals
         const jSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get();
         journals = jSnap.docs.map(d => ({id: d.id, ...d.data()}));
+        
+        // If no journals exist, create a default one
         if(journals.length === 0) {
             await db.collection('journals').add({userId: auth.currentUser.uid, name: 'Main', startCap: 0});
             const newSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get();
@@ -333,12 +335,35 @@
         // Set default active journal if none
         if(!activeJournal && journals.length > 0) activeJournal = journals[0].name;
 
-        // Load Trades
+        // 2. Load Trades
         const tSnap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
         trades = tSnap.docs.map(d => ({id: d.id, ...d.data()}));
 
+        // 3. MIGRATION: Assign orphaned trades to first journal
+        if(journals.length > 0) {
+            const targetJ = journals[0].name;
+            const batch = db.batch();
+            let migrationCount = 0;
+            
+            trades.forEach(t => {
+                const isValid = journals.some(j => j.name === (t.journal || ''));
+                if(!isValid) {
+                    // Trade has no journal or invalid journal -> Move to first
+                    const ref = db.collection('trades').doc(t.id);
+                    batch.update(ref, { journal: targetJ });
+                    t.journal = targetJ; // Update local data
+                    migrationCount++;
+                }
+            });
+
+            if(migrationCount > 0) {
+                console.log(`Migrating ${migrationCount} trades to ${targetJ}`);
+                await batch.commit();
+            }
+        }
+
         populateSelectors();
-        renderDashboard(); // Dashboard shows ALL stacked
+        renderDashboard(); 
     }
 
     function populateSelectors() {
@@ -355,12 +380,9 @@
 
     function changeActiveJournal(val) {
         activeJournal = val;
-        // Re-render specific views that depend on selection
-        // Dashboard IGNORES this selection (as per request)
         const activeId = document.querySelector('.view-section.active').id;
         if(activeId === 'view-Kalender') renderCalendar();
         if(activeId === 'view-Historie') renderHistory();
-        
         document.getElementById('navDrawer').classList.remove('open');
     }
 
@@ -369,7 +391,6 @@
         const container = document.getElementById('dashboard-journals-list');
         container.innerHTML = '';
         
-        // Cleanup charts
         Object.values(chartInstances).forEach(c => c.destroy());
         chartInstances = {};
 
@@ -455,7 +476,6 @@
     function changeCalMonth(d) { calDate.setMonth(calDate.getMonth() + d); renderCalendar(); }
     
     function renderCalendar() {
-        // Only show trades for activeJournal
         if(!activeJournal) return;
         document.getElementById('cal-filter-hint').innerText = `Journal: ${activeJournal}`;
 
@@ -463,7 +483,6 @@
         document.getElementById('cal-month-title').innerText = new Date(y, m).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
         const grid = document.getElementById('cal-days-grid'); grid.innerHTML = "";
         
-        // Filter: STRICTLY activeJournal
         const filtered = trades.filter(t => (t.journal || 'Main') === activeJournal);
 
         const firstDay = new Date(y, m, 1).getDay();
@@ -557,8 +576,6 @@
         const tQuery = await db.collection('trades').where('userId', '==', auth.currentUser.uid).where('journal', '==', name).get();
         tQuery.docs.forEach(doc => batch.delete(doc.ref));
         await batch.commit();
-        
-        // Reset active journal if we deleted it
         if(activeJournal === name) activeJournal = null;
         await loadData(); renderSettingsList();
     }
@@ -570,7 +587,6 @@
         const tQuery = await db.collection('trades').where('userId', '==', auth.currentUser.uid).where('journal', '==', oldName).get();
         tQuery.docs.forEach(doc => batch.update(doc.ref, { journal: newName }));
         await batch.commit();
-        
         if(activeJournal === oldName) activeJournal = newName;
         await loadData(); renderSettingsList();
     }
@@ -606,7 +622,6 @@
     function prepareCreateView() {
         document.getElementById('editId').value = ""; document.getElementById('datetime').value = new Date().toISOString().slice(0,16);
         document.getElementById('assetInput').value = ""; document.getElementById('pnl').value = ""; document.getElementById('note').value = "";
-        // Default to activeJournal if available
         if(activeJournal) document.getElementById('inpJournalSelect').value = activeJournal;
         toggleFormFields(); showView('Trade-erstellen');
     }
