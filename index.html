@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Signals</title>
+    <title>TradeCloud Pro - Signal Copy</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -86,13 +86,16 @@
         .msg-wrapper.other .msg-bubble { background: var(--chat-other); color: var(--text-main); border-bottom-left-radius: 2px; }
         .msg-time { font-size: 0.65rem; color: #666; margin-top: 4px; text-align: right; display: block; }
         
-        /* Chat Card & Signal Styles */
-        .chat-trade-card { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 12px; width: 240px; margin-top: 5px; }
+        .chat-trade-card { 
+            background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; 
+            padding: 12px; width: 240px; margin-top: 5px; cursor: pointer; transition: transform 0.1s;
+        }
+        .chat-trade-card:active { transform: scale(0.98); border-color: var(--accent); }
         .ct-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-        .ct-img { width: 100%; height: 100px; object-fit: cover; border-radius: 4px; margin-top: 10px; cursor: pointer; }
+        .ct-img { width: 100%; height: 100px; object-fit: cover; border-radius: 4px; margin-top: 10px; pointer-events: none; /* Let parent handle click */ }
         .ct-footer { margin-top: 8px; font-size: 0.75rem; color:#888; display: flex; justify-content: space-between; }
         
-        .signal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.85rem; margin-top: 8px; }
+        .signal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.85rem; margin-top: 8px; pointer-events: none; }
         .signal-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .sig-label { color: #888; font-size: 0.75rem; }
         .sig-val { font-weight: bold; }
@@ -172,14 +175,14 @@
 
         .settings-list-item { display: flex; justify-content: space-between; align-items: center; background: var(--cell-bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
         
-        /* SHARE & DELETE MODAL */
-        #share-modal, #delete-modal {
+        /* SHARE & DELETE & SIGNAL MODALS */
+        #share-modal, #delete-modal, #signal-detail-modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: var(--popup-bg); border: 1px solid var(--border); border-radius: 12px;
             padding: 20px; width: 320px; z-index: 1001; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            display: none; flex-direction: column; gap: 15px;
+            display: none; flex-direction: column; gap: 15px; max-height: 85vh; overflow-y: auto;
         }
-        #share-modal.open, #delete-modal.open { display: flex; }
+        #share-modal.open, #delete-modal.open, #signal-detail-modal.open { display: flex; }
         
         .share-opt {
             padding: 15px; border: 1px solid var(--border); border-radius: 8px;
@@ -191,6 +194,20 @@
 
         .signal-input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
         .signal-input-grid input { margin-bottom: 0; padding: 8px; font-size: 0.9rem; }
+
+        /* Signal Detail Styles */
+        .sd-image { width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px; }
+        .sd-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 12px; background: var(--cell-bg); border-radius: 8px; border: 1px solid var(--border);
+        }
+        .sd-label { font-weight: bold; color: #888; font-size: 0.9rem; }
+        .sd-val { font-family: monospace; font-size: 1rem; color: var(--text-main); }
+        .copy-btn { 
+            background: none; border: 1px solid var(--border); border-radius: 6px; 
+            padding: 5px 8px; cursor: pointer; color: var(--accent); transition: 0.2s;
+        }
+        .copy-btn:hover { background: rgba(187, 134, 252, 0.1); }
     </style>
 </head>
 <body>
@@ -249,6 +266,16 @@
 
     <button onclick="confirmShare()" class="btn-primary" style="margin-top:10px;">Senden</button>
     <button onclick="closeShareModal()" class="btn-small" style="background:none; border:none;">Abbrechen</button>
+</div>
+
+<div id="signal-detail-modal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 style="margin:0;">Signal Details</h3>
+        <button onclick="closePopup()" style="background:none; border:none; color:#888; font-size:1.2rem; cursor:pointer;">✕</button>
+    </div>
+    <img id="sd-img" src="" class="sd-image hidden">
+    <div id="sd-content" style="display:flex; flex-direction:column; gap:8px;">
+        </div>
 </div>
 
 <div id="delete-modal" style="text-align:center;">
@@ -723,22 +750,23 @@
             const imgUrl = msg.sharedImage || t.imgSetup;
             const statusLabel = t.status === 'Aktiv' ? 'OPEN' : 'CLOSED';
             const color = t.status === 'Aktiv' ? '#00bcd4' : '#888';
-            const thumb = imgUrl ? `<img src="${imgUrl}" class="ct-img" onclick="window.open('${imgUrl}')">` : '';
+            const thumb = imgUrl ? `<img src="${imgUrl}" class="ct-img">` : '';
             
-            // Build signal details
+            // Build signal preview
             let sigHtml = '';
             if(t.entry || t.sl || t.tp1) {
                 sigHtml = `<div class="signal-grid">`;
                 if(t.entry) sigHtml += `<div class="signal-row"><span class="sig-label">Entry</span><span class="sig-val">${t.entry}</span></div>`;
                 if(t.sl) sigHtml += `<div class="signal-row"><span class="sig-label">SL</span><span class="sig-val text-sl">${t.sl}</span></div>`;
-                if(t.tp1) sigHtml += `<div class="signal-row"><span class="sig-label">TP 1</span><span class="sig-val text-tp">${t.tp1}</span></div>`;
-                if(t.tp2) sigHtml += `<div class="signal-row"><span class="sig-label">TP 2</span><span class="sig-val text-tp">${t.tp2}</span></div>`;
-                if(t.tp3) sigHtml += `<div class="signal-row"><span class="sig-label">TP 3</span><span class="sig-val text-tp">${t.tp3}</span></div>`;
                 sigHtml += `</div>`;
             }
 
+            // Encode whole trade object safe for html attribute
+            const tradeDataString = encodeURIComponent(JSON.stringify(t));
+            const imgUrlString = encodeURIComponent(imgUrl || '');
+
             content = `
-                <div class="chat-trade-card">
+                <div class="chat-trade-card" onclick="openSignalDetail('${tradeDataString}', '${imgUrlString}')">
                     <div class="ct-header">
                         <span>${t.asset}</span>
                         <span style="color:${color}">${statusLabel}</span>
@@ -746,7 +774,7 @@
                     <div>${t.status === 'Aktiv' ? 'Signal 📡' : 'Result 🏁'}</div>
                     ${thumb}
                     ${sigHtml}
-                    <div class="ct-footer"><span>${t.date.split('T')[0]}</span></div>
+                    <div class="ct-footer"><span>${t.date.split('T')[0]}</span> <span>Klicken zum Kopieren</span></div>
                 </div>`;
         }
 
@@ -806,11 +834,9 @@
         if(!trade.imgSetup) document.getElementById('opt-setup').classList.add('disabled');
         if(!trade.imgResult) document.getElementById('opt-result').classList.add('disabled');
         
-        // Show/Hide Signal Inputs based on Status
         const sigDiv = document.getElementById('signal-inputs');
         if(trade.status === 'Aktiv') {
             sigDiv.classList.remove('hidden');
-            // Clear inputs
             document.getElementById('sig-entry').value = '';
             document.getElementById('sig-sl').value = '';
             document.getElementById('sig-tp1').value = '';
@@ -848,7 +874,6 @@
         delete tradeCopy.pnl; 
         delete tradeCopy.userId; 
         
-        // Add Signal Data if Active
         if(trade.status === 'Aktiv') {
             tradeCopy.entry = document.getElementById('sig-entry').value;
             tradeCopy.sl = document.getElementById('sig-sl').value;
@@ -870,6 +895,57 @@
         
         closeShareModal();
         showView('Chat');
+    }
+
+    // --- SIGNAL DETAIL POPUP LOGIC ---
+    function openSignalDetail(tradeDataEncoded, imgUrlEncoded) {
+        const t = JSON.parse(decodeURIComponent(tradeDataEncoded));
+        const imgUrl = decodeURIComponent(imgUrlEncoded);
+        
+        const imgEl = document.getElementById('sd-img');
+        if(imgUrl && imgUrl !== 'undefined') {
+            imgEl.src = imgUrl;
+            imgEl.classList.remove('hidden');
+        } else {
+            imgEl.classList.add('hidden');
+        }
+        
+        const contentDiv = document.getElementById('sd-content');
+        contentDiv.innerHTML = ''; // clear previous
+        
+        const fields = [
+            { label: 'Asset', val: t.asset, id: 'sd-asset' },
+            { label: 'Entry', val: t.entry, id: 'sd-entry' },
+            { label: 'SL', val: t.sl, id: 'sd-sl' },
+            { label: 'TP 1', val: t.tp1, id: 'sd-tp1' },
+            { label: 'TP 2', val: t.tp2, id: 'sd-tp2' },
+            { label: 'TP 3', val: t.tp3, id: 'sd-tp3' }
+        ];
+        
+        fields.forEach(f => {
+            if(f.val) {
+                contentDiv.innerHTML += `
+                <div class="sd-row">
+                    <span class="sd-label">${f.label}</span>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="sd-val">${f.val}</span>
+                        <button class="copy-btn" id="btn-${f.id}" onclick="copyText('${f.val}', 'btn-${f.id}')">📋</button>
+                    </div>
+                </div>`;
+            }
+        });
+
+        document.getElementById('signal-detail-modal').classList.add('open');
+        document.getElementById('popup-overlay').classList.add('open');
+    }
+    
+    function copyText(val, btnId) {
+        navigator.clipboard.writeText(val).then(() => {
+            const btn = document.getElementById(btnId);
+            const originalText = btn.innerText;
+            btn.innerText = '✓';
+            setTimeout(() => { btn.innerText = '📋'; }, 1500);
+        });
     }
 
     function formatChatTime(timestamp) {
@@ -927,6 +1003,7 @@
     function closePopup() { 
         document.getElementById('share-modal').classList.remove('open');
         document.getElementById('delete-modal').classList.remove('open');
+        document.getElementById('signal-detail-modal').classList.remove('open');
         document.getElementById('popup-overlay').classList.remove('open');
         document.getElementById('day-detail-view').classList.add('hidden');
         document.getElementById('member-detail-view').classList.add('hidden');
