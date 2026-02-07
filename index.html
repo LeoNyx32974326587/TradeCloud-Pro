@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Final History</title>
+    <title>TradeCloud Pro - Auto Fill Share</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -905,8 +905,11 @@
         const sigDiv = document.getElementById('signal-inputs');
         if(trade.status === 'Aktiv') {
             sigDiv.classList.remove('hidden');
-            document.getElementById('sig-entry').value = ''; document.getElementById('sig-sl').value = '';
-            document.getElementById('sig-tp1').value = ''; document.getElementById('sig-tp2').value = ''; document.getElementById('sig-tp3').value = '';
+            document.getElementById('sig-entry').value = trade.entry || '';
+            document.getElementById('sig-sl').value = trade.sl || '';
+            document.getElementById('sig-tp1').value = trade.tp1 || '';
+            document.getElementById('sig-tp2').value = trade.tp2 || '';
+            document.getElementById('sig-tp3').value = trade.tp3 || '';
         } else { sigDiv.classList.add('hidden'); }
         document.getElementById('popup-overlay').classList.add('open');
         document.getElementById('share-modal').classList.remove('hidden'); 
@@ -999,11 +1002,13 @@
     function closeTradeDetail() {
         document.getElementById('trade-detail-view').classList.remove('open');
         document.getElementById('trade-detail-view').classList.add('hidden');
-        document.getElementById('popup-overlay').classList.remove('open');
+        // Only close overlay if not coming from day detail
+        if(document.getElementById('day-detail-view').classList.contains('hidden')) {
+             document.getElementById('popup-overlay').classList.remove('open');
+        }
     }
     
     function copyText(val, btnId) {
-        if(!val) return;
         navigator.clipboard.writeText(val).then(() => {
             const btn = document.getElementById(btnId);
             btn.innerText = '✓'; setTimeout(() => { btn.innerText = '📋'; }, 1500);
@@ -1177,7 +1182,7 @@
     function handleLogout() { auth.signOut().then(()=>location.reload()); }
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function toggleTheme(isDark) { if(isDark) { document.body.classList.remove('light-mode'); localStorage.setItem('tradeTheme', 'dark'); } else { document.body.classList.add('light-mode'); localStorage.setItem('tradeTheme', 'light'); } if(document.getElementById('view-Statistik').classList.contains('active')) renderStatistics(); }
-    function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerText = lot.toFixed(2) + " Lot"; } }
+    function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerHTML = `<div style="font-size:2rem;">${Math.max(lot,0.01).toFixed(2)} Lot</div><div style="font-size:0.9rem; color:#888;">Risk: ${riskAmt.toFixed(2)}€</div>`; } }
     function updateContractSize() { const val = document.getElementById('cType').value; if(val !== 'custom') document.getElementById('cContract').value = val; }
     async function admLoad() { try { const s = await db.collection('members').get(); document.getElementById('admList').innerHTML = s.docs.map(d => `<div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center; border-bottom:1px solid var(--border); padding-bottom:5px;"><span>${d.data().email}</span><div><button class="btn-icon" onclick="openMemberDetail('${d.id}', '${d.data().email}')" style="font-size:1rem; margin-right:5px;">👁️</button><button class="btn-icon btn-danger-hover" onclick="admDel('${d.id}')" style="font-size:1rem;">✕</button></div></div>`).join(''); } catch(e){} }
     async function admAdd() { const e=document.getElementById('admEmail').value.toLowerCase().trim(); if(e) { await db.collection('members').add({email:e}); document.getElementById('admEmail').value=''; admLoad(); } }
