@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Pure PnL</title>
+    <title>TradeCloud Pro - Admin & Toggle</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -36,6 +36,14 @@
         #view-title { font-weight: 700; font-size: 1.2rem; }
         .sensitive { filter: blur(var(--blur)); transition: filter 0.3s; }
 
+        /* --- TOGGLE SWITCH --- */
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
         /* --- NAV DRAWER --- */
         .nav-drawer { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: var(--card-bg); border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.5); overflow-y: auto; }
         .nav-drawer.open { left: 0; }
@@ -51,55 +59,19 @@
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
         .card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
         
-        .journal-full-card {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: 12px; margin-bottom: 30px; overflow: hidden;
-            animation: fadeIn 0.4s;
-            display: flex; flex-direction: column;
-        }
-        
-        .jfc-header {
-            padding: 15px 20px; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .journal-full-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 30px; overflow: hidden; animation: fadeIn 0.4s; display: flex; flex-direction: column; }
+        .jfc-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .jfc-title { font-size: 1.3rem; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
-
-        .jfc-body-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            padding: 20px;
-        }
-        
-        .jfc-chart-area {
-            position: relative;
-            height: 300px;
-            background: rgba(255,255,255,0.01);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            padding: 10px;
-        }
-
+        .jfc-body-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 20px; }
+        .jfc-chart-area { position: relative; height: 300px; background: rgba(255,255,255,0.01); border-radius: 8px; border: 1px solid var(--border); padding: 10px; }
         .jfc-sidebar { display: flex; flex-direction: column; gap: 15px; }
-
-        .jfc-stats-row {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-        }
-        
-        .stat-box {
-            background: var(--cell-bg); border: 1px solid var(--border); border-radius: 8px;
-            padding: 15px 10px; text-align: center; display: flex; flex-direction: column; justify-content: center;
-        }
+        .jfc-stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-box { background: var(--cell-bg); border: 1px solid var(--border); border-radius: 8px; padding: 15px 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
         .stat-label { font-size: 0.8rem; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
         .stat-value { font-size: 1.1rem; font-weight: 800; }
-
-        .open-trades-box {
-            background: var(--cell-bg); border: 1px solid var(--border); border-radius: 8px;
-            flex-grow: 1; padding: 15px; display: flex; flex-direction: column; min-height: 120px;
-        }
+        .open-trades-box { background: var(--cell-bg); border: 1px solid var(--border); border-radius: 8px; flex-grow: 1; padding: 15px; display: flex; flex-direction: column; min-height: 120px; }
         .ot-title { font-size: 0.9rem; color: #888; margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 5px;}
         .ot-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-
         @media (max-width: 768px) { .jfc-body-grid { grid-template-columns: 1fr; } .jfc-chart-area { height: 220px; } }
 
         /* --- CALENDAR --- */
@@ -139,10 +111,7 @@
         .dv-stat-label { font-size: 0.8rem; color: #888; margin-bottom: 5px; display: block; }
         .dv-stat-value { font-size: 1.3rem; font-weight: 800; }
         .dv-trades-list-container { padding: 0 20px 20px 20px; }
-        .dv-trade-item { 
-            background: var(--cell-bg); border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; 
-            display: flex; justify-content: space-between; align-items: center; 
-        }
+        .dv-trade-item { background: var(--cell-bg); border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .dv-trade-left { display: flex; align-items: center; gap: 12px; }
 
         /* --- UTILS --- */
@@ -152,16 +121,16 @@
         .chart-btn { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
         .chart-btn.active { background: var(--accent); color: black; }
         .icon-btn { background:none; border:none; color:#888; cursor:pointer; }
-        
         .settings-list-item { display: flex; justify-content: space-between; align-items: center; background: var(--cell-bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
-<div id="popup-overlay" onclick="if(event.target === this) closeDayDetail()">
-    <div id="day-detail-view" class="day-view-container">
+<div id="popup-overlay" onclick="if(event.target === this) closePopup()">
+    
+    <div id="day-detail-view" class="day-view-container hidden">
         <div class="dv-header">
-            <button class="dv-back-btn" onclick="closeDayDetail()">
+            <button class="dv-back-btn" onclick="closePopup()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </button>
             <h2 id="dv-date-title" class="dv-title">Date</h2>
@@ -176,6 +145,24 @@
         </div>
         <div class="dv-trades-list-container"><div id="dv-list"></div></div>
     </div>
+
+    <div id="member-detail-view" class="day-view-container hidden">
+        <div class="dv-header">
+            <button class="dv-back-btn" onclick="closePopup()">✕</button>
+            <h2 id="mem-title" class="dv-title">Mitglied</h2>
+            <div style="width: 24px;"></div>
+        </div>
+        <div class="dv-stats-grid">
+            <div class="dv-stat-box"><span class="dv-stat-label">Total PnL</span><div class="dv-stat-value sensitive">0.00 €</div></div>
+            <div class="dv-stat-box"><span class="dv-stat-label">Win rate</span><div class="dv-stat-value">0%</div></div>
+            <div class="dv-stat-box"><span class="dv-stat-label">Trades</span><div class="dv-stat-value">0</div></div>
+            <div class="dv-stat-box"><span class="dv-stat-label">Status</span><div class="dv-stat-value" style="color:var(--success)">Aktiv</div></div>
+        </div>
+        <div style="padding: 20px; text-align: center; color: #666; font-size: 0.9rem;">
+            <p>Detaillierte Handelsdaten sind für dieses Mitglied aktuell nicht verknüpft.</p>
+        </div>
+    </div>
+
 </div>
 
 <div id="auth-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); display:flex; justify-content:center; align-items:center; z-index:1000;">
@@ -284,8 +271,14 @@
     <section id="view-Einstellungen" class="view-section">
         <div class="card">
             <h3>App Einstellungen</h3>
-            <button onclick="setTheme('dark')" class="chart-btn" style="width:48%">Dark</button>
-            <button onclick="setTheme('light')" class="chart-btn" style="width:48%">Light</button>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; background:var(--cell-bg); padding:15px; border-radius:8px; border:1px solid var(--border);">
+                <span>Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)">
+                    <span class="slider round"></span>
+                </label>
+            </div>
             
             <h3 style="margin-top:30px; border-top:1px solid var(--border); padding-top:20px;">📚 Journal Verwaltung</h3>
             <div style="background:var(--cell-bg); padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:15px;">
@@ -330,7 +323,10 @@
     let activeJournal = null; 
     let editingJournalId = null;
 
-    if(localStorage.getItem('tradeTheme') === 'light') document.body.classList.add('light-mode');
+    // THEME INIT
+    const isLight = localStorage.getItem('tradeTheme') === 'light';
+    if(isLight) document.body.classList.add('light-mode');
+    document.getElementById('theme-toggle').checked = !isLight;
 
     auth.onAuthStateChanged(async (user) => {
         if(user) {
@@ -358,7 +354,7 @@
         journals = jSnap.docs.map(d => ({id: d.id, ...d.data()}));
         
         if(journals.length === 0) {
-            await db.collection('journals').add({userId: auth.currentUser.uid, name: 'Main', hidden: false});
+            await db.collection('journals').add({userId: auth.currentUser.uid, name: 'Main', startCap: 0, hidden: false});
             const newSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get();
             journals = newSnap.docs.map(d => ({id: d.id, ...d.data()}));
         }
@@ -406,7 +402,7 @@
         document.getElementById('navDrawer').classList.remove('open');
     }
 
-    // --- DASHBOARD: NO START CAP, JUST PNL ---
+    // --- DASHBOARD ---
     function renderDashboard() {
         const container = document.getElementById('dashboard-journals-list');
         container.innerHTML = '';
@@ -421,7 +417,7 @@
             
             let totalPnL = 0;
             let wins = 0;
-            const equityCurve = [0]; // Start Chart at 0
+            const equityCurve = [0];
             closed.forEach(t => { totalPnL += t.pnl; equityCurve.push(totalPnL); if(t.pnl > 0) wins++; });
             const winrate = closed.length > 0 ? ((wins / closed.length) * 100).toFixed(0) : 0;
             const pnlColor = totalPnL >= 0 ? 'var(--success)' : 'var(--danger)';
@@ -500,6 +496,7 @@
         }
     }
     function openDayDetail(dateStr) {
+        document.getElementById('member-detail-view').classList.add('hidden'); // Ensure member view is closed
         const d = new Date(dateStr);
         document.getElementById('dv-date-title').innerText = d.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
         const dayTrades = trades.filter(t => {
@@ -519,9 +516,23 @@
         let r=0; const data = dayTrades.map(t=>{r+=t.pnl; return r;});
         dayChart = new Chart(ctx, { type:'line', data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#00c853' : '#ff3d00', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 0 }] }, options:{ responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{grid:{color:'#222'}}} } });
         document.getElementById('dv-list').innerHTML = dayTrades.map(t => `<div class="dv-trade-item"><div class="dv-trade-left"><div class="dv-trade-icon ${t.pnl>=0?'text-green':'text-red'}">${t.pnl>=0?'↗':'↘'}</div><div class="dv-trade-info"><span class="dv-trade-time">${t.date.split('T')[1].slice(0,5)}</span><span class="dv-trade-asset">${t.asset}</span></div></div><div style="display:flex; align-items:center;"><div class="dv-trade-pnl sensitive ${t.pnl>=0?'text-green':'text-red'}">${t.pnl.toFixed(2)}</div></div></div>`).join('');
+        
+        document.getElementById('day-detail-view').classList.remove('hidden');
         document.getElementById('popup-overlay').classList.add('open');
     }
-    function closeDayDetail() { document.getElementById('popup-overlay').classList.remove('open'); }
+    function closePopup() { 
+        document.getElementById('popup-overlay').classList.remove('open');
+        document.getElementById('day-detail-view').classList.add('hidden');
+        document.getElementById('member-detail-view').classList.add('hidden');
+    }
+
+    // --- MEMBER OVERVIEW ---
+    function openMemberDetail(id, email) {
+        document.getElementById('day-detail-view').classList.add('hidden'); // Ensure day view is closed
+        document.getElementById('mem-title').innerText = email;
+        document.getElementById('member-detail-view').classList.remove('hidden');
+        document.getElementById('popup-overlay').classList.add('open');
+    }
 
     // --- HISTORIE ---
     function renderHistory() {
@@ -531,7 +542,7 @@
         document.getElementById('tradeBody').innerHTML = filtered.map(t => `<tr><td style="padding:10px;">${t.date.split('T')[0]}<br><small style="color:#666">${t.journal||'Main'}</small></td><td><b>${t.asset}</b></td><td class="sensitive" style="text-align:right; color:${t.status==='Aktiv'?'#fff':(t.pnl>=0?'var(--success)':'var(--danger)')}">${t.status==='Aktiv'?'RUN':t.pnl.toFixed(2)}</td><td style="text-align:right;"><button class="icon-btn" onclick="editTrade('${t.id}')">✏️</button><button class="icon-btn" onclick="delTrade('${t.id}')">🗑️</button></td></tr>`).join('');
     }
 
-    // --- JOURNAL MANAGEMENT (NO START CAP) ---
+    // --- JOURNAL MANAGEMENT ---
     async function saveJournalInput() {
         const name = document.getElementById('newJName').value.trim();
         if(!name) return alert("Name fehlt!");
@@ -662,9 +673,34 @@
     function togglePrivacy() { privacyMode = !privacyMode; document.documentElement.style.setProperty('--blur', privacyMode ? '5px' : '0px'); }
     function handleLogout() { auth.signOut().then(()=>location.reload()); }
     function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-    function setTheme(m) { if(m==='light') document.body.classList.add('light-mode'); else document.body.classList.remove('light-mode'); localStorage.setItem('tradeTheme', m); }
+    
+    // THEME FUNCTION
+    function toggleTheme(isDark) {
+        if(isDark) {
+            document.body.classList.remove('light-mode');
+            localStorage.setItem('tradeTheme', 'dark');
+        } else {
+            document.body.classList.add('light-mode');
+            localStorage.setItem('tradeTheme', 'light');
+        }
+    }
+    
     function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerText = lot.toFixed(2) + " Lot"; } }
-    async function admLoad() { try { const s = await db.collection('members').get(); document.getElementById('admList').innerHTML = s.docs.map(d => `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${d.data().email}</span><span onclick="admDel('${d.id}')" style="cursor:pointer;color:red;">✕</span></div>`).join(''); } catch(e){} }
+    
+    // ADMIN
+    async function admLoad() { 
+        try { 
+            const s = await db.collection('members').get(); 
+            document.getElementById('admList').innerHTML = s.docs.map(d => `
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center; border-bottom:1px solid var(--border); padding-bottom:5px;">
+                    <span>${d.data().email}</span>
+                    <div>
+                        <span onclick="openMemberDetail('${d.id}', '${d.data().email}')" style="cursor:pointer; margin-right:15px; font-size:1.2rem;">👁️</span>
+                        <span onclick="admDel('${d.id}')" style="cursor:pointer;color:red; font-weight:bold;">✕</span>
+                    </div>
+                </div>`).join(''); 
+        } catch(e){} 
+    }
     async function admAdd() { const e=document.getElementById('admEmail').value.toLowerCase().trim(); if(e) { await db.collection('members').add({email:e}); document.getElementById('admEmail').value=''; admLoad(); } }
     async function admDel(id) { if(confirm("Löschen?")) { await db.collection('members').doc(id).delete(); admLoad(); } }
 </script>
