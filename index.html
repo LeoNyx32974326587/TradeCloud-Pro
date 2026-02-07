@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Journal Fix</title>
+    <title>TradeCloud Pro - Final Design</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -119,9 +119,9 @@
         .dv-stat-item { display: flex; flex-direction: column; }
         .dv-stat-label { color: var(--text-sub); font-size: 0.85rem; margin-bottom: 4px; }
         .dv-stat-val { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
-        .closed-trades-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; margin-top: 10px; }
+        .closed-trades-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; margin-top: 10px; color: #ffffff !important; }
 
-        /* --- JOURNAL TABLE FIX --- */
+        /* --- JOURNAL TABLE --- */
         .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: var(--text-main); }
         .hist-table th { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border); color: var(--text-sub); font-weight: 600; }
         .hist-table td { padding: 10px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); }
@@ -247,9 +247,8 @@
     
     <div id="day-detail-view" class="modal-base hidden">
         <div class="dv-header">
-            <button onclick="closePopup()" style="background:none; border:none; color:#0a84ff; font-size:1rem; cursor:pointer; font-weight:600;">❮ Back</button>
-            <div id="dv-date-title" style="font-weight:700; font-size:1.1rem; color:#ffffff;">Date</div>
-            <div style="width: 40px;"></div>
+            <div id="dv-date-title" style="font-weight:700; font-size:1.2rem; color:#ffffff;">Date</div>
+            <button onclick="closePopup()" style="background:none; border:none; color:#8e8e93; font-size:1.2rem; cursor:pointer; padding:5px;">✕</button>
         </div>
         <div style="padding-bottom:20px; border-bottom:1px solid #2c2c2e; margin-bottom:20px;">
             <div style="height:180px;"><canvas id="dayChart"></canvas></div>
@@ -673,7 +672,7 @@
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 chartInstances[canvasId] = new Chart(ctx, {
                     type: 'line',
-                    data: { labels: equityCurve.map(x => ''), datasets: [{ data: equityCurve, borderColor: '#0a84ff', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: true, backgroundColor: 'rgba(10, 132, 255, 0.05)' }] },
+                    data: { labels: equityCurve.map(x => ''), datasets: [{ data: equityCurve, borderColor: '#bb86fc', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: true, backgroundColor: 'rgba(187, 134, 252, 0.05)' }] },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } }
                 });
             }, 50);
@@ -948,7 +947,7 @@
         let r=0; const data = dayTrades.map(t=>{r+=t.pnl; return r;});
         dayChart = new Chart(ctx, { 
             type:'line', 
-            data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#00c853' : '#ff3d00', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, 
+            data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#30d158' : '#ff453a', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, 
             options:{ responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{grid:{color:'#333'}}} } 
         });
     }
