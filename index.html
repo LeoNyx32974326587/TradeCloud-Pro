@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Restored & Fixed</title>
+    <title>TradeCloud Pro - Restored Design</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -77,7 +77,7 @@
         
         /* BIG GREETING */
         #user-greeting-name { font-size: 1.2em; color: var(--accent); }
-        .greet-container h2 { margin: 0; font-size: 2.4rem; font-weight: 800; line-height: 1.2; }
+        .greet-container h2 { margin: 0; font-size: 2.2rem; font-weight: 800; line-height: 1.2; }
 
         .journal-full-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 30px; overflow: hidden; animation: fadeIn 0.4s; display: flex; flex-direction: column; position: relative; }
         .jfc-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -138,14 +138,25 @@
         .tr-pnl { font-weight: 700; font-size: 0.9rem; text-align: right; min-width: 70px; }
         .tr-arrow { color: #888; margin-left: 10px; font-size: 0.9rem; }
 
-        /* RESTORED DETAIL STYLES (LARGE IMAGES + LIST) */
-        .sd-image { width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border: 1px solid var(--border); margin-top:10px; }
-        .sd-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #151517; border-radius: 8px; border: 1px solid #2c2c2e; margin-bottom:8px; }
-        .sd-label { font-weight: bold; color: #888; font-size: 0.9rem; }
-        .sd-val { font-family: monospace; font-size: 1rem; color: #fff; }
-        .copy-btn { background: none; border: 1px solid #333; border-radius: 6px; padding: 5px 10px; cursor: pointer; color: var(--accent); margin-left:10px; }
+        /* TRADE DETAIL SPECIFICS (RESTORED TO GOOD DESIGN) */
+        .td-hero { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #333; }
+        .td-asset { font-size: 1.8rem; font-weight: 800; color: white; display:block; }
+        .td-pnl { font-size: 3rem; font-weight: 900; margin-top: 5px; display:block; }
         
-        .td-note-box { background: #151517; padding: 15px; border-radius: 8px; border: 1px solid #2c2c2e; margin: 15px 0; font-style: italic; color: #ccc; }
+        .td-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .td-box { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; display:flex; flex-direction:column; justify-content:center; }
+        
+        .td-val-row { display: flex; align-items: center; justify-content: space-between; }
+        .td-label { color: #888; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 5px; display: block; font-weight: 600; }
+        .td-val { color: white; font-size: 1.1rem; font-weight: 600; }
+        
+        .copy-icon { cursor: pointer; font-size: 0.9rem; margin-left: 8px; color: var(--accent); background:none; border:none; padding:5px; }
+        .copy-icon:active { transform: scale(0.9); }
+        
+        .td-note-box { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; margin-bottom: 20px; font-style: italic; color: #ccc; font-size: 0.9rem; line-height: 1.5; }
+        
+        .td-img { width: 100%; border-radius: 8px; border: 1px solid #333; cursor: pointer; margin-top:5px; }
+        .img-box { background: #151517; padding:15px; border-radius:12px; border:1px solid #2c2c2e; margin-top:10px; }
 
         /* --- JOURNAL TABLE --- */
         .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: var(--text-main); }
@@ -972,14 +983,14 @@
         `;
         
         if(t.note) {
-            html += `<div class="td-note">"${t.note}"</div>`;
+            html += `<div class="td-note-box">"${t.note}"</div>`;
         }
         
         if(t.imgSetup) {
             html += `<div class="img-box"><span class="td-label">Setup</span><img src="${t.imgSetup}" class="td-img" onclick="window.open('${t.imgSetup}','_blank')"></div>`;
         }
         if(t.imgResult) {
-            html += `<div class="img-box" style="margin-top:10px;"><span class="td-label">Ergebnis</span><img src="${t.imgResult}" class="td-img" onclick="window.open('${t.imgResult}','_blank')"></div>`;
+            html += `<div class="img-box"><span class="td-label">Ergebnis</span><img src="${t.imgResult}" class="td-img" onclick="window.open('${t.imgResult}','_blank')"></div>`;
         }
         
         document.getElementById('td-content').innerHTML = html;
