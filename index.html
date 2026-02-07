@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Header Button</title>
+    <title>TradeCloud Pro - Thumbnail Right</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -111,9 +111,10 @@
         }
         .hist-thumb:hover { transform: scale(2.5); z-index: 100; position: relative; border-color: var(--accent); }
         
+        /* Dashboard Mini Thumb */
         .dash-thumb {
             width: 30px; height: 20px; object-fit: cover; border-radius: 3px; 
-            border: 1px solid var(--border); margin-right: 8px; vertical-align: middle;
+            border: 1px solid var(--border); margin-left: 8px; vertical-align: middle;
             transition: transform 0.2s;
         }
         .dash-thumb:hover { transform: scale(3); z-index: 100; border-color: var(--accent); }
@@ -505,13 +506,13 @@
             if(open.length > 0) {
                 openTradesHtml = open.map(t => {
                     const thumb = t.imgSetup ? 
-                        `<a href="${t.imgSetup}" target="_blank"><img src="${t.imgSetup}" class="dash-thumb" title="Setup"></a>` : '';
+                        `<a href="${t.imgSetup}" target="_blank" style="margin-left:8px;"><img src="${t.imgSetup}" class="dash-thumb" title="Setup" style="margin-right:0;"></a>` : '';
 
                     return `
                     <div class="ot-list-item">
                         <div style="display:flex; align-items:center;">
-                            ${thumb}
                             <span style="font-weight:bold; color:var(--accent);">${t.asset}</span>
+                            ${thumb}
                         </div>
                         <button class="btn-small" onclick="editTrade('${t.id}', true)">Close</button>
                     </div>`;
