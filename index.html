@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Auto Fill Share</title>
+    <title>TradeCloud Pro - Clean Table</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -155,9 +155,6 @@
         .hist-table td { padding: 10px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); }
         .hist-table tr:hover { background: rgba(255,255,255,0.03); }
         .hist-table tr:last-child td { border-bottom: none; }
-        .hist-thumb, .dash-thumb { width: 30px; height: 20px; object-fit: cover; border-radius: 3px; border: 1px solid var(--border); vertical-align: middle; margin: 0 5px; transition: transform 0.2s; cursor: pointer; }
-        .hist-thumb:hover, .dash-thumb:hover { transform: scale(3.5); z-index: 100; border-color: var(--accent); position: relative; }
-        .note-cell { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-sub); cursor: help; }
         .time-sub { display: block; font-size: 0.7rem; color: var(--text-sub); margin-top: 2px; }
 
         /* --- CHAT STYLES --- */
@@ -468,7 +465,6 @@
                     <tr>
                         <th style="min-width:90px;">Date/Time</th>
                         <th>Asset</th>
-                        <th>Note</th>
                         <th style="text-align:right;">PnL</th>
                         <th></th>
                     </tr>
@@ -1009,6 +1005,7 @@
     }
     
     function copyText(val, btnId) {
+        if(!val) return;
         navigator.clipboard.writeText(val).then(() => {
             const btn = document.getElementById(btnId);
             btn.innerText = '✓'; setTimeout(() => { btn.innerText = '📋'; }, 1500);
