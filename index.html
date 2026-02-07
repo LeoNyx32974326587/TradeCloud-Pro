@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud LeoNyx</title>
+    <title>TradeCloud Pro - Trade Details</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -87,7 +87,6 @@
         .ot-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         .loss-warning { background: rgba(255, 61, 0, 0.15); border-left: 4px solid var(--danger); color: var(--danger); padding: 10px 15px; font-size: 0.9rem; font-weight: bold; margin: 0 20px 10px 20px; display: flex; align-items: center; gap: 10px; border-radius: 4px; }
         
-        /* INDIVIDUAL FILTERS */
         .card-filters { display: flex; gap: 5px; padding: 10px 20px; border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .card-filters::-webkit-scrollbar { display: none; }
         .filter-pill { padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer; color: var(--text-sub); border: 1px solid transparent; background: transparent; transition: 0.2s; white-space: nowrap; text-transform: uppercase; }
@@ -102,10 +101,13 @@
         .modal-base { width: 100%; max-width: 500px; background: var(--popup-bg); color: var(--text-main); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.8); padding: 20px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; position: relative; }
         
         /* Special Black Calendar */
-        #day-detail-view { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; }
+        #day-detail-view { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; z-index: 1000; }
         #day-detail-view .trades-list-card { background: #151517; border-color: #2c2c2e; }
         #day-detail-view .trade-row, #day-detail-view .trade-row-header { border-bottom-color: #2c2c2e; }
         #day-detail-view .tr-date, #day-detail-view .tr-sym, #day-detail-view .dv-stat-val, #day-detail-view .popup-title, #day-detail-view #dv-date-title { color: #ffffff; }
+
+        /* TRADE DETAIL POPUP (Level 2) */
+        #trade-detail-view { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; z-index: 1001; } /* Higher Z-Index */
 
         /* Other Popup Content */
         .dv-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -116,7 +118,8 @@
         .closed-trades-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; margin-top: 10px; color: #ffffff !important; }
         .trades-list-card { background: var(--cell-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
         .trade-row-header { display: flex; padding: 10px 15px; border-bottom: 1px solid var(--border); color: var(--text-sub); font-size: 0.8rem; }
-        .trade-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .trade-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition:0.2s; }
+        .trade-row:active { background: rgba(255,255,255,0.1); }
         .trade-row:last-child { border-bottom: none; }
         .tr-icon { width: 20px; font-size: 0.8rem; }
         .tr-date-col { display: flex; flex-direction: column; width: 100px; }
@@ -125,6 +128,18 @@
         .tr-sym { flex-grow: 1; font-weight: 600; font-size: 0.9rem; }
         .tr-pnl { font-weight: 700; font-size: 0.9rem; text-align: right; min-width: 70px; }
         .tr-arrow { color: #888; margin-left: 10px; font-size: 0.9rem; }
+
+        /* TRADE DETAIL SPECIFICS */
+        .td-hero { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #333; }
+        .td-asset { font-size: 1.5rem; font-weight: 800; color: white; display:block; }
+        .td-pnl { font-size: 2.5rem; font-weight: 900; margin-top: 5px; display:block; }
+        .td-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .td-box { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; }
+        .td-label { color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .td-val { color: white; font-size: 1rem; font-weight: 600; }
+        .td-note { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; margin-bottom: 20px; font-style: italic; color: #ccc; font-size: 0.9rem; }
+        .td-img-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .td-img { width: 100%; border-radius: 8px; border: 1px solid #333; cursor: pointer; }
 
         /* --- JOURNAL TABLE --- */
         .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: var(--text-main); }
@@ -229,6 +244,16 @@
             </div>
             <div id="dv-list"></div>
         </div>
+    </div>
+    
+    <div id="trade-detail-view" class="modal-base hidden">
+        <div class="dv-header">
+            <button onclick="closeTradeDetail()" style="background:none; border:none; color:#0a84ff; font-size:1rem; cursor:pointer; font-weight:600;">❮ Back</button>
+            <div style="font-weight:700; font-size:1.1rem; color:#ffffff;">Trade Details</div>
+            <div style="width:40px;"></div>
+        </div>
+        <div id="td-content">
+            </div>
     </div>
 
     <div id="date-range-modal" class="modal-base hidden">
@@ -529,7 +554,7 @@
     let shareTradeId = null;
     let shareType = null;
     let msgToDeleteId = null;
-    let configuringJournalId = null; // For date modal
+    let configuringJournalId = null;
 
     // THEME INIT
     const isLight = localStorage.getItem('tradeTheme') === 'light';
@@ -545,6 +570,7 @@
                 if(admPanel) { admPanel.classList.remove('hidden'); admLoad(); }
                 finishLogin(user);
             } else {
+                // SECURITY CHECK
                 const memberSnap = await db.collection('members').where('email', '==', email).get();
                 if(!memberSnap.empty) {
                     isAdmin = false;
@@ -652,9 +678,11 @@
             let tradesInPeriod = [];
             
             if (startDate) {
+                // Trades before period
                 const tradesBefore = closedAll.filter(t => new Date(t.date) < startDate);
                 baseBalance += tradesBefore.reduce((acc, t) => acc + t.pnl, 0);
                 
+                // Trades in period
                 tradesInPeriod = closedAll.filter(t => {
                     const d = new Date(t.date);
                     if(endDate) return d >= startDate && d <= endDate;
@@ -708,7 +736,6 @@
                     <div class="jfc-header">
                         <div class="jfc-title">${journal.name}</div>
                     </div>
-                    
                     <div class="card-filters">
                         ${filterHtml}
                     </div>
@@ -778,7 +805,7 @@
         assetChartInstance = new Chart(ctxA, { type: 'bar', data: { labels: sortedAssets, datasets: [{ label: 'PnL', data: sortedAssets.map(a => assetMap[a]), backgroundColor: sortedAssets.map(a => assetMap[a] >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: sortedAssets.map(a => assetMap[a] >= 0 ? '#00c853' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
         const ctxW = document.getElementById('weekdayChart').getContext('2d');
         if(weekdayChartInstance) weekdayChartInstance.destroy();
-        weekdayChartInstance = new Chart(ctxW, { type: 'bar', data: { labels: dayLabels, datasets: [{ label: 'PnL', data: [0,1,2,3,4,5,6].map(d => daysMap[d]), backgroundColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? '#00c853' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
+        weekdayChartInstance = new Chart(ctxW, { type: 'bar', data: { labels: dayLabels, datasets: [{ label: 'PnL', data: [0,1,2,3,4,5,6].map(d => daysMap[d]), backgroundColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? '#30d158' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
         const ctxH = document.getElementById('hourChart').getContext('2d');
         if(hourChartInstance) hourChartInstance.destroy();
         hourChartInstance = new Chart(ctxH, { type: 'bar', data: { labels: hourLabels, datasets: [{ label: 'PnL', data: hourMap, backgroundColor: hourMap.map(v => v >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: hourMap.map(v => v >= 0 ? '#00c853' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
@@ -901,40 +928,42 @@
     // --- SIGNAL DETAIL POPUP LOGIC ---
     function openSignalDetail(tradeDataEncoded, imgUrlEncoded) {
         document.getElementById('popup-overlay').classList.add('open');
-        const modal = document.getElementById('signal-detail-modal');
+        const modal = document.getElementById('trade-detail-view'); // use new detail view
         modal.classList.remove('hidden');
         modal.classList.add('open');
 
         const t = JSON.parse(decodeURIComponent(tradeDataEncoded));
         const imgUrl = decodeURIComponent(imgUrlEncoded);
-        const imgEl = document.getElementById('sd-img');
-        if(imgUrl && imgUrl !== 'undefined') {
-            imgEl.src = imgUrl; imgEl.classList.remove('hidden');
-            imgEl.onclick = () => window.open(imgUrl, '_blank');
-        } else { imgEl.classList.add('hidden'); }
         
-        const contentDiv = document.getElementById('sd-content');
-        contentDiv.innerHTML = ''; 
-        const fields = [
-            { label: 'Asset', val: t.asset, id: 'sd-asset' },
-            { label: 'Entry', val: t.entry, id: 'sd-entry' },
-            { label: 'SL', val: t.sl, id: 'sd-sl' },
-            { label: 'TP 1', val: t.tp1, id: 'sd-tp1' },
-            { label: 'TP 2', val: t.tp2, id: 'sd-tp2' },
-            { label: 'TP 3', val: t.tp3, id: 'sd-tp3' }
-        ];
-        fields.forEach(f => {
-            if(f.val) {
-                contentDiv.innerHTML += `
-                <div class="sd-row">
-                    <span class="sd-label">${f.label}</span>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span class="sd-val">${f.val}</span>
-                        <button class="copy-btn" id="btn-${f.id}" onclick="copyText('${f.val}', 'btn-${f.id}')">📋</button>
-                    </div>
-                </div>`;
-            }
-        });
+        let html = `
+            <div class="td-hero">
+                <span class="td-asset">${t.asset}</span>
+                <span class="td-pnl" style="color:${t.status==='Aktiv'?'#0a84ff':(t.pnl>=0?'#30d158':'#ff453a')}">${t.status==='Aktiv'?'OPEN':t.pnl.toFixed(2)+'€'}</span>
+            </div>
+            
+            <div class="td-grid">
+                <div class="td-box"><span class="td-label">Entry</span><span class="td-val">${t.entry || '-'}</span></div>
+                <div class="td-box"><span class="td-label">Stop Loss</span><span class="td-val" style="color:#ff453a">${t.sl || '-'}</span></div>
+                <div class="td-box"><span class="td-label">Take Profit 1</span><span class="td-val" style="color:#30d158">${t.tp1 || '-'}</span></div>
+                <div class="td-box"><span class="td-label">Date</span><span class="td-val">${t.date.split('T')[0]}</span></div>
+            </div>
+        `;
+        
+        if(t.note) {
+            html += `<div class="td-note">"${t.note}"</div>`;
+        }
+        
+        if(imgUrl && imgUrl !== 'undefined') {
+            html += `<div class="td-img-container"><img src="${imgUrl}" class="td-img" onclick="window.open('${imgUrl}','_blank')"></div>`;
+        }
+        
+        document.getElementById('td-content').innerHTML = html;
+    }
+    
+    function closeTradeDetail() {
+        document.getElementById('trade-detail-view').classList.remove('open');
+        document.getElementById('trade-detail-view').classList.add('hidden');
+        document.getElementById('popup-overlay').classList.remove('open');
     }
     
     function copyText(val, btnId) {
@@ -1003,8 +1032,12 @@
             const arrow = t.pnl >= 0 ? '↗' : '↘';
             const arrowClass = t.pnl >= 0 ? 'text-green' : 'text-red';
             
+            // Pass trade data to open detail on click
+            const tradeDataString = encodeURIComponent(JSON.stringify(t));
+            const imgUrlString = encodeURIComponent(t.imgSetup || t.imgResult || '');
+
             return `
-            <div class="trade-row">
+            <div class="trade-row" onclick="openSignalDetail('${tradeDataString}', '${imgUrlString}')">
                 <div class="tr-icon ${arrowClass}">${arrow}</div>
                 <div class="tr-date-col">
                     <span class="tr-date">${dateShort}</span>
@@ -1027,7 +1060,7 @@
         let r=0; const data = dayTrades.map(t=>{r+=t.pnl; return r;});
         dayChart = new Chart(ctx, { 
             type:'line', 
-            data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#00c853' : '#ff453a', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, 
+            data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#30d158' : '#ff453a', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, 
             options:{ responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{grid:{color:'#333'}}} } 
         });
     }
@@ -1035,7 +1068,7 @@
     // Close logic for all modals
     function closePopup() { 
         document.getElementById('popup-overlay').classList.remove('open');
-        document.querySelectorAll('.standard-modal, .modal-base, #day-detail-view').forEach(el => {
+        document.querySelectorAll('.standard-modal, .modal-base, #day-detail-view, #trade-detail-view').forEach(el => {
             el.classList.add('hidden');
             el.classList.remove('open');
         }); 
