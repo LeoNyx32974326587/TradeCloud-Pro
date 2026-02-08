@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Stable Chart</title>
+    <title>TradeCloud Pro - Clean Chart</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -264,27 +264,6 @@
         @media (max-width: 600px) {
             .input-row-2, .input-row-3 { grid-template-columns: 1fr; gap:0; }
         }
-        
-        /* Floating Button for Chart */
-        .chart-fab {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: var(--accent);
-            color: black;
-            border: none;
-            border-radius: 50px;
-            padding: 12px 24px;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            cursor: pointer;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: transform 0.2s;
-        }
-        .chart-fab:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -498,11 +477,8 @@
         </div>
     </section>
 
-    <section id="view-TradingView" class="view-section" style="height: calc(100vh - 70px); position:relative;">
-         <div id="tradingview_chart" style="height:100%; width:100%;"></div>
-         <button class="chart-fab" onclick="prepareCreateView()">
-            <span style="font-size:1.2rem;">+</span> Trade eintragen
-         </button>
+    <section id="view-TradingView" class="view-section" style="height: calc(100vh - 70px);">
+         <div id="tradingview_chart" style="height:100%; width:100%; border-radius: 12px; overflow: hidden;"></div>
     </section>
 
     <section id="view-Kalender" class="view-section">
@@ -1079,7 +1055,7 @@
                 "locale": "de_DE",
                 "enable_publishing": false,
                 "allow_symbol_change": true,
-                "hide_side_toolbar": false,
+                "hide_side_toolbar": false, // Toolbar enabled for drawing
                 "save_image": false,
                 "container_id": "tradingview_chart"
             });
