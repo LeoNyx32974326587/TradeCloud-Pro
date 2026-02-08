@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - OCR & Chart</title>
+    <title>TradeCloud Pro - Final Release</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -13,8 +13,10 @@
     
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
     <style>
-        /* --- THEMES & COLORS --- */
+        /* --- DESIGN & FARBEN --- */
         :root { 
             --bg-dark: #050505; 
             --card-bg: #121212; 
@@ -76,39 +78,21 @@
         /* --- DASHBOARD --- */
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
         .card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
-        
         #user-greeting-name { font-size: 1.2em; color: var(--accent); }
         .greet-container h2 { margin: 0; font-size: 2.4rem; font-weight: 800; line-height: 1.2; }
 
-        /* NOTIFICATIONS AREA */
+        /* NOTIFICATIONS */
         #dashboard-notification-area { margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
-
-        .feedback-notification { 
-            background: linear-gradient(135deg, rgba(187,134,252,0.2), rgba(187,134,252,0.05)); 
-            border: 1px solid var(--accent); 
-            border-radius: 12px; 
-            padding: 15px; 
-            display: flex; flex-direction: column; 
-            animation: fadeIn 0.5s; 
-        }
+        .feedback-notification { background: linear-gradient(135deg, rgba(187,134,252,0.2), rgba(187,134,252,0.05)); border: 1px solid var(--accent); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; animation: fadeIn 0.5s; }
         .fn-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .fn-title { color: var(--accent); font-weight: bold; display: flex; align-items: center; gap: 8px; }
         .fn-content { font-size: 0.95rem; margin-bottom: 12px; line-height: 1.4; color: #eee; font-style: italic; }
         .fn-actions { display: flex; gap: 10px; justify-content: flex-end; }
-
-        .chat-notification { 
-            background: rgba(10, 132, 255, 0.2); 
-            border: 1px solid #0a84ff; 
-            color: #fff; padding: 15px; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            animation: fadeIn 0.5s; 
-            display: flex; align-items: center; justify-content: space-between; 
-            font-weight: bold; 
-        }
+        .chat-notification { background: rgba(10, 132, 255, 0.2); border: 1px solid #0a84ff; color: #fff; padding: 15px; border-radius: 12px; cursor: pointer; animation: fadeIn 0.5s; display: flex; align-items: center; justify-content: space-between; font-weight: bold; }
         .chat-close-btn { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.2rem; cursor: pointer; padding: 5px; margin-left: 10px; }
         .chat-close-btn:hover { color: white; }
 
+        /* JOURNAL CARDS */
         .journal-full-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 30px; overflow: hidden; animation: fadeIn 0.4s; display: flex; flex-direction: column; position: relative; }
         .jfc-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .jfc-title { font-size: 1.3rem; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
@@ -123,29 +107,23 @@
         .ot-title { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 5px;}
         .ot-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         .loss-warning { background: rgba(255, 61, 0, 0.15); border-left: 4px solid var(--danger); color: var(--danger); padding: 10px 15px; font-size: 0.9rem; font-weight: bold; margin: 0 20px 10px 20px; display: flex; align-items: center; gap: 10px; border-radius: 4px; }
-        
         .ot-thumb { width: 30px; height: 20px; object-fit: cover; border-radius: 3px; border: 1px solid var(--border); margin-left: 8px; vertical-align: middle; }
-
         .card-filters { display: flex; gap: 5px; padding: 10px 20px; border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .card-filters::-webkit-scrollbar { display: none; }
         .filter-pill { padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer; color: var(--text-sub); border: 1px solid transparent; background: transparent; transition: 0.2s; white-space: nowrap; text-transform: uppercase; }
         .filter-pill:hover { background: rgba(255,255,255,0.05); }
         .filter-pill.active { background: rgba(187, 134, 252, 0.15); color: var(--accent); border-color: var(--accent); }
-
         @media (max-width: 768px) { .jfc-body-grid { grid-template-columns: 1fr; } .jfc-chart-area { height: 220px; } }
 
-        /* --- POPUPS & MODALS --- */
+        /* --- POPUPS --- */
         #popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
         #popup-overlay.open { display: flex; opacity: 1; }
         .modal-base { width: 95%; max-width: 500px; background: var(--popup-bg); color: var(--text-main); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.8); padding: 20px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; position: relative; transition: all 0.3s; }
-        
         #day-detail-view, #trade-detail-view, #admin-member-modal, #trade-form-modal { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; z-index: 1000; }
-        
         #day-detail-view .trades-list-card { background: #151517; border-color: #2c2c2e; }
         #day-detail-view .trade-row, #day-detail-view .trade-row-header { border-bottom-color: #2c2c2e; }
         #day-detail-view .tr-date, #day-detail-view .tr-sym, #day-detail-view .dv-stat-val, #day-detail-view .popup-title, #day-detail-view #dv-date-title { color: #ffffff; }
 
-        /* Other Popup Content */
         .dv-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .dv-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
         .dv-stat-item { display: flex; flex-direction: column; }
@@ -165,7 +143,7 @@
         .tr-pnl { font-weight: 700; font-size: 0.9rem; text-align: right; min-width: 70px; }
         .tr-arrow { color: #888; margin-left: 10px; font-size: 0.9rem; }
 
-        /* TRADE DETAIL SPECIFICS */
+        /* TRADE DETAILS */
         .td-hero { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #333; }
         .td-asset { font-size: 1.8rem; font-weight: 800; color: white; display:block; }
         .td-pnl { font-size: 3rem; font-weight: 900; margin-top: 5px; display:block; }
@@ -181,7 +159,7 @@
         .img-box { background: #151517; padding:15px; border-radius:12px; border:1px solid #2c2c2e; margin-top:10px; }
         .td-img { width: 100%; border-radius: 8px; border: 1px solid #333; cursor: pointer; margin-top:5px; }
 
-        /* ADMIN STYLES */
+        /* ADMIN */
         .adm-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--cell-bg); border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
         .adm-user-info { display: flex; align-items: center; gap: 10px; }
         .adm-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
@@ -191,7 +169,7 @@
         .adm-tab-btn { flex: 1; padding: 15px; border: none; background: #151517; color: #888; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; transition:0.2s; }
         .adm-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(187, 134, 252, 0.05); }
 
-        /* --- JOURNAL TABLE --- */
+        /* HISTORIE */
         .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: var(--text-main); }
         .hist-table th { text-align: left; padding: 15px 10px; border-bottom: 1px solid var(--border); color: var(--text-sub); font-weight: 600; }
         .hist-table td { padding: 15px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); }
@@ -199,7 +177,7 @@
         .hist-table tr:last-child td { border-bottom: none; }
         .time-sub { display: block; font-size: 0.7rem; color: var(--text-sub); margin-top: 2px; }
 
-        /* --- CHAT STYLES --- */
+        /* CHAT */
         .chat-container { display: flex; flex-direction: column; height: calc(100vh - 140px); background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
         .chat-messages { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .chat-input-area { padding: 15px; background: var(--cell-bg); border-top: 1px solid var(--border); display: flex; gap: 10px; }
@@ -224,7 +202,7 @@
         .msg-wrapper.me .chat-del-btn { left: -25px; }
         .msg-wrapper.other .chat-del-btn { right: -25px; }
 
-        /* --- UTILS --- */
+        /* UTILS */
         .text-green { color: var(--success) !important; }
         .text-red { color: var(--danger) !important; }
         .text-tp { color: var(--success); }
@@ -265,7 +243,6 @@
             .input-row-2, .input-row-3 { grid-template-columns: 1fr; gap:0; }
         }
         
-        /* OCR Loader */
         #ocr-status { font-size: 0.8rem; color: var(--accent); margin-top: 5px; display: none; }
     </style>
 </head>
@@ -345,7 +322,6 @@
             <div style="width:40px;"></div>
         </div>
         <div id="td-content"></div>
-        
         <div id="adm-feedback-input-area" class="hidden" style="padding:20px; border-top:1px solid #333; margin-top:20px; background:#151517;">
             <label style="color:var(--accent); font-weight:bold; display:block; margin-bottom:8px;">👨‍🏫 Feedback senden:</label>
             <textarea id="adm-feedback-text" rows="3" style="width:100%; background:#000; color:#fff; border:1px solid #333; padding:10px; border-radius:8px;"></textarea>
@@ -469,9 +445,7 @@
             <h2 style="margin:0;">Hallo <span id="user-greeting-name">Trader</span> 👋</h2>
             <button onclick="prepareCreateView()" class="btn-primary" style="width:auto; padding: 10px 20px; margin:0; font-size:0.8rem;">+ NEUER TRADE</button>
         </div>
-        
         <div id="dashboard-notification-area"></div>
-
         <div id="dashboard-journals-list"></div>
     </section>
     
@@ -487,7 +461,7 @@
     </section>
 
     <section id="view-TradingView" class="view-section" style="height: calc(100vh - 70px);">
-         <iframe id="tv-frame" src="https://tradingview.tradequomarkets.com/" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
+         <div id="tradingview_chart" style="height:100%; width:100%; border-radius: 12px; overflow: hidden;"></div>
     </section>
 
     <section id="view-Kalender" class="view-section">
@@ -632,20 +606,16 @@
     let editingJournalId = null;
     let currentUserName = "User";
     let isAdmin = false;
-    
     let journalFilters = {}; 
     let journalCustomDates = {}; 
     let shareTradeId = null;
     let shareType = null;
     let msgToDeleteId = null;
     let configuringJournalId = null;
-    
     let inspectedUserTrades = [];
     let inspectedUserJournals = [];
     let adminChartInstance = null;
     let currentDetailTradeId = null;
-
-    // Chat Vars
     let isChatActive = false;
     let lastMessageCount = 0;
     let isFirstLoad = true;
@@ -657,12 +627,7 @@
     auth.onAuthStateChanged(async (user) => {
         if(user) {
             const email = user.email.toLowerCase().trim();
-            await db.collection('users').doc(user.uid).set({
-                email: email,
-                displayName: user.displayName || 'Trader',
-                photoURL: user.photoURL || ''
-            }, { merge: true });
-
+            await db.collection('users').doc(user.uid).set({ email: email, displayName: user.displayName || 'Trader', photoURL: user.photoURL || '' }, { merge: true });
             if(email === "leon.luca.lauterbach@gmail.com") {
                 isAdmin = true;
                 const admPanel = document.getElementById('admin-panel');
@@ -670,28 +635,19 @@
                 finishLogin(user);
             } else {
                 const memberSnap = await db.collection('members').where('email', '==', email).get();
-                if(!memberSnap.empty) {
-                    isAdmin = false;
-                    finishLogin(user);
-                } else {
-                    alert("Zugriff verweigert! Diese E-Mail ist nicht registriert.");
-                    auth.signOut();
-                    location.reload();
-                }
+                if(!memberSnap.empty) { isAdmin = false; finishLogin(user); } 
+                else { alert("Zugriff verweigert! Diese E-Mail ist nicht registriert."); auth.signOut(); location.reload(); }
             }
         }
     });
 
     async function finishLogin(user) {
         const firstName = user.email.split('@')[0].split('.')[0];
-        const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
-        currentUserName = capitalizedName;
-        document.getElementById('user-greeting-name').innerText = capitalizedName;
-        
+        currentUserName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+        document.getElementById('user-greeting-name').innerText = currentUserName;
         document.getElementById('auth-overlay').classList.add('hidden');
         document.getElementById('app-content').classList.remove('hidden');
         document.getElementById('main-header').classList.remove('hidden');
-        
         await loadData();
         loadChat();
     }
@@ -710,8 +666,6 @@
         trades = tSnap.docs.map(d => ({id: d.id, ...d.data()}));
         populateSelectors();
         renderDashboard(); 
-        
-        // Always try to render history if active
         if(document.getElementById('view-Historie').classList.contains('active')) renderHistory();
         if(document.getElementById('view-Statistik').classList.contains('active')) renderStatistics();
     }
@@ -727,40 +681,30 @@
 
     function changeActiveJournal(val) {
         activeJournal = val;
-        // Also update the create selector
         const createSel = document.getElementById('inpJournalSelect');
         if(createSel) createSel.value = activeJournal;
-        
         const activeId = document.querySelector('.view-section.active').id;
         if(activeId === 'view-Kalender') renderCalendar();
         if(activeId === 'view-Historie') renderHistory();
         if(activeId === 'view-Statistik') renderStatistics();
         if(activeId === 'view-Übersicht') renderDashboard();
-        if(activeId === 'view-TradingView') {
-            const theme = document.body.classList.contains('light-mode') ? "light" : "dark";
-            // Use TradeQuo embed URL dynamically based on theme if supported, or fallback
-            // Note: TradeQuo might not support dynamic theme param in URL, defaulting to their standard
-            document.getElementById('tv-frame').src = "https://tradingview.tradequomarkets.com/";
-        }
+        if(activeId === 'view-TradingView') setTimeout(renderTradingViewWidget, 50);
         document.getElementById('navDrawer').classList.remove('open');
         document.getElementById('menu-overlay').classList.remove('open');
     }
 
-    // --- DASHBOARD RENDERER (Includes Notifications) ---
     function renderDashboard() {
-        renderNotificationsArea(); // Separate function for clean code
+        renderNotificationsArea();
         const container = document.getElementById('dashboard-journals-list');
         container.innerHTML = '';
         Object.values(chartInstances).forEach(c => c.destroy());
         chartInstances = {};
-        const todayStr = new Date().toDateString();
 
         journals.forEach(journal => {
             if(journal.hidden) return;
             const timeframe = journalFilters[journal.id] || 'GESAMT';
             const now = new Date();
             let startDate = null; let endDate = null;
-            
             if(timeframe === 'HEUTE') { startDate = new Date(); startDate.setHours(0,0,0,0); endDate = new Date(); endDate.setHours(23,59,59,999); }
             else if(timeframe === 'GESTERN') { startDate = new Date(); startDate.setDate(startDate.getDate()-1); startDate.setHours(0,0,0,0); endDate = new Date(); endDate.setDate(endDate.getDate()-1); endDate.setHours(23,59,59,999); }
             else if(timeframe === 'WOCHE') { startDate = new Date(now.getTime() - 7*24*60*60*1000); }
@@ -794,7 +738,7 @@
             if(journal.maxDD && parseFloat(journal.maxDD) > 0) {
                 const limit = parseFloat(journal.maxDD); let threshold = limit;
                 if(journal.ddType === 'percent') { const totalBal = startCap + closedAll.reduce((a,b)=>a+b.pnl,0); const currentBalance = Math.max(totalBal, 0); threshold = currentBalance * (limit / 100); }
-                if(todayPnL < -threshold) warningHtml = `<div class="loss-warning"><span>⚠️</span><span>TAGESVERLUST ÜBERSCHRITTEN</span></div>`;
+                if(totalPnL < -threshold) warningHtml = `<div class="loss-warning"><span>⚠️</span><span>TAGESVERLUST ÜBERSCHRITTEN</span></div>`;
             }
 
             let openTradesHtml = '<p style="color:var(--text-sub); font-style:italic; font-size:0.8rem; text-align:center; padding-top:20px;">Keine offenen Trades.</p>';
@@ -816,57 +760,26 @@
     function renderNotificationsArea() {
         const area = document.getElementById('dashboard-notification-area');
         area.innerHTML = '';
-
-        // 1. Chat Notification Logic
         const storedChatCount = parseInt(localStorage.getItem('chatCount') || '0');
-        // If MORE messages than we have "seen", AND we are not currently in the chat view
         if (lastMessageCount > storedChatCount && !isChatActive) {
-            area.innerHTML += `
-            <div id="chat-notify-box" class="chat-notification">
-                 <div onclick="showView('Chat')" style="flex-grow:1; display:flex; align-items:center; gap:10px;">
-                    💬 Neue Nachricht im Community Chat!
-                 </div>
-                 <button class="chat-close-btn" onclick="dismissChatNotification(event)">✕</button>
-            </div>`;
+            area.innerHTML += `<div id="chat-notify-box" class="chat-notification"><div onclick="showView('Chat')" style="flex-grow:1; display:flex; align-items:center; gap:10px;">💬 Neue Nachricht im Community Chat!</div><button class="chat-close-btn" onclick="dismissChatNotification(event)">✕</button></div>`;
         }
-
-        // 2. Feedback Notifications
         const unreadFeedbackTrades = trades.filter(t => t.adminFeedback && !t.feedbackRead);
         if(unreadFeedbackTrades.length > 0) {
             unreadFeedbackTrades.forEach(t => {
                 const tradeDataString = encodeURIComponent(JSON.stringify(t));
                 const imgUrlString = encodeURIComponent(t.imgSetup || t.imgResult || '');
-                area.innerHTML += `
-                    <div class="feedback-notification">
-                        <div class="fn-header">
-                            <div class="fn-title"><span>💬</span> Coach Feedback zu ${t.asset}</div>
-                        </div>
-                        <div class="fn-content">
-                            "${t.adminFeedback.substring(0, 80)}${t.adminFeedback.length > 80 ? '...' : ''}"
-                        </div>
-                        <div class="fn-actions">
-                            <button class="btn-primary" style="padding:10px 20px;" onclick="openSignalDetail('${tradeDataString}', '${imgUrlString}')">Ansehen</button>
-                        </div>
-                    </div>
-                `;
+                area.innerHTML += `<div class="feedback-notification"><div class="fn-header"><div class="fn-title"><span>💬</span> Coach Feedback zu ${t.asset}</div></div><div class="fn-content">"${t.adminFeedback.substring(0, 80)}${t.adminFeedback.length > 80 ? '...' : ''}"</div><div class="fn-actions"><button class="btn-primary" style="padding:10px 20px;" onclick="openSignalDetail('${tradeDataString}', '${imgUrlString}')">Ansehen</button></div></div>`;
             });
         }
     }
     
     function dismissChatNotification(e) {
-        e.stopPropagation(); // Don't trigger the "open chat" click
-        
-        // 1. Remove Box
+        e.stopPropagation(); 
         const box = document.getElementById('chat-notify-box');
         if(box) box.remove();
-
-        // 2. Remove Red Dot
         document.getElementById('btn-Chat').innerHTML = '💬 Chat';
-
-        // 3. Mark as read in storage so it doesn't reappear on reload
-        if(lastMessageCount > 0) {
-             localStorage.setItem('chatCount', lastMessageCount);
-        }
+        if(lastMessageCount > 0) localStorage.setItem('chatCount', lastMessageCount);
     }
 
     function setJournalFilter(journalId, timeframe) {
@@ -903,28 +816,18 @@
             const chatBox = document.getElementById('chat-messages');
             chatBox.innerHTML = messages.map(msg => renderMessage(msg)).join('');
             chatBox.scrollTop = chatBox.scrollHeight;
-            
             lastMessageCount = messages.length;
-            
-            // KEY FIX: Only update storage if chat is active AND we have messages
-            if (isChatActive && lastMessageCount > 0) {
-                localStorage.setItem('chatCount', lastMessageCount);
-            }
-
+            if (isChatActive && lastMessageCount > 0) localStorage.setItem('chatCount', lastMessageCount);
             if (!isFirstLoad && !isChatActive) {
                 const storedCount = parseInt(localStorage.getItem('chatCount') || '0');
                 if (lastMessageCount > storedCount) {
-                    // Update UI if we are on dashboard
                     if(document.getElementById('view-Übersicht').classList.contains('active')) renderDashboard();
                     document.getElementById('btn-Chat').innerHTML = '💬 Chat <span style="color:red; font-size:0.8rem;">●</span>';
                 }
             }
-            // Init check on load
             if(isFirstLoad) {
                  const storedCount = parseInt(localStorage.getItem('chatCount') || '0');
-                 if (lastMessageCount > storedCount) {
-                     document.getElementById('btn-Chat').innerHTML = '💬 Chat <span style="color:red; font-size:0.8rem;">●</span>';
-                 }
+                 if (lastMessageCount > storedCount) document.getElementById('btn-Chat').innerHTML = '💬 Chat <span style="color:red; font-size:0.8rem;">●</span>';
             }
             isFirstLoad = false;
         });
@@ -971,7 +874,6 @@
         shareTradeId = id; shareType = null;
         const trade = trades.find(t => t.id === id);
         if(!trade) return;
-        
         document.querySelectorAll('.share-opt').forEach(el => el.classList.remove('selected', 'disabled'));
         if(!trade.imgSetup) document.getElementById('opt-setup').classList.add('disabled');
         if(!trade.imgResult) document.getElementById('opt-result').classList.add('disabled');
@@ -1053,302 +955,38 @@
         }
     }
     
-    // --- OCR FUNCTIONALITY ---
-    async function analyzeSetupImage() {
-        const url = document.getElementById('imgSetup').value.trim();
-        if(!url) return alert("Bitte erst einen Bild-Link einfügen!");
-
-        const status = document.getElementById('ocr-status');
-        status.style.display = 'block';
-        status.innerText = "Lade Bild über Proxy...";
-
-        try {
-            // Use CORS proxy to fetch image data
-            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-            const response = await fetch(proxyUrl);
-            const blob = await response.blob();
-
-            status.innerText = "Erkenne Text (Tesseract)...";
-            
-            const worker = await Tesseract.createWorker('deu');
-            const ret = await worker.recognize(blob);
-            await worker.terminate();
-            
-            const text = ret.data.text;
-            console.log("OCR Result:", text);
-            
-            status.innerText = "Text analysiert! Fülle Felder...";
-            
-            // Simple Parsing Logic (Experimental)
-            const lines = text.split('\n');
-            
-            // 1. Try to find Asset (e.g. EURUSD, BTCUSD)
-            const assetMatch = text.match(/([A-Z]{3}[A-Z]{3})/);
-            if(assetMatch) document.getElementById('assetInput').value = assetMatch[1];
-
-            // 2. Try to find numbers for prices
-            // This is tricky, we look for keywords line by line
-            lines.forEach(line => {
-                const lower = line.toLowerCase();
-                // Extract number from line
-                const numMatch = line.match(/(\d+\.\d{2,5})/);
-                if(numMatch) {
-                    const val = numMatch[1];
-                    if(lower.includes('stop') || lower.includes('sl') || lower.includes('loss')) {
-                        document.getElementById('inpSL').value = val;
-                    }
-                    if(lower.includes('profit') || lower.includes('tp') || lower.includes('target')) {
-                        document.getElementById('inpTP1').value = val;
-                    }
-                    if(lower.includes('entry') || lower.includes('price') || lower.includes('open')) {
-                        document.getElementById('inpEntry').value = val;
-                    }
-                }
+    function renderTradingViewWidget() {
+        const container = document.getElementById('tradingview_chart');
+        if(!container) return;
+        container.innerHTML = '';
+        
+        if (typeof TradingView !== 'undefined') {
+             new TradingView.widget({
+                "autosize": true,
+                "symbol": "FX:EURUSD",
+                "interval": "D",
+                "timezone": "Etc/UTC",
+                "theme": document.body.classList.contains('light-mode') ? "light" : "dark",
+                "style": "1",
+                "locale": "de_DE",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "container_id": "tradingview_chart",
+                "hide_side_toolbar": false, // Enable drawing toolbar
+                "studies": [ "MASimple@tv-basicstudies" ],
+                "show_popup_button": true,
+                "popup_width": "1000",
+                "popup_height": "650"
             });
-            
-            setTimeout(() => { status.style.display = 'none'; }, 2000);
-
-        } catch (e) {
-            console.error(e);
-            status.innerText = "Fehler: Konnte Bild nicht lesen (CORS/Format).";
         }
     }
 
-    function changeCalMonth(d) { calDate.setMonth(calDate.getMonth() + d); renderCalendar(); }
-    function renderCalendar() {
-        if(!activeJournal && journals.length > 0) activeJournal = journals[0].name;
-        document.getElementById('cal-filter-hint').innerText = `Journal: ${activeJournal}`;
-        const y = calDate.getFullYear(), m = calDate.getMonth();
-        document.getElementById('cal-month-title').innerText = new Date(y, m).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
-        const grid = document.getElementById('cal-days-grid'); grid.innerHTML = "";
-        const filtered = trades.filter(t => (t.journal || 'Main') === activeJournal);
-        const firstDay = new Date(y, m, 1).getDay(), lastDay = new Date(y, m + 1, 0).getDate();
-        for(let i=0; i<firstDay; i++) grid.innerHTML += `<div class="cal-cell" style="opacity:0; cursor:default;"></div>`;
-        for(let d=1; d<=lastDay; d++) {
-            const dateStr = new Date(y, m, d).toDateString();
-            const dayTrades = filtered.filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === dateStr);
-            let sum = 0, count = dayTrades.length; dayTrades.forEach(t => sum += t.pnl);
-            let cellClass = 'cal-cell';
-            if(count > 0) { if(sum > 0) cellClass += ' win'; else if(sum < 0) cellClass += ' loss'; }
-            let html = `<div class="cal-date">${d}</div>`;
-            if(count > 0) { html += `<div class="cal-pnl sensitive ${sum>=0?'text-green':'text-red'}">${sum.toFixed(0)}</div><div class="cal-trades">${count} Trades</div>`; }
-            grid.innerHTML += `<div class="${cellClass}" ${count > 0 ? `onclick="openDayDetail('${y}-${m+1}-${d}')"` : ''}>${html}</div>`;
-        }
-    }
-
-    function openDayDetail(dateStr) {
-        const d = new Date(dateStr);
-        document.getElementById('dv-date-title').innerText = d.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-        const dayTrades = trades.filter(t => {
-            if((t.journal || 'Main') !== activeJournal) return false;
-            return t.status === 'Geschlossen' && new Date(t.date).toDateString() === d.toDateString();
-        }).sort((a,b)=> new Date(a.date)-new Date(b.date));
-        
-        let sum=0; dayTrades.forEach(t=>sum+=t.pnl);
-        const wins = dayTrades.filter(t=>t.pnl>0).length;
-        const grossLoss = Math.abs(dayTrades.filter(t=>t.pnl<0).reduce((a,b)=>a+b.pnl,0));
-        const pf = grossLoss===0 ? (wins>0?99:0) : (dayTrades.filter(t=>t.pnl>0).reduce((a,b)=>a+b.pnl,0)/grossLoss);
-        
-        document.getElementById('dv-pnl').innerText = (sum<0?'-':'+') + '€' + Math.abs(sum).toFixed(2);
-        document.getElementById('dv-pnl').className = `dv-stat-val sensitive ${sum>=0?'text-green':'text-red'}`;
-        document.getElementById('dv-winrate').innerText = dayTrades.length ? ((wins/dayTrades.length)*100).toFixed(0)+'%' : '0%';
-        document.getElementById('dv-pf').innerText = pf.toFixed(2);
-        document.getElementById('dv-count').innerText = dayTrades.length;
-
-        document.getElementById('dv-list').innerHTML = dayTrades.map(t => {
-            const time = t.date.split('T')[1].slice(0,5);
-            const dateShort = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-            const pnlClass = t.pnl >= 0 ? 'text-green' : 'text-red';
-            const arrow = t.pnl >= 0 ? '↗' : '↘';
-            const arrowClass = t.pnl >= 0 ? 'text-green' : 'text-red';
-            const tradeDataString = encodeURIComponent(JSON.stringify(t));
-            const imgUrlString = encodeURIComponent(t.imgSetup || t.imgResult || '');
-            return `<div class="trade-row" onclick="openSignalDetail('${tradeDataString}', '${imgUrlString}')"><div class="tr-icon ${arrowClass}">${arrow}</div><div class="tr-date-col"><span class="tr-date">${dateShort}</span><span class="tr-time">${time}</span></div><div class="tr-sym">${t.asset}</div><div class="tr-pnl sensitive ${pnlClass}">${t.pnl.toFixed(2)}</div><div class="tr-arrow">›</div></div>`;
-        }).join('');
-
-        document.getElementById('popup-overlay').classList.add('open');
-        document.getElementById('day-detail-view').classList.remove('hidden');
-        document.getElementById('day-detail-view').classList.add('open');
-        
-        const ctx = document.getElementById('dayChart').getContext('2d'); 
-        if(dayChart) dayChart.destroy();
-        let r=0; const data = dayTrades.map(t=>{r+=t.pnl; return r;});
-        dayChart = new Chart(ctx, { type:'line', data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#00c853' : '#ff453a', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, options:{ responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{grid:{color:'#333'}}} } });
-    }
-
-    function closePopup() { 
-        document.getElementById('popup-overlay').classList.remove('open');
-        document.querySelectorAll('.modal-base').forEach(el => {
-            el.classList.add('hidden');
-            el.classList.remove('open');
-        }); 
-        // Only run logic if coming from a specific context
-        if(currentDetailTradeId) closeTradeDetail();
-    }
-    
-    async function closeTradeDetail() {
-        document.getElementById('trade-detail-view').classList.remove('open');
-        document.getElementById('trade-detail-view').classList.add('hidden');
-        if(document.getElementById('day-detail-view').classList.contains('hidden') && !document.getElementById('admin-member-modal').classList.contains('open')) {
-             document.getElementById('popup-overlay').classList.remove('open');
-        }
-        
-        // AUTO-DELETE FEEDBACK ON CLOSE (If Owner)
-        if(currentDetailTradeId) {
-            const t = trades.find(x => x.id === currentDetailTradeId);
-            // Check if it was "unread" (meaning notification was active) or if user is owner
-            if(t && t.adminFeedback && !isAdmin && t.userId === auth.currentUser.uid) {
-                 await db.collection('trades').doc(currentDetailTradeId).update({ adminFeedback: "", feedbackRead: true });
-                 await loadData(); // Reload UI to clear notification
-            }
-            currentDetailTradeId = null;
-        }
-    }
-    
-    function copyText(val, btnId) {
-        if(!val) return;
-        navigator.clipboard.writeText(val).then(() => {
-            const btn = document.getElementById(btnId);
-            btn.innerText = '✓'; setTimeout(() => { btn.innerText = '📋'; }, 1500);
-        });
-    }
-
-    function formatChatTime(timestamp) {
-        if (!timestamp) return '';
-        const date = timestamp.toDate();
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    async function openMemberDetail(id, email) {
-        let userDisplayName = "User";
-        try {
-            const userSnap = await db.collection('users').where('email', '==', email).get();
-            if(!userSnap.empty) { userDisplayName = userSnap.docs[0].data().displayName; }
-        } catch(e) {}
-        
-        document.getElementById('adm-detail-name').innerText = userDisplayName;
-        document.getElementById('adm-detail-email').innerText = email;
-
-        const userSnap = await db.collection('users').where('email', '==', email).get();
-        if(userSnap.empty) { alert("User hat sich noch nie eingeloggt."); return; }
-        const targetUid = userSnap.docs[0].id;
-
-        const jSnap = await db.collection('journals').where('userId', '==', targetUid).get();
-        inspectedUserJournals = jSnap.docs.map(d => ({id: d.id, ...d.data()}));
-        
-        const tSnap = await db.collection('trades').where('userId', '==', targetUid).get();
-        inspectedUserTrades = tSnap.docs.map(d => ({id: d.id, ...d.data()}));
-
-        const sel = document.getElementById('adm-journal-select');
-        if(inspectedUserJournals.length === 0) { sel.innerHTML = '<option>Kein Journal</option>'; } 
-        else { sel.innerHTML = inspectedUserJournals.map(j => `<option value="${j.name}">${j.name}</option>`).join(''); }
-        
-        document.getElementById('popup-overlay').classList.add('open');
-        document.getElementById('admin-member-modal').classList.remove('hidden');
-        document.getElementById('admin-member-modal').classList.add('open');
-        
-        updateAdminMemberView();
-    }
-
-    function updateAdminMemberView() {
-        const selectedJ = document.getElementById('adm-journal-select').value;
-        let filteredTrades = inspectedUserTrades;
-        if(selectedJ && inspectedUserJournals.length > 0) {
-             const target = selectedJ && selectedJ !== 'Kein Journal' ? selectedJ : inspectedUserJournals[0].name;
-             filteredTrades = inspectedUserTrades.filter(t => (t.journal || 'Main') === target);
-        }
-        
-        const closed = filteredTrades.filter(t => t.status === 'Geschlossen');
-        const sum = closed.reduce((a,b) => a + b.pnl, 0);
-        const wins = closed.filter(t => t.pnl > 0).length;
-        const winrate = closed.length ? ((wins/closed.length)*100).toFixed(0) : 0;
-        
-        document.getElementById('adm-stat-pnl').innerText = sum.toFixed(2) + ' €';
-        document.getElementById('adm-stat-pnl').style.color = sum >= 0 ? 'var(--success)' : 'var(--danger)';
-        document.getElementById('adm-stat-win').innerText = winrate + '%';
-        document.getElementById('adm-stat-count').innerText = closed.length;
-        
-        let bal = 0; const data = closed.sort((a,b)=>new Date(a.date)-new Date(b.date)).map(t => { bal += t.pnl; return bal; });
-        const ctx = document.getElementById('admChart').getContext('2d');
-        if(adminChartInstance) adminChartInstance.destroy();
-        adminChartInstance = new Chart(ctx, { type: 'line', data: { labels: data.map(x=>''), datasets: [{ data: data, borderColor: '#bb86fc', borderWidth: 2, pointRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#333' } } } } });
-        
-        document.getElementById('adm-trade-list').innerHTML = filteredTrades.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t => {
-            const tradeDataString = encodeURIComponent(JSON.stringify(t));
-            const imgUrlString = encodeURIComponent(t.imgSetup || t.imgResult || '');
-            return `<tr style="font-size:0.8rem;"><td>${t.date.split('T')[0]}</td><td>${t.asset}</td><td style="text-align:right; color:${t.pnl>=0?'var(--success)':'var(--danger)'}">${t.pnl.toFixed(2)}</td><td style="text-align:right;"><button class="btn-icon" style="padding:4px 8px; font-size:1rem;" onclick="openSignalDetail('${tradeDataString}', '${imgUrlString}')">ℹ️</button></td></tr>`;
-        }).join('');
-    }
-
-    function switchAdminTab(tab) {
-        document.getElementById('btn-adm-stats').classList.toggle('active', tab==='stats');
-        document.getElementById('btn-adm-trades').classList.toggle('active', tab==='trades');
-        if(tab === 'stats') { document.getElementById('adm-content-stats').classList.remove('hidden'); document.getElementById('adm-content-trades').classList.add('hidden'); } 
-        else { document.getElementById('adm-content-stats').classList.add('hidden'); document.getElementById('adm-content-trades').classList.remove('hidden'); }
-    }
-
-    function renderHistory() {
-        if(!activeJournal && journals.length > 0) activeJournal = journals[0].name;
-        document.getElementById('hist-title').innerText = `Trade Historie (${activeJournal || 'Alle'})`;
-        let filtered = trades.filter(t => (t.journal||'Main') === activeJournal).sort((a,b)=>new Date(b.date)-new Date(a.date));
-        const tbody = document.getElementById('tradeBody');
-        if(!tbody) return;
-        if(filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-sub);">Keine Trades im ausgewählten Journal</td></tr>'; return; }
-        tbody.innerHTML = filtered.map(t => {
-            const time = t.date.split('T')[1]; const date = t.date.split('T')[0];
-            const shareBtn = (t.imgSetup || t.imgResult) ? `<button class="btn-icon btn-share" onclick="shareTrade('${t.id}')" title="Share">🚀</button>` : '';
-            const tradeDataString = encodeURIComponent(JSON.stringify(t));
-            const imgUrlString = encodeURIComponent(t.imgSetup || t.imgResult || '');
-            let pnlHtml = t.status === 'Aktiv' ? '<span style="color:var(--text-sub); font-style:italic;">Offen</span>' : `<span class="sensitive" style="color:${t.pnl >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${t.pnl.toFixed(2)}</span>`;
-            return `<tr><td>${date}<span class="time-sub">${time}</span></td><td><b>${t.asset}</b></td><td style="text-align:right;">${pnlHtml}</td><td style="text-align:right;"><button class="btn-icon" onclick="openSignalDetail('${tradeDataString}', '${imgUrlString}')" title="Details">ℹ️</button> ${shareBtn} <button class="btn-icon" onclick="editTrade('${t.id}')">✏️</button> <button class="btn-icon btn-danger-hover" onclick="delTrade('${t.id}')">🗑️</button></td></tr>`;
-        }).join('');
-    }
-
-    // --- OTHER CORE FUNCTIONS (UNCHANGED) ---
-    async function admLoad() { try { const s = await db.collection('members').get(); const listEl = document.getElementById('admList'); listEl.innerHTML = ''; for(const doc of s.docs) { const mData = doc.data(); const mId = doc.id; let displayName = "User"; let photoURL = ""; const uQuery = await db.collection('users').where('email', '==', mData.email).get(); if(!uQuery.empty) { const uData = uQuery.docs[0].data(); displayName = uData.displayName; photoURL = uData.photoURL; } const imgHtml = photoURL ? `<img src="${photoURL}" class="adm-pic">` : `<div class="adm-pic" style="background:#333; display:flex; justify-content:center; align-items:center;">👤</div>`; listEl.innerHTML += `<div class="adm-row"><div class="adm-user-info">${imgHtml}<div class="adm-text"><span class="adm-name">${displayName}</span><span class="adm-email">${mData.email}</span></div></div><div><button class="btn-icon" onclick="openMemberDetail('${mId}', '${mData.email}')" style="font-size:1rem; margin-right:5px;">👁️</button><button class="btn-icon btn-danger-hover" onclick="admDel('${mId}')" style="font-size:1rem;">✕</button></div></div>`; } } catch(e){ console.error(e); } }
-    async function admAdd() { const e=document.getElementById('admEmail').value.toLowerCase().trim(); if(e) { await db.collection('members').add({email:e}); document.getElementById('admEmail').value=''; admLoad(); } }
-    async function admDel(id) { if(confirm("Löschen?")) { await db.collection('members').doc(id).delete(); admLoad(); } }
-    async function saveJournalInput() { const name = document.getElementById('newJName').value.trim(); const cap = parseFloat(document.getElementById('newJCap').value)||0; const maxDD = document.getElementById('newJMaxDD').value; const ddType = document.getElementById('newJDDType').value; if(!name) return alert("Name fehlt!"); if(editingJournalId) { const oldJ = journals.find(j=>j.id===editingJournalId); await db.collection('journals').doc(editingJournalId).update({name, startCap:cap, maxDD, ddType}); if(name!==oldJ.name) { const batch=db.batch(); (await db.collection('trades').where('userId','==',auth.currentUser.uid).where('journal','==',oldJ.name).get()).docs.forEach(doc=>batch.update(doc.ref,{journal:name})); await batch.commit(); if(activeJournal===oldJ.name) activeJournal=name; } cancelEdit(); } else { await db.collection('journals').add({userId:auth.currentUser.uid, name, startCap:cap, maxDD, ddType, hidden:false}); document.getElementById('newJName').value=''; document.getElementById('newJCap').value=''; } await loadData(); renderSettingsList(); }
-    function prepareEditJournal(id) { const j = journals.find(x => x.id === id); if(!j) return; document.getElementById('journal-form-title').innerText = "Journal Bearbeiten"; document.getElementById('newJName').value = j.name; document.getElementById('newJCap').value = j.startCap || ''; document.getElementById('newJMaxDD').value = j.maxDD || ''; document.getElementById('newJDDType').value = j.ddType || 'eur'; document.getElementById('btn-save-journal').innerText = "Speichern"; document.getElementById('btn-cancel-journal').classList.remove('hidden'); editingJournalId = id; }
-    function cancelEdit() { document.getElementById('journal-form-title').innerText = "Neues Journal"; document.getElementById('newJName').value = ''; document.getElementById('newJCap').value = ''; document.getElementById('newJMaxDD').value = ''; document.getElementById('btn-save-journal').innerText = "Erstellen"; document.getElementById('btn-cancel-journal').classList.add('hidden'); editingJournalId = null; }
-    async function toggleJournalVisibility(id, currentHidden) { await db.collection('journals').doc(id).update({ hidden: !currentHidden }); await loadData(); renderSettingsList(); }
-    async function deleteJournal(id, name) { if(!confirm(`Warnung: Journal '${name}' und ALLE Trades löschen?`)) return; await db.collection('journals').doc(id).delete(); const batch = db.batch(); const tQuery = await db.collection('trades').where('userId', '==', auth.currentUser.uid).where('journal', '==', name).get(); tQuery.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit(); if(activeJournal === name) activeJournal = null; await loadData(); renderSettingsList(); }
-    function renderSettingsList() { document.getElementById('settings-journal-list').innerHTML = journals.map(j => { const isHidden = j.hidden === true; const opacity = isHidden ? '0.5' : '1'; const eye = isHidden ? '🙈' : '👁️'; return `<div class="settings-list-item" style="opacity:${opacity}"><div><strong>${j.name}</strong> <small style="color:var(--text-sub)">${j.startCap ? j.startCap+'€' : ''}</small></div><div><button class="btn-small" onclick="toggleJournalVisibility('${j.id}', ${isHidden})">${eye}</button><button class="btn-small" onclick="prepareEditJournal('${j.id}')">✎</button><button class="btn-small btn-danger-hover" onclick="deleteJournal('${j.id}', '${j.name}')">🗑</button></div></div>`; }).join(''); }
-    function showView(v) { 
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active')); 
-        document.getElementById('view-' + v.replace(/\s+/g, '-')).classList.add('active'); 
-        document.getElementById('view-title').innerText = v.toUpperCase(); 
-        document.getElementById('navDrawer').classList.remove('open'); 
-        document.getElementById('menu-overlay').classList.remove('open'); 
-        document.querySelectorAll('.nav-drawer button').forEach(b => b.classList.remove('nav-active')); 
-        const btn = document.getElementById('btn-' + v); if(btn) btn.classList.add('nav-active'); 
-        
-        isChatActive = (v === 'Chat');
-        if (isChatActive) {
-            document.getElementById('chat-notification').classList.add('hidden');
-            document.getElementById('btn-Chat').innerHTML = '💬 Chat';
-            hasNewChatMessage = false;
-            // UPDATE: Force save current count when opening view
-            if(lastMessageCount > 0) localStorage.setItem('chatCount', lastMessageCount);
-        }
-
-        if(v === 'Übersicht') renderDashboard(); 
-        if(v === 'Kalender') renderCalendar(); 
-        if(v === 'Historie') renderHistory(); 
-        if(v === 'Statistik') renderStatistics(); 
-        if(v === 'Einstellungen') renderSettingsList(); 
-        if(v === 'News') { const b=document.getElementById('news-box'); b.innerHTML=''; const s=document.createElement('script'); s.src="https://s3.tradingview.com/external-embedding/embed-widget-events.js"; s.async=true; s.innerHTML=JSON.stringify({"colorTheme":document.body.classList.contains('light-mode')?'light':'dark',"width":"100%","height":"100%","locale":"de"}); b.appendChild(s); } 
-        
-        // --- THIS WAS MISSING ---
-        if(v === 'TradingView') setTimeout(renderTradingViewWidget, 50);
-    }
-    
+    // --- UTILS ---
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('open'); }
     function prepareCreateView() { document.getElementById('editId').value = ""; const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); document.getElementById('datetime').value = now.toISOString().slice(0,16); document.getElementById('assetInput').value = ""; document.getElementById('pnl').value = ""; document.getElementById('note').value = ""; document.getElementById('inpEntry').value = ""; document.getElementById('inpSL').value = ""; document.getElementById('inpTP1').value = ""; document.getElementById('inpTP2').value = ""; document.getElementById('inpTP3').value = ""; if(activeJournal) document.getElementById('inpJournalSelect').value = activeJournal; toggleFormFields(); document.getElementById('trade-form-modal').classList.remove('hidden'); document.getElementById('trade-form-modal').classList.add('open'); document.getElementById('popup-overlay').classList.add('open'); document.getElementById('form-title').innerText="Neuer Trade";}
     async function saveTrade() { const id = document.getElementById('editId').value; const asset = document.getElementById('assetInput').value.toUpperCase(); if(!asset) return alert("Asset fehlt!"); const data = { userId: auth.currentUser.uid, date: document.getElementById('datetime').value, asset: asset, journal: document.getElementById('inpJournalSelect').value, status: document.getElementById('status').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value, entry: document.getElementById('inpEntry').value, sl: document.getElementById('inpSL').value, tp1: document.getElementById('inpTP1').value, tp2: document.getElementById('inpTP2').value, tp3: document.getElementById('inpTP3').value, adminFeedback: document.getElementById('inpAdminFeedback').value }; if(id) await db.collection('trades').doc(id).update(data); else await db.collection('trades').add(data); await loadData(); closePopup(); }
-    function editTrade(id, closeNow) { const t = trades.find(x => x.id === id); document.getElementById('editId').value = t.id; document.getElementById('datetime').value = t.date; document.getElementById('assetInput').value = t.asset; document.getElementById('inpJournalSelect').value = t.journal || (journals[0] ? journals[0].name : 'Main'); document.getElementById('status').value = closeNow ? 'Geschlossen' : t.status; document.getElementById('pnl').value = t.pnl; document.getElementById('imgSetup').value = t.imgSetup || ''; document.getElementById('imgResult').value = t.imgResult || ''; document.getElementById('note').value = t.note || ''; document.getElementById('inpEntry').value = t.entry || ''; document.getElementById('inpSL').value = t.sl || ''; document.getElementById('inpTP1').value = t.tp1 || ''; document.getElementById('inpTP2').value = t.tp2 || ''; document.getElementById('inpTP3').value = t.tp3 || ''; 
-    document.getElementById('inpAdminFeedback').value = t.adminFeedback || ''; document.getElementById('adm-feedback-input-area').classList.toggle('hidden', !isAdmin); document.getElementById('form-title').innerText="Trade Bearbeiten";
-    toggleFormFields(); document.getElementById('trade-form-modal').classList.remove('hidden'); document.getElementById('trade-form-modal').classList.add('open'); document.getElementById('popup-overlay').classList.add('open'); }
+    function editTrade(id, closeNow) { const t = trades.find(x => x.id === id); document.getElementById('editId').value = t.id; document.getElementById('datetime').value = t.date; document.getElementById('assetInput').value = t.asset; document.getElementById('inpJournalSelect').value = t.journal || (journals[0] ? journals[0].name : 'Main'); document.getElementById('status').value = closeNow ? 'Geschlossen' : t.status; document.getElementById('pnl').value = t.pnl; document.getElementById('imgSetup').value = t.imgSetup || ''; document.getElementById('imgResult').value = t.imgResult || ''; document.getElementById('note').value = t.note || ''; document.getElementById('inpEntry').value = t.entry || ''; document.getElementById('inpSL').value = t.sl || ''; document.getElementById('inpTP1').value = t.tp1 || ''; document.getElementById('inpTP2').value = t.tp2 || ''; document.getElementById('inpTP3').value = t.tp3 || ''; document.getElementById('inpAdminFeedback').value = t.adminFeedback || ''; document.getElementById('adm-feedback-input-area').classList.toggle('hidden', !isAdmin); document.getElementById('form-title').innerText="Trade Bearbeiten"; toggleFormFields(); document.getElementById('trade-form-modal').classList.remove('hidden'); document.getElementById('trade-form-modal').classList.add('open'); document.getElementById('popup-overlay').classList.add('open'); }
     async function delTrade(id) { if(confirm("Löschen?")) { await db.collection('trades').doc(id).delete(); await loadData(); showView('Historie'); } }
     function toggleFormFields() { const s = document.getElementById('status').value; document.getElementById('closedFields').classList.toggle('hidden', s === 'Aktiv'); }
     function togglePrivacy() { privacyMode = !privacyMode; document.documentElement.style.setProperty('--blur', privacyMode ? '5px' : '0px'); }
@@ -1357,6 +995,37 @@
     function toggleTheme(isDark) { if(isDark) { document.body.classList.remove('light-mode'); localStorage.setItem('tradeTheme', 'dark'); } else { document.body.classList.add('light-mode'); localStorage.setItem('tradeTheme', 'light'); } if(document.getElementById('view-Statistik').classList.contains('active')) renderStatistics(); }
     function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerHTML = `<div style="font-size:2rem;">${Math.max(lot,0.01).toFixed(2)} Lot</div><div style="font-size:0.9rem; color:#888;">Risk: ${riskAmt.toFixed(2)}€</div>`; } }
     function updateContractSize() { const val = document.getElementById('cType').value; if(val !== 'custom') document.getElementById('cContract').value = val; }
+    
+    // OCR
+    async function analyzeSetupImage() {
+        const url = document.getElementById('imgSetup').value.trim();
+        if(!url) return alert("Bitte erst einen Bild-Link einfügen!");
+        const status = document.getElementById('ocr-status'); status.style.display = 'block'; status.innerText = "Lade Bild...";
+        try {
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+            const response = await fetch(proxyUrl);
+            const blob = await response.blob();
+            status.innerText = "Erkenne Text...";
+            const worker = await Tesseract.createWorker('deu');
+            const ret = await worker.recognize(blob);
+            await worker.terminate();
+            const text = ret.data.text;
+            status.innerText = "Text analysiert!";
+            const assetMatch = text.match(/([A-Z]{3}[A-Z]{3})/);
+            if(assetMatch) document.getElementById('assetInput').value = assetMatch[1];
+            text.split('\n').forEach(line => {
+                const lower = line.toLowerCase();
+                const numMatch = line.match(/(\d+\.\d{2,5})/);
+                if(numMatch) {
+                    const val = numMatch[1];
+                    if(lower.includes('stop') || lower.includes('sl')) document.getElementById('inpSL').value = val;
+                    if(lower.includes('profit') || lower.includes('tp')) document.getElementById('inpTP1').value = val;
+                    if(lower.includes('entry') || lower.includes('open')) document.getElementById('inpEntry').value = val;
+                }
+            });
+            setTimeout(() => { status.style.display = 'none'; }, 2000);
+        } catch (e) { status.innerText = "Fehler: Konnte Bild nicht lesen."; }
+    }
 </script>
 </body>
 </html>
