@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Chart Integration</title>
+    <title>TradeCloud Pro - Chart Fixed</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 
@@ -432,7 +434,8 @@
     <button onclick="showView('Übersicht')" id="btn-Übersicht">🏠 Dashboard</button>
     <button onclick="prepareCreateView()" style="color:var(--accent);">➕ Neuer Trade</button>
     <button onclick="showView('Chat')" id="btn-Chat">💬 Chat</button>
-    <button onclick="showView('TradingView')" id="btn-TradingView">📈 Chart</button> <div class="nav-separator"></div>
+    <button onclick="showView('TradingView')" id="btn-TradingView">📈 Chart</button>
+    <div class="nav-separator"></div>
     <div class="nav-selector-container">
         <label class="nav-selector-label">AKTUELLES JOURNAL ⌄</label>
         <select id="navJournalSelect" onchange="changeActiveJournal(this.value)"></select>
@@ -725,7 +728,7 @@
         if(activeId === 'view-Historie') renderHistory();
         if(activeId === 'view-Statistik') renderStatistics();
         if(activeId === 'view-Übersicht') renderDashboard();
-        if(activeId === 'view-TradingView') renderTradingViewWidget(); // Update chart
+        if(activeId === 'view-TradingView') renderTradingViewWidget();
         document.getElementById('navDrawer').classList.remove('open');
         document.getElementById('menu-overlay').classList.remove('open');
     }
