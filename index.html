@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Chart Final</title>
+    <title>TradeCloud Pro - Fullscreen Chart</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 
@@ -474,10 +476,8 @@
         </div>
     </section>
 
-    <section id="view-TradingView" class="view-section">
-        <div class="card" style="padding:0; height: calc(100vh - 100px); overflow:hidden;">
-             <div id="tradingview_chart" style="height:100%; width:100%"></div>
-        </div>
+    <section id="view-TradingView" class="view-section" style="height: calc(100vh - 70px);">
+         <div id="tradingview_chart" style="height:100%; width:100%; border-radius: 12px; overflow: hidden;"></div>
     </section>
 
     <section id="view-Kalender" class="view-section">
@@ -726,7 +726,7 @@
         if(activeId === 'view-Historie') renderHistory();
         if(activeId === 'view-Statistik') renderStatistics();
         if(activeId === 'view-Übersicht') renderDashboard();
-        if(activeId === 'view-TradingView') setTimeout(renderTradingViewWidget, 50); // Fix for chart
+        if(activeId === 'view-TradingView') setTimeout(renderTradingViewWidget, 50); // FIX FOR CHART
         document.getElementById('navDrawer').classList.remove('open');
         document.getElementById('menu-overlay').classList.remove('open');
     }
