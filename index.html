@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Final Notification Fix</title>
+    <title>TradeCloud Pro - Chat Dismiss</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -89,7 +89,8 @@
         .fn-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .fn-title { color: var(--accent); font-weight: bold; display: flex; align-items: center; gap: 8px; }
         .fn-content { font-size: 0.95rem; margin-bottom: 12px; line-height: 1.4; color: #eee; font-style: italic; }
-        
+        .fn-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
         .chat-notification { 
             background: rgba(10, 132, 255, 0.2); 
             border: 1px solid #0a84ff; 
@@ -97,8 +98,14 @@
             border-radius: 12px; 
             cursor: pointer; 
             animation: fadeIn 0.5s; 
-            display: flex; align-items: center; gap: 10px; font-weight: bold; 
+            display: flex; align-items: center; justify-content: space-between; /* Changed for X button */
+            font-weight: bold; 
         }
+        
+        .chat-close-btn {
+            background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.2rem; cursor: pointer; padding: 5px; margin-left: 10px;
+        }
+        .chat-close-btn:hover { color: white; }
 
         .journal-full-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 30px; overflow: hidden; animation: fadeIn 0.4s; display: flex; flex-direction: column; position: relative; }
         .jfc-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -788,13 +795,16 @@
         const area = document.getElementById('dashboard-notification-area');
         area.innerHTML = '';
 
-        // 1. Chat Notification
+        // 1. Chat Notification Logic
         const storedChatCount = parseInt(localStorage.getItem('chatCount') || '0');
-        // If there are more messages than we last saw, AND we are not currently in the chat view
+        // If MORE messages than we have "seen", AND we are not currently in the chat view
         if (lastMessageCount > storedChatCount && !isChatActive) {
             area.innerHTML += `
-            <div id="chat-notify-box" class="chat-notification" onclick="openChatFromNotify()">
-                 💬 Neue Nachricht im Community Chat!
+            <div id="chat-notify-box" class="chat-notification">
+                 <div onclick="showView('Chat')" style="flex-grow:1; display:flex; align-items:center; gap:10px;">
+                    💬 Neue Nachricht im Community Chat!
+                 </div>
+                 <button class="chat-close-btn" onclick="dismissChatNotification(event)">✕</button>
             </div>`;
         }
 
@@ -821,12 +831,20 @@
         }
     }
     
-    function openChatFromNotify() {
-        // Immediately hide visually to give feedback
+    function dismissChatNotification(e) {
+        e.stopPropagation(); // Don't trigger the "open chat" click
+        
+        // 1. Remove Box
         const box = document.getElementById('chat-notify-box');
         if(box) box.remove();
-        // Go to view
-        showView('Chat');
+
+        // 2. Remove Red Dot
+        document.getElementById('btn-Chat').innerHTML = '💬 Chat';
+
+        // 3. Mark as read in storage so it doesn't reappear on reload (KEY FIX)
+        if(lastMessageCount > 0) {
+             localStorage.setItem('chatCount', lastMessageCount);
+        }
     }
 
     function setJournalFilter(journalId, timeframe) {
@@ -864,7 +882,6 @@
             chatBox.innerHTML = messages.map(msg => renderMessage(msg)).join('');
             chatBox.scrollTop = chatBox.scrollHeight;
             
-            // Notification Logic via LocalStorage
             lastMessageCount = messages.length;
             
             // KEY FIX: Only update storage if chat is active AND we have messages
@@ -1204,6 +1221,7 @@
         }).join('');
     }
 
+    // --- OTHER CORE FUNCTIONS (UNCHANGED) ---
     async function admLoad() { try { const s = await db.collection('members').get(); const listEl = document.getElementById('admList'); listEl.innerHTML = ''; for(const doc of s.docs) { const mData = doc.data(); const mId = doc.id; let displayName = "User"; let photoURL = ""; const uQuery = await db.collection('users').where('email', '==', mData.email).get(); if(!uQuery.empty) { const uData = uQuery.docs[0].data(); displayName = uData.displayName; photoURL = uData.photoURL; } const imgHtml = photoURL ? `<img src="${photoURL}" class="adm-pic">` : `<div class="adm-pic" style="background:#333; display:flex; justify-content:center; align-items:center;">👤</div>`; listEl.innerHTML += `<div class="adm-row"><div class="adm-user-info">${imgHtml}<div class="adm-text"><span class="adm-name">${displayName}</span><span class="adm-email">${mData.email}</span></div></div><div><button class="btn-icon" onclick="openMemberDetail('${mId}', '${mData.email}')" style="font-size:1rem; margin-right:5px;">👁️</button><button class="btn-icon btn-danger-hover" onclick="admDel('${mId}')" style="font-size:1rem;">✕</button></div></div>`; } } catch(e){ console.error(e); } }
     async function admAdd() { const e=document.getElementById('admEmail').value.toLowerCase().trim(); if(e) { await db.collection('members').add({email:e}); document.getElementById('admEmail').value=''; admLoad(); } }
     async function admDel(id) { if(confirm("Löschen?")) { await db.collection('members').doc(id).delete(); admLoad(); } }
@@ -1227,7 +1245,8 @@
             document.getElementById('chat-notification').classList.add('hidden');
             document.getElementById('btn-Chat').innerHTML = '💬 Chat';
             hasNewChatMessage = false;
-            localStorage.setItem('chatCount', lastMessageCount);
+            // UPDATE: Force save current count when opening view
+            if(lastMessageCount > 0) localStorage.setItem('chatCount', lastMessageCount);
         }
 
         if(v === 'Übersicht') renderDashboard(); 
