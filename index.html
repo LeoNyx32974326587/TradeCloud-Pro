@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Stable Release</title>
+    <title>TradeCloud Pro - Edit Popup & Chat Fix</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
@@ -75,7 +75,6 @@
         #user-greeting-name { font-size: 1.2em; color: var(--accent); }
         .greet-container h2 { margin: 0; font-size: 2.4rem; font-weight: 800; line-height: 1.2; }
 
-        /* FEEDBACK NOTIFICATION */
         .feedback-notification { background: linear-gradient(135deg, rgba(187,134,252,0.15), rgba(187,134,252,0.05)); border: 1px solid var(--accent); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; animation: fadeIn 0.5s; }
         .fn-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .fn-title { color: var(--accent); font-weight: bold; display: flex; align-items: center; gap: 8px; }
@@ -112,8 +111,7 @@
         #popup-overlay.open { display: flex; opacity: 1; }
         .modal-base { width: 95%; max-width: 500px; background: var(--popup-bg); color: var(--text-main); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.8); padding: 20px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; position: relative; transition: all 0.3s; }
         
-        /* Special Black Calendar & Detail */
-        #day-detail-view, #trade-detail-view, #admin-member-modal { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; z-index: 1000; }
+        #day-detail-view, #trade-detail-view, #admin-member-modal, #trade-form-modal { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; z-index: 1000; }
         
         #day-detail-view .trades-list-card { background: #151517; border-color: #2c2c2e; }
         #day-detail-view .trade-row, #day-detail-view .trade-row-header { border-bottom-color: #2c2c2e; }
@@ -269,6 +267,42 @@
                 <div style="width:20px;"></div><div style="width:100px;">Open</div><div style="flex-grow:1;">Symbol</div><div style="min-width:70px; text-align:right;">PnL</div><div style="width:20px;"></div>
             </div>
             <div id="dv-list"></div>
+        </div>
+    </div>
+    
+    <div id="trade-form-modal" class="modal-base hidden">
+        <div class="dv-header">
+            <span class="popup-title" id="form-title">Neuer Trade</span>
+            <button class="popup-close" onclick="closePopup()">✕</button>
+        </div>
+        <div style="padding:10px;">
+            <input type="hidden" id="editId">
+            <label>Journal</label><select id="inpJournalSelect"></select>
+            <label>Status</label><select id="status" onchange="toggleFormFields()"><option value="Aktiv">Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
+            <label>Asset</label><input type="text" id="assetInput" placeholder="EURUSD" style="text-transform:uppercase;">
+            <label>Datum</label><input type="datetime-local" id="datetime">
+            
+            <div class="input-row-2">
+                <div><label>Entry</label><input type="number" id="inpEntry" step="any"></div>
+                <div><label>Stop Loss</label><input type="number" id="inpSL" step="any"></div>
+            </div>
+            <div class="input-row-3">
+                <div><label>TP 1</label><input type="number" id="inpTP1" step="any"></div>
+                <div><label>TP 2</label><input type="number" id="inpTP2" step="any"></div>
+                <div><label>TP 3</label><input type="number" id="inpTP3" step="any"></div>
+            </div>
+
+            <label>Setup (Bild Link)</label><input type="url" id="imgSetup">
+            <label>Notiz</label><textarea id="note" rows="2"></textarea>
+            
+            <div id="closedFields" class="hidden"><label style="color:var(--success)">PnL (€)</label><input type="number" id="pnl" step="0.01"><label>Result (Bild Link)</label><input type="url" id="imgResult"></div>
+            
+            <div id="admin-feedback-container" class="hidden" style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
+                <label style="color:var(--accent);">👨‍🏫 Coach Feedback (Admin)</label>
+                <textarea id="inpAdminFeedback" rows="2" style="border-color:var(--accent);" placeholder="Tipp für den User..."></textarea>
+            </div>
+
+            <button onclick="saveTrade()" class="btn-primary" style="margin-top:15px;">SPEICHERN</button>
         </div>
     </div>
     
@@ -459,41 +493,6 @@
         </div>
     </section>
 
-    <section id="view-Trade-erstellen" class="view-section">
-        <div class="card">
-            <h3 style="margin-top:0;">Neuer Trade</h3>
-            <input type="hidden" id="editId">
-            <label>Journal</label>
-            <select id="inpJournalSelect"></select>
-            <label>Status</label><select id="status" onchange="toggleFormFields()"><option value="Aktiv">Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
-            <label>Asset</label><input type="text" id="assetInput" placeholder="EURUSD" style="text-transform:uppercase;">
-            <label>Datum</label><input type="datetime-local" id="datetime">
-            
-            <div class="input-row-2">
-                <div><label>Entry</label><input type="number" id="inpEntry" step="any"></div>
-                <div><label>Stop Loss</label><input type="number" id="inpSL" step="any"></div>
-            </div>
-            <div class="input-row-3">
-                <div><label>TP 1</label><input type="number" id="inpTP1" step="any"></div>
-                <div><label>TP 2</label><input type="number" id="inpTP2" step="any"></div>
-                <div><label>TP 3</label><input type="number" id="inpTP3" step="any"></div>
-            </div>
-
-            <label>Setup (Bild Link)</label><input type="url" id="imgSetup">
-            <label>Notiz</label><textarea id="note" rows="2"></textarea>
-            
-            <div id="closedFields" class="hidden"><label style="color:var(--success)">PnL (€)</label><input type="number" id="pnl" step="0.01"><label>Result (Bild Link)</label><input type="url" id="imgResult"></div>
-            
-            <div id="admin-feedback-container" class="hidden" style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
-                <label style="color:var(--accent);">👨‍🏫 Coach Feedback (Admin)</label>
-                <textarea id="inpAdminFeedback" rows="2" style="border-color:var(--accent);" placeholder="Tipp für den User..."></textarea>
-            </div>
-
-            <button onclick="saveTrade()" class="btn-primary" style="margin-top:15px;">SPEICHERN</button>
-            <button onclick="showView('Übersicht')" style="width:100%; padding:15px; background:none; border:1px solid #333; color:#888; border-radius:8px; margin-top:10px; cursor:pointer;">Abbrechen</button>
-        </div>
-    </section>
-
     <section id="view-Historie" class="view-section">
         <div class="card" style="overflow-x:auto;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -624,28 +623,11 @@
     auth.onAuthStateChanged(async (user) => {
         if(user) {
             const email = user.email.toLowerCase().trim();
-            
-            await db.collection('users').doc(user.uid).set({
-                email: email,
-                displayName: user.displayName || 'Trader',
-                photoURL: user.photoURL || ''
-            }, { merge: true });
-
-            if(email === "leon.luca.lauterbach@gmail.com") {
-                isAdmin = true;
-                const admPanel = document.getElementById('admin-panel');
-                if(admPanel) { admPanel.classList.remove('hidden'); admLoad(); }
-                finishLogin(user);
-            } else {
+            await db.collection('users').doc(user.uid).set({ email: email, displayName: user.displayName || 'Trader', photoURL: user.photoURL || '' }, { merge: true });
+            if(email === "leon.luca.lauterbach@gmail.com") { isAdmin = true; const admPanel = document.getElementById('admin-panel'); if(admPanel) { admPanel.classList.remove('hidden'); admLoad(); } finishLogin(user); } 
+            else {
                 const memberSnap = await db.collection('members').where('email', '==', email).get();
-                if(!memberSnap.empty) {
-                    isAdmin = false;
-                    finishLogin(user);
-                } else {
-                    alert("Zugriff verweigert! Diese E-Mail ist nicht registriert.");
-                    auth.signOut();
-                    location.reload();
-                }
+                if(!memberSnap.empty) { isAdmin = false; finishLogin(user); } else { alert("Zugriff verweigert!"); auth.signOut(); location.reload(); }
             }
         }
     });
@@ -655,30 +637,22 @@
         const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
         currentUserName = capitalizedName;
         document.getElementById('user-greeting-name').innerText = capitalizedName;
-        
         document.getElementById('auth-overlay').classList.add('hidden');
         document.getElementById('app-content').classList.remove('hidden');
         document.getElementById('main-header').classList.remove('hidden');
-        
-        await loadData();
-        loadChat();
+        await loadData(); loadChat();
     }
 
     async function loadData() {
         if(!auth.currentUser) return;
         const jSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get();
         journals = jSnap.docs.map(d => ({id: d.id, ...d.data()}));
-        if(journals.length === 0) {
-            await db.collection('journals').add({userId: auth.currentUser.uid, name: 'Main', startCap: 0, hidden: false});
-            const newSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get();
-            journals = newSnap.docs.map(d => ({id: d.id, ...d.data()}));
-        }
+        if(journals.length === 0) { await db.collection('journals').add({userId: auth.currentUser.uid, name: 'Main', startCap: 0, hidden: false}); const newSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get(); journals = newSnap.docs.map(d => ({id: d.id, ...d.data()})); }
         if(!activeJournal && journals.length > 0) activeJournal = journals[0].name;
         const tSnap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
         trades = tSnap.docs.map(d => ({id: d.id, ...d.data()}));
         populateSelectors();
         renderDashboard(); 
-        
         if(document.getElementById('view-Historie').classList.contains('active')) renderHistory();
     }
 
@@ -695,7 +669,6 @@
         activeJournal = val;
         const createSel = document.getElementById('inpJournalSelect');
         if(createSel) createSel.value = activeJournal;
-        
         const activeId = document.querySelector('.view-section.active').id;
         if(activeId === 'view-Kalender') renderCalendar();
         if(activeId === 'view-Historie') renderHistory();
@@ -718,7 +691,6 @@
             const timeframe = journalFilters[journal.id] || 'GESAMT';
             const now = new Date();
             let startDate = null; let endDate = null;
-            
             if(timeframe === 'HEUTE') { startDate = new Date(); startDate.setHours(0,0,0,0); endDate = new Date(); endDate.setHours(23,59,59,999); }
             else if(timeframe === 'GESTERN') { startDate = new Date(); startDate.setDate(startDate.getDate()-1); startDate.setHours(0,0,0,0); endDate = new Date(); endDate.setDate(endDate.getDate()-1); endDate.setHours(23,59,59,999); }
             else if(timeframe === 'WOCHE') { startDate = new Date(now.getTime() - 7*24*60*60*1000); }
@@ -855,9 +827,11 @@
     function closeDeleteModal() { closePopup(); }
 
     function shareTrade(id) {
+        // FIXED SHARE FUNCTION: Passing ID correctly
+        shareTradeId = id; shareType = null;
         const trade = trades.find(t => t.id === id);
         if(!trade) return;
-        shareTradeId = id; shareType = null;
+        
         document.querySelectorAll('.share-opt').forEach(el => el.classList.remove('selected', 'disabled'));
         if(!trade.imgSetup) document.getElementById('opt-setup').classList.add('disabled');
         if(!trade.imgResult) document.getElementById('opt-result').classList.add('disabled');
@@ -1021,7 +995,7 @@
 
     function closePopup() { 
         document.getElementById('popup-overlay').classList.remove('open');
-        document.querySelectorAll('.standard-modal, .modal-base, #day-detail-view, #trade-detail-view, #admin-member-modal').forEach(el => {
+        document.querySelectorAll('.modal-base').forEach(el => {
             el.classList.add('hidden');
             el.classList.remove('open');
         }); 
@@ -1030,7 +1004,7 @@
     function closeTradeDetail() {
         document.getElementById('trade-detail-view').classList.remove('open');
         document.getElementById('trade-detail-view').classList.add('hidden');
-        if(document.getElementById('day-detail-view').classList.contains('hidden')) {
+        if(document.getElementById('day-detail-view').classList.contains('hidden') && !document.getElementById('admin-member-modal').classList.contains('open')) {
              document.getElementById('popup-overlay').classList.remove('open');
         }
     }
@@ -1135,7 +1109,7 @@
         }).join('');
     }
 
-    // --- OTHER CORE FUNCTIONS (UNCHANGED) ---
+    // --- OTHER CORE FUNCTIONS ---
     async function admLoad() { try { const s = await db.collection('members').get(); const listEl = document.getElementById('admList'); listEl.innerHTML = ''; for(const doc of s.docs) { const mData = doc.data(); const mId = doc.id; let displayName = "User"; let photoURL = ""; const uQuery = await db.collection('users').where('email', '==', mData.email).get(); if(!uQuery.empty) { const uData = uQuery.docs[0].data(); displayName = uData.displayName; photoURL = uData.photoURL; } const imgHtml = photoURL ? `<img src="${photoURL}" class="adm-pic">` : `<div class="adm-pic" style="background:#333; display:flex; justify-content:center; align-items:center;">👤</div>`; listEl.innerHTML += `<div class="adm-row"><div class="adm-user-info">${imgHtml}<div class="adm-text"><span class="adm-name">${displayName}</span><span class="adm-email">${mData.email}</span></div></div><div><button class="btn-icon" onclick="openMemberDetail('${mId}', '${mData.email}')" style="font-size:1rem; margin-right:5px;">👁️</button><button class="btn-icon btn-danger-hover" onclick="admDel('${mId}')" style="font-size:1rem;">✕</button></div></div>`; } } catch(e){ console.error(e); } }
     async function admAdd() { const e=document.getElementById('admEmail').value.toLowerCase().trim(); if(e) { await db.collection('members').add({email:e}); document.getElementById('admEmail').value=''; admLoad(); } }
     async function admDel(id) { if(confirm("Löschen?")) { await db.collection('members').doc(id).delete(); admLoad(); } }
@@ -1154,7 +1128,6 @@
         document.querySelectorAll('.nav-drawer button').forEach(b => b.classList.remove('nav-active')); 
         const btn = document.getElementById('btn-' + v); if(btn) btn.classList.add('nav-active'); 
         
-        // CHAT NOTIFY LOGIC
         isChatActive = (v === 'Chat');
         if (isChatActive) {
             document.getElementById('chat-notification').classList.add('hidden');
@@ -1169,11 +1142,11 @@
         if(v === 'News') { const b=document.getElementById('news-box'); b.innerHTML=''; const s=document.createElement('script'); s.src="https://s3.tradingview.com/external-embedding/embed-widget-events.js"; s.async=true; s.innerHTML=JSON.stringify({"colorTheme":document.body.classList.contains('light-mode')?'light':'dark',"width":"100%","height":"100%","locale":"de"}); b.appendChild(s); } 
     }
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('open'); }
-    function prepareCreateView() { document.getElementById('editId').value = ""; const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); document.getElementById('datetime').value = now.toISOString().slice(0,16); document.getElementById('assetInput').value = ""; document.getElementById('pnl').value = ""; document.getElementById('note').value = ""; document.getElementById('inpEntry').value = ""; document.getElementById('inpSL').value = ""; document.getElementById('inpTP1').value = ""; document.getElementById('inpTP2').value = ""; document.getElementById('inpTP3').value = ""; if(activeJournal) document.getElementById('inpJournalSelect').value = activeJournal; toggleFormFields(); showView('Trade-erstellen'); }
-    async function saveTrade() { const id = document.getElementById('editId').value; const asset = document.getElementById('assetInput').value.toUpperCase(); if(!asset) return alert("Asset fehlt!"); const data = { userId: auth.currentUser.uid, date: document.getElementById('datetime').value, asset: asset, journal: document.getElementById('inpJournalSelect').value, status: document.getElementById('status').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value, entry: document.getElementById('inpEntry').value, sl: document.getElementById('inpSL').value, tp1: document.getElementById('inpTP1').value, tp2: document.getElementById('inpTP2').value, tp3: document.getElementById('inpTP3').value, adminFeedback: document.getElementById('inpAdminFeedback').value }; if(id) await db.collection('trades').doc(id).update(data); else await db.collection('trades').add(data); await loadData(); showView('Übersicht'); }
+    function prepareCreateView() { document.getElementById('editId').value = ""; const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); document.getElementById('datetime').value = now.toISOString().slice(0,16); document.getElementById('assetInput').value = ""; document.getElementById('pnl').value = ""; document.getElementById('note').value = ""; document.getElementById('inpEntry').value = ""; document.getElementById('inpSL').value = ""; document.getElementById('inpTP1').value = ""; document.getElementById('inpTP2').value = ""; document.getElementById('inpTP3').value = ""; if(activeJournal) document.getElementById('inpJournalSelect').value = activeJournal; toggleFormFields(); document.getElementById('trade-form-modal').classList.remove('hidden'); document.getElementById('trade-form-modal').classList.add('open'); document.getElementById('popup-overlay').classList.add('open'); document.getElementById('form-title').innerText="Neuer Trade";}
+    async function saveTrade() { const id = document.getElementById('editId').value; const asset = document.getElementById('assetInput').value.toUpperCase(); if(!asset) return alert("Asset fehlt!"); const data = { userId: auth.currentUser.uid, date: document.getElementById('datetime').value, asset: asset, journal: document.getElementById('inpJournalSelect').value, status: document.getElementById('status').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value, entry: document.getElementById('inpEntry').value, sl: document.getElementById('inpSL').value, tp1: document.getElementById('inpTP1').value, tp2: document.getElementById('inpTP2').value, tp3: document.getElementById('inpTP3').value, adminFeedback: document.getElementById('inpAdminFeedback').value }; if(id) await db.collection('trades').doc(id).update(data); else await db.collection('trades').add(data); await loadData(); closePopup(); }
     function editTrade(id, closeNow) { const t = trades.find(x => x.id === id); document.getElementById('editId').value = t.id; document.getElementById('datetime').value = t.date; document.getElementById('assetInput').value = t.asset; document.getElementById('inpJournalSelect').value = t.journal || (journals[0] ? journals[0].name : 'Main'); document.getElementById('status').value = closeNow ? 'Geschlossen' : t.status; document.getElementById('pnl').value = t.pnl; document.getElementById('imgSetup').value = t.imgSetup || ''; document.getElementById('imgResult').value = t.imgResult || ''; document.getElementById('note').value = t.note || ''; document.getElementById('inpEntry').value = t.entry || ''; document.getElementById('inpSL').value = t.sl || ''; document.getElementById('inpTP1').value = t.tp1 || ''; document.getElementById('inpTP2').value = t.tp2 || ''; document.getElementById('inpTP3').value = t.tp3 || ''; 
-    document.getElementById('inpAdminFeedback').value = t.adminFeedback || ''; document.getElementById('adm-feedback-input-area').classList.toggle('hidden', !isAdmin);
-    toggleFormFields(); showView('Trade-erstellen'); }
+    document.getElementById('inpAdminFeedback').value = t.adminFeedback || ''; document.getElementById('adm-feedback-input-area').classList.toggle('hidden', !isAdmin); document.getElementById('form-title').innerText="Trade Bearbeiten";
+    toggleFormFields(); document.getElementById('trade-form-modal').classList.remove('hidden'); document.getElementById('trade-form-modal').classList.add('open'); document.getElementById('popup-overlay').classList.add('open'); }
     async function delTrade(id) { if(confirm("Löschen?")) { await db.collection('trades').doc(id).delete(); await loadData(); showView('Historie'); } }
     function toggleFormFields() { const s = document.getElementById('status').value; document.getElementById('closedFields').classList.toggle('hidden', s === 'Aktiv'); }
     function togglePrivacy() { privacyMode = !privacyMode; document.documentElement.style.setProperty('--blur', privacyMode ? '5px' : '0px'); }
@@ -1182,26 +1155,6 @@
     function toggleTheme(isDark) { if(isDark) { document.body.classList.remove('light-mode'); localStorage.setItem('tradeTheme', 'dark'); } else { document.body.classList.add('light-mode'); localStorage.setItem('tradeTheme', 'light'); } if(document.getElementById('view-Statistik').classList.contains('active')) renderStatistics(); }
     function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerHTML = `<div style="font-size:2rem;">${Math.max(lot,0.01).toFixed(2)} Lot</div><div style="font-size:0.9rem; color:#888;">Risk: ${riskAmt.toFixed(2)}€</div>`; } }
     function updateContractSize() { const val = document.getElementById('cType').value; if(val !== 'custom') document.getElementById('cContract').value = val; }
-    
-    // --- CHAT LISTEN ---
-    function loadChat() {
-        db.collection('chat').orderBy('timestamp', 'desc').limit(50).onSnapshot({ includeMetadataChanges: true }, snapshot => {
-            const messages = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()})).reverse();
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML = messages.map(msg => renderMessage(msg)).join('');
-            chatBox.scrollTop = chatBox.scrollHeight;
-            
-            // Notification Logic
-            if (!isFirstLoad && !isChatActive && messages.length > lastMessageCount) {
-                const notif = document.getElementById('chat-notification');
-                if(notif) notif.classList.remove('hidden');
-                document.getElementById('btn-Chat').innerHTML = '💬 Chat <span style="color:red; font-size:0.8rem;">●</span>';
-            }
-            lastMessageCount = messages.length;
-            isFirstLoad = false;
-        });
-    }
-
 </script>
 </body>
 </html>
