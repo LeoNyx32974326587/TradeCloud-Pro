@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro4</title>
+    <title>TradeCloud Pro</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -75,6 +75,7 @@
         .chat-locked-msg { text-align: center; padding: 15px; background: rgba(255,255,255,0.05); color: var(--text-sub); font-size: 0.8rem; font-style: italic; border-top: 1px solid var(--border); margin-top: auto; }
         .chat-dm-del-btn { background: none; border: none; color: var(--text-sub); font-size: 1rem; padding: 5px; cursor: pointer; }
         .chat-dm-del-btn:hover { color: var(--danger); }
+        
         .msg-wrapper { max-width: 85%; display: flex; flex-direction: column; position: relative; }
         .msg-wrapper.me { align-self: flex-end; align-items: flex-end; }
         .msg-wrapper.other { align-self: flex-start; align-items: flex-start; }
@@ -87,9 +88,17 @@
         .chat-del-btn { position: absolute; top: 0; background: rgba(0,0,0,0.6); color: #ff3d00; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; opacity: 0.6; transition: 0.2s; }
         .msg-wrapper.me .chat-del-btn { left: -25px; }
         .msg-wrapper.other .chat-del-btn { right: -25px; }
-        @media (max-width: 700px) { .chat-layout { flex-direction: column; } .chat-sidebar { width: 100%; height: 70px; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); } .channel-item { min-width: 140px; flex-shrink: 0; justify-content: center; text-align: center; padding: 10px; border-bottom: none; border-left: none; } .channel-item.active { border-bottom: 3px solid var(--accent); border-left: none; background: transparent; } .channel-desc { display: none; } .chat-messages { padding: 10px; } }
 
-        /* JOURNAL */
+        @media (max-width: 700px) {
+            .chat-layout { flex-direction: column; }
+            .chat-sidebar { width: 100%; height: 70px; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); }
+            .channel-item { min-width: 140px; flex-shrink: 0; justify-content: center; text-align: center; padding: 10px; border-bottom: none; border-left: none; }
+            .channel-item.active { border-bottom: 3px solid var(--accent); border-left: none; background: transparent; }
+            .channel-desc { display: none; }
+            .chat-messages { padding: 10px; }
+        }
+
+        /* JOURNAL & LISTS */
         .journal-full-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 30px; overflow: hidden; animation: fadeIn 0.4s; display: flex; flex-direction: column; position: relative; }
         .jfc-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .jfc-title { font-size: 1.3rem; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
@@ -109,6 +118,16 @@
         .filter-pill:hover { background: rgba(255,255,255,0.05); }
         .filter-pill.active { background: rgba(187, 134, 252, 0.15); color: var(--accent); border-color: var(--accent); }
         .loss-warning { background: rgba(255, 61, 0, 0.15); border-left: 4px solid var(--danger); color: var(--danger); padding: 10px 15px; font-size: 0.9rem; font-weight: bold; margin: 0 20px 10px 20px; display: flex; align-items: center; gap: 10px; border-radius: 4px; }
+        
+        #dashboard-notification-area { margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .feedback-notification { background: linear-gradient(135deg, rgba(187,134,252,0.2), rgba(187,134,252,0.05)); border: 1px solid var(--accent); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; animation: fadeIn 0.5s; }
+        .fn-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .fn-title { color: var(--accent); font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .fn-content { font-size: 0.95rem; margin-bottom: 12px; line-height: 1.4; color: #eee; font-style: italic; }
+        .fn-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .chat-notification { background: rgba(10, 132, 255, 0.2); border: 1px solid #0a84ff; color: #fff; padding: 15px; border-radius: 12px; cursor: pointer; animation: fadeIn 0.5s; display: flex; align-items: center; justify-content: space-between; font-weight: bold; }
+        .chat-close-btn { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.2rem; cursor: pointer; padding: 5px; margin-left: 10px; }
+
         @media (max-width: 768px) { .jfc-body-grid { grid-template-columns: 1fr; } .jfc-chart-area { height: 220px; } }
 
         /* POPUPS */
@@ -133,22 +152,6 @@
         .dv-stat-label { color: var(--text-sub); font-size: 0.85rem; margin-bottom: 4px; }
         .dv-stat-val { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
         .closed-trades-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; margin-top: 10px; }
-
-        /* DETAILS */
-        .td-hero { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #333; }
-        .td-asset { font-size: 1.8rem; font-weight: 800; color: white; display:block; }
-        .td-pnl { font-size: 3rem; font-weight: 900; margin-top: 5px; display:block; }
-        .td-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .td-box { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; display:flex; flex-direction:column; justify-content:center; }
-        .td-val-row { display: flex; align-items: center; justify-content: space-between; }
-        .td-label { color: #888; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 5px; display: block; font-weight: 600; }
-        .td-val { color: white; font-size: 1.1rem; font-weight: 600; }
-        .copy-icon { cursor: pointer; font-size: 0.9rem; margin-left: 8px; color: var(--accent); background:none; border:none; padding:5px; }
-        .td-note-box { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; margin-bottom: 20px; font-style: italic; color: #ccc; font-size: 0.9rem; line-height: 1.5; }
-        .feedback-message { background: rgba(187, 134, 252, 0.1); border: 1px solid var(--accent); color: #fff; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        .feedback-label { display: block; color: var(--accent); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 5px; }
-        .img-box { background: #151517; padding:15px; border-radius:12px; border:1px solid #2c2c2e; margin-top:10px; }
-        .td-img { width: 100%; border-radius: 8px; border: 1px solid #333; cursor: pointer; margin-top:5px; }
 
         /* MISC */
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
@@ -203,9 +206,15 @@
 <body>
 
 <div id="popup-overlay" onclick="if(event.target === this) window.closePopup()">
+    
     <div id="day-detail-view" class="modal-base hidden">
-        <div class="dv-header"><div id="dv-date-title" style="font-weight:700; font-size:1.2rem;">Date</div><button onclick="window.closePopup()" class="popup-close">✕</button></div>
-        <div style="padding-bottom:20px; border-bottom:1px solid #2c2c2e; margin-bottom:20px;"><div style="height:180px;"><canvas id="dayChart"></canvas></div></div>
+        <div class="dv-header">
+            <div id="dv-date-title" style="font-weight:700; font-size:1.2rem;">Date</div>
+            <button onclick="window.closePopup()" class="popup-close">✕</button>
+        </div>
+        <div style="padding-bottom:20px; border-bottom:1px solid #2c2c2e; margin-bottom:20px;">
+            <div style="height:180px;"><canvas id="dayChart"></canvas></div>
+        </div>
         <div class="dv-stats-grid">
             <div class="dv-stat-item"><span class="dv-stat-label">PnL</span><span id="dv-pnl" class="dv-stat-val sensitive">-</span></div>
             <div class="dv-stat-item"><span class="dv-stat-label">Win rate</span><span id="dv-winrate" class="dv-stat-val">-</span></div>
@@ -213,50 +222,45 @@
             <div class="dv-stat-item"><span class="dv-stat-label">Trades</span><span id="dv-count" class="dv-stat-val">-</span></div>
         </div>
         <div class="closed-trades-title">Closed Trades</div>
-        <div class="trades-list-card"><div class="trade-row-header"><div style="width:20px;"></div><div style="width:100px;">Open</div><div style="flex-grow:1;">Symbol</div><div style="min-width:70px; text-align:right;">PnL</div><div style="width:20px;"></div></div><div id="dv-list"></div></div>
+        <div class="trades-list-card">
+             <div class="trade-row-header">
+                <div style="width:20px;"></div><div style="width:100px;">Open</div><div style="flex-grow:1;">Symbol</div><div style="min-width:70px; text-align:right;">PnL</div><div style="width:20px;"></div>
+            </div>
+            <div id="dv-list"></div>
+        </div>
     </div>
     
     <div id="trade-form-modal" class="modal-base hidden">
-        <div class="dv-header"><span class="popup-title" id="form-title">Neuer Trade</span><button class="popup-close" onclick="window.closePopup()">✕</button></div>
+        <div class="dv-header">
+            <span class="popup-title" id="form-title">Neuer Trade</span>
+            <button class="popup-close" onclick="window.closePopup()">✕</button>
+        </div>
         <div style="padding:10px;">
             <input type="hidden" id="editId">
             <label>Journal</label><select id="inpJournalSelect"></select>
             <label>Status</label><select id="status" onchange="window.toggleFormFields()"><option value="Aktiv">Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
             <label>Asset</label><input type="text" id="assetInput" placeholder="EURUSD" style="text-transform:uppercase;">
             <label>Datum</label><input type="datetime-local" id="datetime">
-            <div class="input-row-2"><div><label>Entry</label><input type="number" id="inpEntry" step="any"></div><div><label>Stop Loss</label><input type="number" id="inpSL" step="any"></div></div>
-            <div class="input-row-3"><div><label>TP 1</label><input type="number" id="inpTP1" step="any"></div><div><label>TP 2</label><input type="number" id="inpTP2" step="any"></div><div><label>TP 3</label><input type="number" id="inpTP3" step="any"></div></div>
+            <div class="input-row-2">
+                <div><label>Entry</label><input type="number" id="inpEntry" step="any"></div>
+                <div><label>Stop Loss</label><input type="number" id="inpSL" step="any"></div>
+            </div>
+            <div class="input-row-3">
+                <div><label>TP 1</label><input type="number" id="inpTP1" step="any"></div>
+                <div><label>TP 2</label><input type="number" id="inpTP2" step="any"></div>
+                <div><label>TP 3</label><input type="number" id="inpTP3" step="any"></div>
+            </div>
             <label>Setup (Bild Link)</label><input type="url" id="imgSetup" placeholder="https://...">
             <label>Notiz</label><textarea id="note" rows="2"></textarea>
             <div id="closedFields" class="hidden"><label style="color:var(--success)">PnL (€)</label><input type="number" id="pnl" step="0.01"><label>Result (Bild Link)</label><input type="url" id="imgResult"></div>
-            <div id="admin-feedback-container" class="hidden" style="margin-top:20px; border-top:1px solid #333; padding-top:15px;"><label style="color:var(--accent);">👨‍🏫 Coach Feedback (Admin)</label><textarea id="inpAdminFeedback" rows="2" style="border-color:var(--accent);" placeholder="Tipp für den User..."></textarea></div>
+            <div id="admin-feedback-container" class="hidden" style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
+                <label style="color:var(--accent);">👨‍🏫 Coach Feedback (Admin)</label>
+                <textarea id="inpAdminFeedback" rows="2" style="border-color:var(--accent);" placeholder="Tipp für den User..."></textarea>
+            </div>
             <button onclick="window.saveTrade()" class="btn-primary" style="margin-top:15px;">SPEICHERN</button>
         </div>
     </div>
     
-    <div id="share-channel-modal" class="modal-base hidden">
-        <div class="dv-header"><span class="popup-title">Wohin senden?</span><button class="popup-close" onclick="window.closePopup()">✕</button></div>
-        <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
-            <div class="share-opt" onclick="window.selectShareChannelTarget('general')">📢 Allgemein</div>
-            <div class="share-opt" onclick="window.selectShareChannelTarget('signals')">🚀 Signale</div>
-            <div id="btn-share-pro" class="share-opt hidden" onclick="window.selectShareChannelTarget('pro')">💎 Pro Signale</div>
-        </div>
-    </div>
-
-    <div id="share-modal" class="modal-base hidden">
-        <div class="dv-header"><span class="popup-title">Was teilen?</span><button class="popup-close" onclick="window.closeShareModal()">✕</button></div>
-        <p style="font-size:0.8rem; color:var(--text-sub); text-align:center; margin:0;">Wähle, was du teilen möchtest</p>
-        <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
-            <div id="opt-setup" class="share-opt" onclick="window.selectShareOption('setup')"><span>📷</span> <span>Setup Chart</span></div>
-            <div id="opt-result" class="share-opt" onclick="window.selectShareOption('result')"><span>🏁</span> <span>Ergebnis Chart</span></div>
-        </div>
-        <div id="signal-inputs" class="signal-input-grid hidden">
-            <input type="number" id="sig-entry" placeholder="Entry"><input type="number" id="sig-sl" placeholder="SL">
-            <input type="number" id="sig-tp1" placeholder="TP 1"><input type="number" id="sig-tp2" placeholder="TP 2"><input type="number" id="sig-tp3" placeholder="TP 3" style="grid-column:span 2;">
-        </div>
-        <button onclick="window.confirmShare()" class="btn-primary" style="margin-top:10px;">Senden</button>
-    </div>
-
     <div id="user-search-modal" class="modal-base hidden">
         <div class="dv-header"><span class="popup-title">Neuer Chat</span><button class="popup-close" onclick="window.closePopup()">✕</button></div>
         <input id="search-user-input" placeholder="Name oder Email eingeben..." oninput="window.searchUsers(this.value)">
@@ -264,7 +268,10 @@
     </div>
     
     <div id="trade-detail-view" class="modal-base hidden">
-        <div class="dv-header"><button onclick="window.closeTradeDetail()" style="background:none; border:none; color:#0a84ff; font-size:1rem; cursor:pointer; font-weight:600;">❮ Back</button><div style="font-weight:700; font-size:1.1rem;">Trade Details</div><div style="width:40px;"></div></div>
+        <div class="dv-header">
+            <button onclick="window.closeTradeDetail()" style="background:none; border:none; color:#0a84ff; font-size:1rem; cursor:pointer; font-weight:600;">❮ Back</button>
+            <div style="font-weight:700; font-size:1.1rem;">Trade Details</div><div style="width:40px;"></div>
+        </div>
         <div id="td-content"></div>
         <div id="adm-feedback-input-area" class="hidden" style="padding:20px; border-top:1px solid #333; margin-top:20px; background:#151517;">
             <label style="color:var(--accent); font-weight:bold; display:block; margin-bottom:8px;">👨‍🏫 Feedback senden:</label>
@@ -289,10 +296,19 @@
             <button class="adm-tab-btn" onclick="window.switchAdminTab('trades')" id="btn-adm-trades">📜 Trade Liste</button>
         </div>
         <div id="adm-content-stats" style="padding:20px; overflow-y:auto;">
-             <div class="dv-stats-grid"><div class="stat-box"><span class="stat-label">Total PnL</span><div class="stat-value sensitive" id="adm-stat-pnl">0.00 €</div></div><div class="stat-box"><span class="stat-label">Winrate</span><div class="stat-value" id="adm-stat-win">0%</div></div><div class="stat-box"><span class="stat-label">Trades</span><div class="stat-value" id="adm-stat-count">0</div></div></div>
+             <div class="dv-stats-grid">
+                <div class="stat-box"><span class="stat-label">Total PnL</span><div class="stat-value sensitive" id="adm-stat-pnl">0.00 €</div></div>
+                <div class="stat-box"><span class="stat-label">Winrate</span><div class="stat-value" id="adm-stat-win">0%</div></div>
+                <div class="stat-box"><span class="stat-label">Trades</span><div class="stat-value" id="adm-stat-count">0</div></div>
+            </div>
             <div style="height:200px; margin-top:20px;"><canvas id="admChart"></canvas></div>
         </div>
-        <div id="adm-content-trades" class="hidden" style="padding:0; overflow-y:auto; flex-grow:1;"><table class="hist-table"><thead><tr><th>Date</th><th>Asset</th><th style="text-align:right;">PnL</th><th></th></tr></thead><tbody id="adm-trade-list"></tbody></table></div>
+        <div id="adm-content-trades" class="hidden" style="padding:0; overflow-y:auto; flex-grow:1;">
+            <table class="hist-table">
+                <thead><tr><th>Date</th><th>Asset</th><th style="text-align:right;">PnL</th><th></th></tr></thead>
+                <tbody id="adm-trade-list"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="date-range-modal" class="modal-base hidden">
@@ -304,15 +320,47 @@
         </div>
     </div>
 
+    <div id="share-channel-modal" class="modal-base hidden">
+        <div class="dv-header"><span class="popup-title">Wohin senden?</span><button class="popup-close" onclick="window.closePopup()">✕</button></div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
+            <div class="share-opt" onclick="window.selectShareChannelTarget('general')">📢 Allgemein</div>
+            <div class="share-opt" onclick="window.selectShareChannelTarget('signals')">🚀 Signale</div>
+            <div id="btn-share-pro" class="share-opt hidden" onclick="window.selectShareChannelTarget('pro')">💎 Pro Signale</div>
+        </div>
+    </div>
+
+    <div id="share-modal" class="modal-base hidden">
+        <div class="dv-header"><span class="popup-title">Was teilen?</span><button class="popup-close" onclick="window.closeShareModal()">✕</button></div>
+        <p style="font-size:0.8rem; color:var(--text-sub); text-align:center; margin:0;">Wähle, was du teilen möchtest</p>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
+            <div id="opt-setup" class="share-opt" onclick="window.selectShareOption('setup')"><span>📷</span> <span>Setup Chart</span></div>
+            <div id="opt-result" class="share-opt" onclick="window.selectShareOption('result')"><span>🏁</span> <span>Ergebnis Chart</span></div>
+        </div>
+        <div id="signal-inputs" class="signal-input-grid hidden">
+            <input type="number" id="sig-entry" placeholder="Entry">
+            <input type="number" id="sig-sl" placeholder="SL">
+            <input type="number" id="sig-tp1" placeholder="TP 1">
+            <input type="number" id="sig-tp2" placeholder="TP 2">
+            <input type="number" id="sig-tp3" placeholder="TP 3" style="grid-column:span 2;">
+        </div>
+        <button onclick="window.confirmShare()" class="btn-primary" style="margin-top:10px;">Senden</button>
+    </div>
+
     <div id="delete-modal" class="modal-base hidden" style="text-align:center;">
         <h3 style="margin:0 0 10px 0;">Nachricht löschen?</h3>
         <p style="font-size:0.9rem; color:var(--text-sub); margin-bottom:20px;">Dies kann nicht rückgängig gemacht werden.</p>
-        <div style="display:flex; gap:10px;"><button onclick="window.confirmDeleteMessage()" class="btn-primary" style="background:var(--danger); flex:1;">Löschen</button><button onclick="window.closeDeleteModal()" class="btn-small" style="flex:1;">Abbrechen</button></div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="window.confirmDeleteMessage()" class="btn-primary" style="background:var(--danger); flex:1;">Löschen</button>
+            <button onclick="window.closeDeleteModal()" class="btn-small" style="flex:1;">Abbrechen</button>
+        </div>
     </div>
 </div>
 
 <div id="auth-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); display:flex; justify-content:center; align-items:center; z-index:1000;">
-    <div class="card" style="text-align: center; width: 300px; border: 1px solid var(--accent);"><h2 style="color: var(--accent); letter-spacing: 2px;">TRADECLOUD</h2><button onclick="window.loginGoogle()" class="btn-primary">LOGIN</button></div>
+    <div class="card" style="text-align: center; width: 300px; border: 1px solid var(--accent);">
+        <h2 style="color: var(--accent); letter-spacing: 2px;">TRADECLOUD</h2>
+        <button onclick="window.loginGoogle()" class="btn-primary">LOGIN</button>
+    </div>
 </div>
 
 <header id="main-header" class="hidden">
@@ -329,7 +377,10 @@
     <button onclick="window.showView('Chat')" id="btn-Chat">💬 Chat</button>
     <button onclick="window.showView('TradingView')" id="btn-TradingView">📈 Chart</button>
     <div class="nav-separator"></div>
-    <div class="nav-selector-container"><label class="nav-selector-label">AKTUELLES JOURNAL ⌄</label><select id="navJournalSelect" onchange="window.changeActiveJournal(this.value)"></select></div>
+    <div class="nav-selector-container">
+        <label class="nav-selector-label">AKTUELLES JOURNAL ⌄</label>
+        <select id="navJournalSelect" onchange="window.changeActiveJournal(this.value)"></select>
+    </div>
     <div class="nav-separator"></div>
     <button onclick="window.showView('Kalender')" id="btn-Kalender">📅 Kalender</button>
     <button onclick="window.showView('Statistik')" id="btn-Statistik">📈 Statistik</button>
@@ -356,12 +407,23 @@
     <section id="view-Chat" class="view-section">
         <div class="chat-layout">
             <div class="chat-sidebar">
-                <div class="channel-item active" id="ch-general" onclick="window.switchChannel('general')"><div><div class="channel-name">📢 Allgemein</div><span class="channel-desc">Community Talk</span></div></div>
-                <div class="channel-item" id="ch-signals" onclick="window.switchChannel('signals')"><div><div class="channel-name">🚀 Signale</div><span class="channel-desc">Nur Trades (Alle)</span></div></div>
-                <div class="channel-item" id="ch-pro" onclick="window.switchChannel('pro')"><div><div class="channel-name">💎 Pro Signale</div><span class="channel-desc">Nur Coach</span></div></div>
-                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; margin-top:10px;"><span style="font-size:0.7rem; color:var(--text-sub); font-weight:bold; letter-spacing:1px;">DIREKTNACHRICHTEN</span><button class="btn-icon" style="padding:2px 8px; font-size:1rem;" onclick="window.openSearchModal()">+</button></div>
+                <div class="channel-item active" id="ch-general" onclick="window.switchChannel('general')">
+                    <div><div class="channel-name">📢 Allgemein</div><span class="channel-desc">Community Talk</span></div>
+                </div>
+                <div class="channel-item" id="ch-signals" onclick="window.switchChannel('signals')">
+                    <div><div class="channel-name">🚀 Signale</div><span class="channel-desc">Nur Trades (Alle)</span></div>
+                </div>
+                <div class="channel-item" id="ch-pro" onclick="window.switchChannel('pro')">
+                    <div><div class="channel-name">💎 Pro Signale</div><span class="channel-desc">Nur Coach</span></div>
+                </div>
+                
+                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                    <span style="font-size:0.7rem; color:var(--text-sub); font-weight:bold; letter-spacing:1px;">DIREKTNACHRICHTEN</span>
+                    <button class="btn-icon" style="padding:2px 8px; font-size:1rem;" onclick="window.openSearchModal()">+</button>
+                </div>
                 <div id="dm-list-area"></div>
             </div>
+            
             <div class="chat-main">
                 <div class="jfc-header"><div class="jfc-title" id="chat-channel-title">📢 Allgemein</div></div>
                 <div id="chat-messages" class="chat-messages"></div>
@@ -574,40 +636,14 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth(), db = firebase.firestore();
 
-    let trades = [];
-    let journals = []; 
-    let chartInstances = {}; 
-    let dayChart = null;
-    let assetChartInstance = null;
-    let weekdayChartInstance = null;
-    let hourChartInstance = null;
-    let adminChartInstance = null;
+    let trades = [], journals = []; 
+    let chartInstances = {}, dayChart = null, assetChartInstance = null, weekdayChartInstance = null, hourChartInstance = null, adminChartInstance = null;
     let calDate = new Date();
-    let privacyMode = false;
-    let activeJournal = null; 
-    let editingJournalId = null;
-    let currentUserName = "User";
-    let isAdmin = false;
-    
-    let journalFilters = {}; 
-    let journalCustomDates = {}; 
-    let shareTradeId = null;
-    let shareType = null;
-    let msgToDeleteId = null;
-    let configuringJournalId = null;
-    let selectedShareChannel = null; // New state for share workflow
-    
-    let inspectedUserTrades = [];
-    let inspectedUserJournals = [];
-    let currentDetailTradeId = null;
-
-    // Chat Vars
-    let isChatActive = false;
-    let lastMessageCount = 0;
-    let isFirstLoad = true;
-    let currentChatChannel = 'general';
-    let chatListener = null;
-    let targetedMemberUid = null;
+    let privacyMode = false, activeJournal = null, editingJournalId = null, currentUserName = "User", isAdmin = false;
+    let journalFilters = {}, journalCustomDates = {}, shareTradeId = null, shareType = null, msgToDeleteId = null, configuringJournalId = null;
+    let selectedShareChannel = null;
+    let inspectedUserTrades = [], inspectedUserJournals = [], currentDetailTradeId = null;
+    let isChatActive = false, lastMessageCount = 0, currentChatChannel = 'general', chatListener = null, targetedMemberUid = null;
 
     const isLight = localStorage.getItem('tradeTheme') === 'light';
     if(isLight) document.body.classList.add('light-mode');
@@ -627,7 +663,7 @@
                 isAdmin = true;
                 const admPanel = document.getElementById('admin-panel');
                 if(admPanel) { admPanel.classList.remove('hidden'); window.admLoad(); }
-                document.getElementById('btn-share-pro').classList.remove('hidden'); // Show Pro Channel share for admin
+                document.getElementById('btn-share-pro').classList.remove('hidden');
                 finishLogin(user);
             } else {
                 isAdmin = false;
@@ -639,9 +675,8 @@
     async function finishLogin(user) {
         try {
             const firstName = user.email.split('@')[0].split('.')[0];
-            const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
-            currentUserName = capitalizedName;
-            document.getElementById('user-greeting-name').innerText = capitalizedName;
+            currentUserName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+            document.getElementById('user-greeting-name').innerText = currentUserName;
             
             const uDoc = await db.collection('users').doc(user.uid).get();
             const uData = uDoc.data();
@@ -656,16 +691,10 @@
             await loadData();
             loadChat('general');
             window.loadDirectMessages(); 
-        } catch(e) {
-            console.error("Login Error:", e);
-        }
+        } catch(e) { console.error("Login Error:", e); }
     }
 
-    window.toggleFeedbackSetting = async function(val) {
-        if(auth.currentUser) {
-            await db.collection('users').doc(auth.currentUser.uid).set({ allowFeedback: val }, { merge: true });
-        }
-    }
+    window.toggleFeedbackSetting = async function(val) { if(auth.currentUser) await db.collection('users').doc(auth.currentUser.uid).set({ allowFeedback: val }, { merge: true }); }
 
     async function loadData() {
         try {
@@ -677,9 +706,7 @@
                 const newSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get();
                 journals = newSnap.docs.map(d => ({id: d.id, ...d.data()}));
             }
-            if(!activeJournal || !journals.find(j => j.name === activeJournal)) {
-                 activeJournal = journals.length > 0 ? journals[0].name : 'Main';
-            }
+            if(!activeJournal || !journals.find(j => j.name === activeJournal)) activeJournal = journals.length > 0 ? journals[0].name : 'Main';
             
             const tSnap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
             trades = tSnap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -702,8 +729,7 @@
 
     window.changeActiveJournal = function(val) {
         activeJournal = val;
-        const createSel = document.getElementById('inpJournalSelect');
-        if(createSel) createSel.value = activeJournal;
+        document.getElementById('inpJournalSelect').value = activeJournal;
         const activeId = document.querySelector('.view-section.active').id;
         if(activeId === 'view-Kalender') renderCalendar();
         if(activeId === 'view-Historie') renderHistory();
@@ -727,7 +753,6 @@
                 const timeframe = journalFilters[journal.id] || 'GESAMT';
                 let tradesInPeriod = filterTradesByTime(journal, timeframe);
                 const startCap = parseFloat(journal.startCap) || 0;
-                // FIX: Case insensitive filtering
                 const closedAll = trades.filter(t => (t.journal || 'Main').toLowerCase() === journal.name.toLowerCase() && t.status === 'Geschlossen').sort((a,b)=>new Date(a.date)-new Date(b.date));
 
                 let baseBalance = startCap;
@@ -748,7 +773,6 @@
 
                 const pnlColor = totalPnL >= 0 ? 'var(--success)' : 'var(--danger)';
                 const canvasId = `chart-${journal.id}`;
-                // FIX: Case insensitive filtering
                 const open = trades.filter(t => (t.journal || 'Main').toLowerCase() === journal.name.toLowerCase() && t.status === 'Aktiv');
                 let openTradesHtml = '<p style="color:var(--text-sub); font-style:italic; font-size:0.8rem; text-align:center; padding-top:20px;">Keine offenen Trades.</p>';
                 if(open.length > 0) {
@@ -794,7 +818,6 @@
     }
 
     function filterTradesByTime(journal, timeframe) {
-        // FIX: Robust Comparison
         const jTrades = trades.filter(t => (t.journal || 'Main').toLowerCase() === journal.name.toLowerCase() && t.status === 'Geschlossen');
         const now = new Date();
         let startDate = null; let endDate = null;
@@ -816,13 +839,13 @@
         const chatBox = document.getElementById('chat-messages');
         chatBox.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-sub);">Lade Nachrichten...</div>';
 
+        // CLIENT SIDE SORTING TO FIX INDEX ERROR
         try {
             chatListener = db.collection('chat')
                 .where('channel', '==', channel)
-                .orderBy('timestamp', 'desc')
-                .limit(50)
                 .onSnapshot({ includeMetadataChanges: true }, snapshot => {
-                    const messages = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()})).reverse();
+                    let messages = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                    messages.sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0)); // Sort client side
                     chatBox.innerHTML = messages.map(msg => renderMessage(msg)).join('');
                     chatBox.scrollTop = chatBox.scrollHeight;
                     if(channel === 'general') lastMessageCount = messages.length;
@@ -981,8 +1004,7 @@
         const input = document.getElementById('chat-input');
         const text = input.value.trim();
         if (!text) return;
-        
-        // Fix: Simply allow send, channel permission logic handles blocking UI
+        // Fix: Simply allow send
         if(auth.currentUser) {
              await db.collection('chat').add({ 
                 text: text, 
@@ -1052,15 +1074,15 @@
     window.confirmDeleteMessage = async function() { if(msgToDeleteId) { await db.collection('chat').doc(msgToDeleteId).delete(); window.closePopup(); } }
     window.closeDeleteModal = function() { window.closePopup(); }
     
-    // --- NEW SHARE WORKFLOW ---
+    // --- SHARE WORKFLOW ---
     window.shareTrade = function(id) {
         shareTradeId = id; 
         shareType = null;
-        selectedShareChannel = null; // reset
+        selectedShareChannel = null;
         const trade = trades.find(t => t.id === id);
         if(!trade) return;
         
-        // Open Step 1: Channel Selector
+        // Step 1: Channel Selector
         document.getElementById('popup-overlay').classList.add('open');
         document.getElementById('share-channel-modal').classList.remove('hidden'); 
         document.getElementById('share-channel-modal').classList.add('open');
@@ -1103,7 +1125,7 @@
     
     window.confirmShare = async function() {
         if(!shareTradeId || !shareType) return alert("Bitte wähle aus, was du teilen möchtest.");
-        if(!selectedShareChannel) selectedShareChannel = 'general'; // Fallback
+        if(!selectedShareChannel) selectedShareChannel = 'general';
         
         const trade = trades.find(t => t.id === shareTradeId);
         const tradeCopy = { ...trade }; delete tradeCopy.pnl; delete tradeCopy.userId; 
@@ -1129,7 +1151,6 @@
         window.showView('Chat');
         window.switchChannel(selectedShareChannel);
     }
-
     function renderTradingViewWidget() {
         const container = document.getElementById('tradingview_chart');
         if(!container) return;
@@ -1150,7 +1171,7 @@
         const y = calDate.getFullYear(), m = calDate.getMonth();
         document.getElementById('cal-month-title').innerText = new Date(y, m).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
         const grid = document.getElementById('cal-days-grid'); grid.innerHTML = "";
-        const filtered = trades.filter(t => (t.journal || 'Main').toLowerCase() === activeJournal.toLowerCase());
+        const filtered = trades.filter(t => (t.journal || 'Main') === activeJournal);
         const firstDay = new Date(y, m, 1).getDay(), lastDay = new Date(y, m + 1, 0).getDate();
         for(let i=0; i<firstDay; i++) grid.innerHTML += `<div class="cal-cell" style="opacity:0; cursor:default;"></div>`;
         for(let d=1; d<=lastDay; d++) {
@@ -1168,7 +1189,7 @@
         const d = new Date(dateStr);
         document.getElementById('dv-date-title').innerText = d.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
         const dayTrades = trades.filter(t => {
-            if((t.journal || 'Main').toLowerCase() !== activeJournal.toLowerCase()) return false;
+            if((t.journal || 'Main') !== activeJournal) return false;
             return t.status === 'Geschlossen' && new Date(t.date).toDateString() === d.toDateString();
         }).sort((a,b)=> new Date(a.date)-new Date(b.date));
         
