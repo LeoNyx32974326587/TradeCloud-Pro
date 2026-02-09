@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro</title>
+    <title>TradeCloud P5ro</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -27,11 +27,11 @@
             --blur: 0px;
             --popup-bg: #1a1a1a; 
             
-            /* WHATSAPP STYLE COLORS (DARK) */
+            /* WHATSAPP STYLE COLORS (For Chat Only) */
             --wa-bg: #0b141a;
             --wa-header: #202c33;
-            --wa-bubble-in: #202c33; /* Incoming */
-            --wa-bubble-out: #005c4b; /* Outgoing */
+            --wa-bubble-in: #202c33;
+            --wa-bubble-out: #005c4b;
             --wa-input-bg: #2a3942;
             --wa-tick: #53bdeb;
         }
@@ -111,7 +111,7 @@
 
         @media (max-width: 768px) { .jfc-body-grid { grid-template-columns: 1fr; } .jfc-chart-area { height: 220px; } }
 
-        /* --- POPUPS & MODALS --- */
+        /* --- POPUPS & MODALS (OLD DESIGN RESTORED) --- */
         #popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
         #popup-overlay.open { display: flex; opacity: 1; }
         .modal-base { width: 95%; max-width: 500px; background: var(--popup-bg); color: var(--text-main); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.8); padding: 20px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; position: relative; transition: all 0.3s; }
@@ -123,8 +123,14 @@
         #day-detail-view .trade-row-header { border-bottom: 1px solid #2c2c2e !important; color: #888; display: flex; padding: 10px 15px; font-size: 0.8rem; }
         #day-detail-view .tr-date, #day-detail-view .tr-sym, #day-detail-view .dv-stat-val, #day-detail-view .popup-title, #day-detail-view #dv-date-title { color: #ffffff !important; }
 
+        /* RESTORED ADMIN MEMBER MODAL STYLE (Original Black) */
+        #admin-member-modal { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; z-index: 1000; }
+        #admin-member-modal .hist-table th { border-bottom: 1px solid #333; color: #888; }
+        #admin-member-modal .hist-table td { border-bottom: 1px solid #333; color: #fff; }
+        #admin-member-modal .stat-box { background: #151517; border: 1px solid #333; }
+
         /* OTHER MODALS */
-        #trade-detail-view, #admin-member-modal, #trade-form-modal { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; z-index: 1000; }
+        #trade-detail-view, #trade-form-modal { background: #000000 !important; color: #ffffff !important; border: 1px solid #333; z-index: 1000; }
         .dv-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .dv-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
         .dv-stat-item { display: flex; flex-direction: column; }
@@ -190,7 +196,16 @@
         /* TRADE CARD IN CHAT - FIXED VISIBILITY */
         .chat-trade-card { background: rgba(0,0,0,0.4); border-radius: 6px; padding: 8px; margin-bottom: 5px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
         
-        /* --- RESTORED HISTORY TABLE STYLE (Original) --- */
+        /* --- RESTORED ADMIN & HISTORY STYLES (Old Design) --- */
+        .adm-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--cell-bg); border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+        .adm-user-info { display: flex; align-items: center; gap: 10px; }
+        .adm-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
+        .adm-text { display: flex; flex-direction: column; }
+        .adm-name { font-weight: 700; font-size: 0.9rem; }
+        .adm-email { font-size: 0.8rem; color: var(--text-sub); }
+        .adm-tab-btn { flex: 1; padding: 15px; border: none; background: #151517; color: #888; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; transition:0.2s; }
+        .adm-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(187, 134, 252, 0.05); }
+
         .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: var(--text-main); }
         .hist-table th { text-align: left; padding: 15px 10px; border-bottom: 1px solid var(--border); color: var(--text-sub); font-weight: 600; }
         .hist-table td { padding: 15px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); }
@@ -214,6 +229,9 @@
         .cal-cell { background: var(--cell-bg); border-radius: 6px; aspect-ratio: 1/0.85; position: relative; border: 1px solid transparent; cursor: pointer; transition: transform 0.1s; }
         .cal-cell.win { background: rgba(0, 200, 83, 0.15); border: 1px solid rgba(0, 200, 83, 0.3); }
         .cal-cell.loss { background: rgba(255, 61, 0, 0.15); border: 1px solid rgba(255, 61, 0, 0.3); }
+        .cal-date { position: absolute; top: 2px; right: 4px; font-size: 0.7rem; font-weight: 600; color: var(--text-sub); }
+        .cal-pnl { position: absolute; bottom: 16px; width: 100%; text-align: center; font-size: 0.65rem; font-weight: bold; }
+        .cal-trades { position: absolute; bottom: 2px; width: 100%; text-align: center; font-size: 0.55rem; color: var(--text-sub); }
         .share-opt { padding: 15px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
         .share-opt.selected { border-color: var(--accent); background: rgba(187, 134, 252, 0.1); }
         .share-opt.disabled { opacity: 0.4; cursor: not-allowed; }
@@ -1017,6 +1035,7 @@
         const time = formatChatTime(msg.timestamp);
         let content = `<div class="msg-text">${msg.text || ''}</div>`;
         
+        // Admin delete button (little visual tweak for WA style)
         let delBtn = isAdmin ? `<button style="position:absolute; top:2px; right:5px; background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer;" onclick="deleteChatMessage('${msg.id}')">✕</button>` : '';
         
         if (msg.type === 'trade' && msg.tradeData) {
