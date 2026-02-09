@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - Clean Chart 2</title>
+    <title>TradeCloud Pro - Clean Chart</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -1312,79 +1312,108 @@
     function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerHTML = `<div style="font-size:2rem;">${Math.max(lot,0.01).toFixed(2)} Lot</div><div style="font-size:0.9rem; color:#888;">Risk: ${riskAmt.toFixed(2)}€</div>`; } }
     function updateContractSize() { const val = document.getElementById('cType').value; if(val !== 'custom') document.getElementById('cContract').value = val; }
 
-    // --- UPDATE: INTELLIGENTE BILDERKENNUNG (OCR) ---
+    // --- UPDATED: OCR MIT EIGENEM API KEY ---
     async function runOCR() {
-        // 1. Get Value
         let url = document.getElementById('imgSetup').value.trim();
         const statusEl = document.getElementById('ocr-status');
-
-        // 2. Validation
+        
         if(!url) { alert("Bitte erst eine Bild-URL einfügen!"); return; }
-
+        
         statusEl.innerText = '🤖 Lese Daten aus Bild...';
+        statusEl.style.color = 'var(--accent)';
 
-        // 3. TRADINGVIEW FIX (Das Herzstück der Lösung)
-        if (url.includes('tradingview.com/x/') && !url.endsWith('.png')) {
-            url += '.png';
-            console.log("TradingView Link korrigiert zu:", url);
+        // 1. TRADINGVIEW URL FIX
+        if (url.includes('tradingview.com/x/')) {
+            url = url.split('?')[0]; // Query Params entfernen
+            if (!url.endsWith('.png')) {
+                url += '.png';
+            }
         }
 
-        // 4. API Call
-        const apiKey = 'helloworld';
-        const apiEndpoint = `https://api.ocr.space/parse/imageurl?apikey=${apiKey}&url=${encodeURIComponent(url)}&language=eng&isOverlayRequired=false`;
+        console.log("Analysiere URL:", url);
+
+        // 2. API CONFIG (DEIN EIGENER KEY)
+        const apiKey = 'K85689091988957'; 
+        
+        const apiEndpoint = `https://api.ocr.space/parse/imageurl?apikey=${apiKey}&url=${encodeURIComponent(url)}&language=eng&isOverlayRequired=false&scale=true`;
 
         try {
             const response = await fetch(apiEndpoint);
             const data = await response.json();
 
-            // 5. Error Handling
+            // 3. FEHLER DIAGNOSE
             if (data.IsErroredOnProcessing) {
-                console.error("OCR Fehler:", data);
-                let msg = '❌ Fehler beim Lesen.';
-                if(data.ErrorMessage && (data.ErrorMessage.includes("Not a valid image") || data.ErrorMessage.includes("url"))) {
-                     msg = '❌ Kein direkter Bild-Link! (TV Link wurde aber korrigiert...)';
+                console.error("OCR API Antwort:", data);
+                
+                let errorMsg = data.ErrorMessage || "Unbekannter Fehler";
+                if (Array.isArray(data.ErrorMessage)) errorMsg = data.ErrorMessage[0];
+                
+                if (errorMsg.includes("valid image")) {
+                    alert("⚠️ Fehler: Der Link führt zu keinem Bild.\n\nLösung: In TradingView auf Kamera klicken -> 'Link zum Chartbild kopieren' (Rechtsklick -> Adresse kopieren).");
+                } else {
+                    alert("⚠️ API Fehler: " + errorMsg);
                 }
-                statusEl.innerText = msg;
+                
+                statusEl.innerText = '❌ Fehlgeschlagen';
+                statusEl.style.color = 'var(--danger)';
                 return;
             }
 
-            // 6. Parsing
+            // 4. ERFOLG - DATEN VERARBEITEN
             if (data.ParsedResults && data.ParsedResults.length > 0) {
                 const text = data.ParsedResults[0].ParsedText;
-                console.log("OCR Text:", text);
+                console.log("Gelesener Text:", text);
 
-                // Clean text for regex
                 const cleanText = text.replace(/(\r\n|\n|\r)/gm, " ");
 
-                // Regex Logic (Entry, SL, TP)
-                
-                // SL
+                let foundAny = false;
+
+                // Stop Loss
                 const slMatch = cleanText.match(/(?:Stop|SL|Loss|Level)[\s:=-]*(\d+[\.,]\d{2,5})/i);
-                if (slMatch && slMatch[1]) document.getElementById('inpSL').value = slMatch[1].replace(',', '.');
+                if (slMatch && slMatch[1]) {
+                    document.getElementById('inpSL').value = slMatch[1].replace(',', '.');
+                    foundAny = true;
+                }
 
                 // Entry
                 const entryMatch = cleanText.match(/(?:Price|Entry|Open)[\s:=-]*(\d+[\.,]\d{2,5})/i);
-                if (entryMatch && entryMatch[1]) document.getElementById('inpEntry').value = entryMatch[1].replace(',', '.');
+                if (entryMatch && entryMatch[1]) {
+                    document.getElementById('inpEntry').value = entryMatch[1].replace(',', '.');
+                    foundAny = true;
+                }
 
                 // TP
                 const tpMatch = cleanText.match(/(?:Target|TP|Profit)[\s:=-]*(\d+[\.,]\d{2,5})/i);
-                if (tpMatch && tpMatch[1]) document.getElementById('inpTP1').value = tpMatch[1].replace(',', '.');
+                if (tpMatch && tpMatch[1]) {
+                    document.getElementById('inpTP1').value = tpMatch[1].replace(',', '.');
+                    foundAny = true;
+                }
 
                 // Asset
                 const assetMatch = cleanText.match(/\b([A-Z]{3}[A-Z]{3}|GOLD|DAX|US30|BTCUSD|ETHUSD)\b/);
                 if (assetMatch && !document.getElementById('assetInput').value) {
                     document.getElementById('assetInput').value = assetMatch[0];
+                    foundAny = true;
                 }
 
-                statusEl.innerText = '✅ Daten gefunden!';
-                setTimeout(() => statusEl.innerText = '', 3000);
+                if(foundAny) {
+                    statusEl.innerText = '✅ Daten eingetragen!';
+                    statusEl.style.color = 'var(--success)';
+                } else {
+                    statusEl.innerText = '⚠️ Text gelesen, aber keine Keywords gefunden.';
+                    alert("Text wurde gelesen, aber keine Werte erkannt.\n\nHast du das 'Long/Short Position' Tool in TradingView genutzt und sind die Labels im Chart sichtbar?");
+                }
+                
+                setTimeout(() => statusEl.innerText = '', 5000);
+
             } else {
-                statusEl.innerText = '⚠️ Kein Text erkannt.';
+                statusEl.innerText = '⚠️ Bild leer oder nicht lesbar.';
             }
 
         } catch (error) {
             console.error(error);
-            statusEl.innerText = '❌ Netzwerkfehler / API Limit';
+            statusEl.innerText = '❌ Netzwerkfehler';
+            alert("Netzwerkfehler: Prüfe deine Internetverbindung.");
         }
     }
 </script>
