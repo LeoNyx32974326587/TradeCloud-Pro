@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro8</title>
+    <title>TradeCloud Pro</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -27,17 +27,17 @@
             --popup-bg: #ffffff; --chat-me: #e1f5fe; --chat-other: #f1f1f1;
         }
 
-        /* --- GLOBAL --- */
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; color: var(--text-main); padding-bottom: 80px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .hidden { display: none !important; }
         .view-section { display: none; animation: fadeIn 0.3s; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- HEADER & NAV --- */
+        /* HEADER & NAV */
         header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-dark); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
         .menu-btn { cursor: pointer; font-size: 2rem; color: var(--text-main); background: none; border: none; padding: 0; margin-right: 15px; }
         #view-title { font-weight: 700; font-size: 1.2rem; }
+        .sensitive { filter: blur(var(--blur)); transition: filter 0.3s; }
         
         .nav-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card-bg); border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 10px; padding-bottom: 50px; box-shadow: 2px 0 10px rgba(0,0,0,0.5); overflow-y: auto; display: flex; flex-direction: column; }
         .nav-drawer.open { left: 0; }
@@ -51,7 +51,7 @@
         .nav-selector-label { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 5px; display: block; font-weight: bold; letter-spacing: 1px; }
         #navJournalSelect { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; cursor: pointer; font-size:1rem; }
 
-        /* --- UI ELEMENTS --- */
+        /* UI */
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
         .card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
         .btn-primary { background: var(--accent); color: black; padding: 15px; border: none; font-weight: 800; border-radius: 8px; width: 100%; cursor: pointer; }
@@ -60,17 +60,15 @@
         .btn-danger-hover:hover { border-color: var(--danger); color: var(--danger); }
         input, select, textarea { background: var(--bg-dark); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
 
-        /* --- CHAT SYSTEM --- */
+        /* CHAT SYSTEM */
         .chat-layout { display: flex; height: calc(100vh - 140px); background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
         .chat-sidebar { width: var(--sidebar-w); background: var(--cell-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
         .chat-main { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg-dark); position:relative; overflow: hidden; }
-        
         .channel-item { padding: 15px; cursor: pointer; border-bottom: 1px solid var(--border); transition: 0.2s; display:flex; justify-content: space-between; align-items: center; }
         .channel-item:hover { background: rgba(255,255,255,0.05); }
         .channel-item.active { background: rgba(187, 134, 252, 0.1); color: var(--accent); font-weight: bold; border-left: 4px solid var(--accent); }
         .channel-name { font-size: 0.95rem; }
         .channel-desc { font-size: 0.7rem; color: var(--text-sub); display: block; margin-top: 2px; }
-        
         .chat-messages { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .chat-input-area { padding: 15px; background: var(--cell-bg); border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
         .chat-locked-msg { text-align: center; padding: 15px; background: rgba(255,255,255,0.05); color: var(--text-sub); font-size: 0.8rem; font-style: italic; border-top: 1px solid var(--border); margin-top: auto; }
@@ -87,9 +85,8 @@
         .chat-del-btn { position: absolute; top: 0; background: rgba(0,0,0,0.6); color: #ff3d00; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; opacity: 0.6; transition: 0.2s; }
         .msg-wrapper.me .chat-del-btn { left: -25px; }
         .msg-wrapper.other .chat-del-btn { right: -25px; }
-        .ct-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-        .ct-img { width: 100%; height: 100px; object-fit: cover; border-radius: 4px; margin-top: 10px; pointer-events: none; }
-        .ct-footer { margin-top: 8px; font-size: 0.75rem; color: var(--text-sub); display: flex; justify-content: space-between; }
+        .chat-dm-del-btn { background: none; border: none; color: var(--text-sub); font-size: 1rem; padding: 5px; cursor: pointer; }
+        .chat-dm-del-btn:hover { color: var(--danger); }
 
         @media (max-width: 700px) {
             .chat-layout { flex-direction: column; }
@@ -100,7 +97,7 @@
             .chat-messages { padding: 10px; }
         }
 
-        /* --- DASHBOARD & LISTS --- */
+        /* JOURNAL & LISTS */
         .journal-full-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 30px; overflow: hidden; animation: fadeIn 0.4s; display: flex; flex-direction: column; position: relative; }
         .jfc-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .jfc-title { font-size: 1.3rem; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
@@ -132,12 +129,12 @@
 
         @media (max-width: 768px) { .jfc-body-grid { grid-template-columns: 1fr; } .jfc-chart-area { height: 220px; } }
 
-        /* --- POPUPS --- */
+        /* POPUPS */
         #popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
         #popup-overlay.open { display: flex; opacity: 1; }
         .modal-base { width: 95%; max-width: 500px; background: var(--popup-bg); color: var(--text-main); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.8); padding: 20px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; position: relative; transition: all 0.3s; }
         
-        /* FIX: Calendar Popup Styles - IMPORTANT RESTORATION */
+        /* FIX: Calendar Popup Styles */
         .trades-list-card { background: var(--cell-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
         .trade-row-header { display: flex; padding: 10px 15px; border-bottom: 1px solid var(--border); color: var(--text-sub); font-size: 0.8rem; }
         .trade-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition:0.2s; }
@@ -164,7 +161,7 @@
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* --- UTILS --- */
+        /* UTILS */
         .settings-list-item { display: flex; justify-content: space-between; align-items: center; background: var(--cell-bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
         .text-tp { color: var(--success); } .text-sl { color: var(--danger); }
         .text-green { color: var(--success) !important; } .text-red { color: var(--danger) !important; }
@@ -173,7 +170,7 @@
         .popup-close { background:none; border:none; color:var(--text-sub); font-size:1.2rem; cursor:pointer; }
         .popup-title { margin:0; font-size:1.2rem; font-weight:bold; }
         
-        /* Admin Elements */
+        /* ADMIN */
         .adm-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--cell-bg); border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
         .adm-user-info { display: flex; align-items: center; gap: 10px; }
         .adm-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
@@ -183,7 +180,7 @@
         .adm-tab-btn { flex: 1; padding: 15px; border: none; background: #151517; color: #888; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; }
         .adm-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(187, 134, 252, 0.05); }
 
-        /* Trade Details */
+        /* TRADE DETAIL */
         .td-hero { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #333; }
         .td-asset { font-size: 1.8rem; font-weight: 800; color: white; display:block; }
         .td-pnl { font-size: 3rem; font-weight: 900; margin-top: 5px; display:block; }
@@ -559,8 +556,7 @@
 </div>
 
 <script>
-    // --- GLOBAL FUNCTIONS (ATTACHED TO WINDOW) ---
-    
+    // DEFINE FUNCTIONS GLOBALLY FIRST
     window.toggleMenu = function() { 
         document.getElementById('navDrawer').classList.toggle('open'); 
         document.getElementById('menu-overlay').classList.toggle('open'); 
@@ -573,7 +569,6 @@
     };
 
     window.prepareCreateView = function() { 
-        console.log("Opening New Trade Modal"); // Debug
         document.getElementById('editId').value = ""; 
         const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); 
         document.getElementById('datetime').value = now.toISOString().slice(0,16); 
@@ -699,11 +694,11 @@
     auth.onAuthStateChanged(async (user) => {
         if(user) {
             const email = user.email.toLowerCase().trim();
-            // Safe merge save
             await db.collection('users').doc(user.uid).set({
                 email: email,
                 displayName: user.displayName || 'Trader',
                 photoURL: user.photoURL || '',
+                allowFeedback: true
             }, { merge: true });
 
             if(email === "leon.luca.lauterbach@gmail.com") {
@@ -797,7 +792,7 @@
     }
 
     // --- DASHBOARD RENDERER ---
-    function renderDashboard() {
+    window.renderDashboard = function() {
         try {
             const container = document.getElementById('dashboard-journals-list');
             container.innerHTML = '';
@@ -840,7 +835,6 @@
                 const filters = ['HEUTE', 'GESTERN', 'WOCHE', 'MONAT', 'JAHR', 'GESAMT', 'ZEITRAUM'];
                 const filterHtml = filters.map(f => `<button class="filter-pill ${timeframe===f?'active':''}" onclick="window.setJournalFilter('${journal.id}', '${f}')">${f}</button>`).join('');
                 
-                // CRITICAL FIX: Safe Calculation of Today PnL
                 let warningHtml = '';
                 if(journal.maxDD && parseFloat(journal.maxDD) > 0) {
                     let todayPnL = 0; 
@@ -999,7 +993,11 @@
                 const isSender = d.senderId === myUid;
                 const otherName = isSender ? d.targetName : d.senderName;
                 if(d.status === 'accepted') {
-                     list.innerHTML += `<div class="channel-item" id="${chatId}" onclick="window.switchChannel('${chatId}')"><div><div class="channel-name">📩 ${otherName}</div></div></div>`;
+                     // Add Delete Button Logic Here
+                     list.innerHTML += `<div class="channel-item" id="${chatId}" onclick="window.switchChannel('${chatId}')">
+                        <div style="flex-grow:1;"><div class="channel-name">📩 ${otherName}</div></div>
+                        <button class="chat-dm-del-btn" onclick="window.deleteDM('${chatId}', event)">✕</button>
+                     </div>`;
                 } else if(d.status === 'pending') {
                     if(!isSender) {
                         list.innerHTML += `<div class="channel-item" style="background:rgba(187,134,252,0.1); flex-direction:column; align-items:start;"><div style="font-size:0.7rem; color:var(--accent);">Anfrage von:</div><div style="font-weight:bold; margin-bottom:5px;">${otherName}</div><div style="display:flex; gap:10px; width:100%;"><button class="btn-small" style="flex:1; border-color:var(--success); color:var(--success);" onclick="window.answerRequest('${chatId}', 'accepted')">✓</button><button class="btn-small" style="flex:1; border-color:var(--danger); color:var(--danger);" onclick="window.answerRequest('${chatId}', 'rejected')">✕</button></div></div>`;
@@ -1016,6 +1014,16 @@
             await db.collection('chat_requests').doc(docId).delete(); 
         } else {
             await db.collection('chat_requests').doc(docId).update({ status: status });
+        }
+    }
+    
+    // NEU: DM Löschen
+    window.deleteDM = async function(chatId, event) {
+        event.stopPropagation();
+        if(confirm("Möchtest du diesen Chat wirklich löschen?")) {
+            await db.collection('chat_requests').doc(chatId).delete();
+            // Optional: Auch Nachrichten löschen? Besser nur den Eintrag entfernen.
+            if(currentChatChannel === chatId) window.switchChannel('general');
         }
     }
 
@@ -1046,8 +1054,8 @@
         const text = input.value.trim();
         if (!text) return;
         
-        // SIMPLE SEND (Allow everyone if not pro channel, or if admin)
-        if(currentChatChannel === 'pro' && !isAdmin) return;
+        // Removed complex checks to ensure functionality first
+        // if(currentChatChannel === 'pro' && !isAdmin) return;
 
         await db.collection('chat').add({ 
             text: text, 
