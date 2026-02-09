@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeClou77d Pro</title>
+    <title>TradeCloud Pro</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -142,19 +142,23 @@
         .tr-pnl { font-weight: 700; font-size: 0.9rem; text-align: right; min-width: 70px; }
         .tr-arrow { color: #888; margin-left: 10px; font-size: 0.9rem; }
 
-        /* TRADE DETAIL SPECIFIC STYLES */
+        /* TRADE DETAIL NEW STYLE (LIST) */
         .td-hero { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #333; }
         .td-asset { font-size: 1.8rem; font-weight: 800; color: white; display:block; }
         .td-pnl { font-size: 3rem; font-weight: 900; margin-top: 5px; display:block; }
-        .td-value-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-        .td-row { display: flex; justify-content: space-between; align-items: center; background: #151517; padding: 12px; border-radius: 8px; border: 1px solid #2c2c2e; }
+        
+        .td-value-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .td-row { display: flex; justify-content: space-between; align-items: center; background: #151517; padding: 12px 15px; border-radius: 8px; border: 1px solid #2c2c2e; }
         .td-row-label { color: #888; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
-        .td-row-val { color: white; font-family: monospace; font-size: 1rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        .td-copy-btn { background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--accent); padding: 5px; }
+        .td-row-val-group { display:flex; align-items:center; gap:10px; }
+        .td-row-val { color: white; font-family: monospace; font-size: 1rem; font-weight: bold; }
+        .td-copy-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--accent); padding: 5px; line-height:1; }
+        .td-copy-btn:hover { color: #fff; }
+
         .td-note-box { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; margin-bottom: 20px; font-style: italic; color: #ccc; font-size: 0.9rem; line-height: 1.5; }
         .td-img-box { margin-bottom: 15px; }
         .td-img-label { display: block; color: var(--accent); font-weight: bold; font-size: 0.8rem; margin-bottom: 5px; }
-        .td-img-thumb { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; border: 1px solid #333; cursor: pointer; transition: opacity 0.2s; }
+        .td-img-thumb { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #333; cursor: pointer; transition: opacity 0.2s; margin-top:5px; }
         .td-img-thumb:hover { opacity: 0.8; }
         
         /* --- WHATSAPP STYLE CHAT --- */
@@ -1456,11 +1460,36 @@
             html += `<div class="feedback-message"><div style="display:flex; justify-content:space-between; align-items:start;"><span class="feedback-label">👨‍🏫 Coach Feedback</span></div><div style="margin-top:5px;">${t.adminFeedback}</div></div>`;
         }
 
-        html += `<div class="td-hero"><span class="td-asset">${t.asset}</span><span class="td-pnl" style="color:${t.status==='Aktiv'?'#0a84ff':(t.pnl>=0?'#30d158':'#ff453a')}">${t.status==='Aktiv'?'OPEN':t.pnl.toFixed(2)+'€'}</span></div><div class="td-grid"><div class="td-box"><div class="td-val-row"><span class="td-label">Entry</span><button id="btn-copy-entry" class="copy-icon" onclick="copyText('${t.entry || ''}', 'btn-copy-entry')">📋</button></div><span class="td-val">${t.entry || '-'}</span></div><div class="td-box"><div class="td-val-row"><span class="td-label">Stop Loss</span><button id="btn-copy-sl" class="copy-icon" onclick="copyText('${t.sl || ''}', 'btn-copy-sl')">📋</button></div><span class="td-val" style="color:#ff453a">${t.sl || '-'}</span></div><div class="td-box"><div class="td-val-row"><span class="td-label">TP 1</span><button id="btn-copy-tp1" class="copy-icon" onclick="copyText('${t.tp1 || ''}', 'btn-copy-tp1')">📋</button></div><span class="td-val" style="color:#30d158">${t.tp1 || '-'}</span></div><div class="td-box"><div class="td-val-row"><span class="td-label">TP 2</span><button id="btn-copy-tp2" class="copy-icon" onclick="copyText('${t.tp2 || ''}', 'btn-copy-tp2')">📋</button></div><span class="td-val" style="color:#30d158">${t.tp2 || '-'}</span></div><div class="td-box"><div class="td-val-row"><span class="td-label">TP 3</span><button id="btn-copy-tp3" class="copy-icon" onclick="copyText('${t.tp3 || ''}', 'btn-copy-tp3')">📋</button></div><span class="td-val" style="color:#30d158">${t.tp3 || '-'}</span></div><div class="td-box"><span class="td-label">Date</span><span class="td-val">${t.date.split('T')[0]}</span></div></div>`;
+        html += `<div class="td-hero"><span class="td-asset">${t.asset}</span><span class="td-pnl" style="color:${t.status==='Aktiv'?'#0a84ff':(t.pnl>=0?'#30d158':'#ff453a')}">${t.status==='Aktiv'?'OPEN':t.pnl.toFixed(2)+'€'}</span></div>`;
+
+        // NEW LIST LAYOUT
+        html += `<div class="td-value-list">`;
         
+        // Helper to add row
+        const addRow = (label, val, id) => {
+            if(!val) return '';
+            return `
+            <div class="td-row">
+                <span class="td-row-label">${label}</span>
+                <div class="td-row-val-group">
+                    <span class="td-row-val">${val}</span>
+                    <button class="td-copy-btn" id="${id}" onclick="copyText('${val}', '${id}')">📋</button>
+                </div>
+            </div>`;
+        };
+
+        html += addRow('Entry', t.entry, 'btn-cp-ent');
+        html += `<div class="td-row"><span class="td-row-label">Stop Loss</span><div class="td-row-val-group"><span class="td-row-val" style="color:#ff453a">${t.sl||'-'}</span><button class="td-copy-btn" id="btn-cp-sl" onclick="copyText('${t.sl||''}', 'btn-cp-sl')">📋</button></div></div>`;
+        
+        html += addRow('TP 1', t.tp1, 'btn-cp-tp1');
+        html += addRow('TP 2', t.tp2, 'btn-cp-tp2');
+        html += addRow('TP 3', t.tp3, 'btn-cp-tp3');
+        html += `</div>`;
+
         if(t.note) { html += `<div class="td-note-box">"${t.note}"</div>`; }
-        if(t.imgSetup) { html += `<div class="img-box"><span class="td-label">Setup</span><img src="${t.imgSetup}" class="td-img" onclick="window.open('${t.imgSetup}','_blank')"></div>`; }
-        if(t.imgResult) { html += `<div class="img-box"><span class="td-label">Ergebnis</span><img src="${t.imgResult}" class="td-img" onclick="window.open('${t.imgResult}','_blank')"></div>`; }
+        if(t.imgSetup) { html += `<div class="td-img-box"><span class="td-img-label">Setup</span><img src="${t.imgSetup}" class="td-img-thumb" onclick="window.open('${t.imgSetup}','_blank')"></div>`; }
+        if(t.imgResult) { html += `<div class="td-img-box"><span class="td-img-label">Ergebnis</span><img src="${t.imgResult}" class="td-img-thumb" onclick="window.open('${t.imgResult}','_blank')"></div>`; }
+        
         document.getElementById('td-content').innerHTML = html;
     }
     
