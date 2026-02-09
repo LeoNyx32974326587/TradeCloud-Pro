@@ -576,6 +576,14 @@
                     <span class="slider round"></span>
                 </label>
             </div>
+
+            <div class="settings-list-item">
+                <span>Coach Feedback erlauben</span>
+                <label class="switch">
+                    <input type="checkbox" id="feedback-toggle" onchange="toggleFeedback(this.checked)" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
             
             <h3 style="margin-top:30px; border-top:1px solid var(--border); padding-top:20px;">📚 Journal Verwaltung</h3>
             <div style="background:var(--cell-bg); padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:15px;">
@@ -642,6 +650,9 @@
     let adminChartInstance = null;
     let currentDetailTradeId = null;
 
+    // NEU: Globale Variable für inspizierten User Feedback-Status
+    let inspectedUserFeedbackAllowed = true;
+
     // Chat Vars
     let isChatActive = false;
     let lastMessageCount = 0;
@@ -659,6 +670,14 @@
                 displayName: user.displayName || 'Trader',
                 photoURL: user.photoURL || ''
             }, { merge: true });
+
+            // NEU: Laden der Feedback-Präferenz
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if(userDoc.exists) {
+                const data = userDoc.data();
+                const allowFeedback = data.allowCoachFeedback !== false; 
+                document.getElementById('feedback-toggle').checked = allowFeedback;
+            }
 
             if(email === "leon.luca.lauterbach@gmail.com") {
                 isAdmin = true;
@@ -783,6 +802,13 @@
             const pnlColor = totalPnL >= 0 ? 'var(--success)' : 'var(--danger)';
             const canvasId = `chart-${journal.id}`;
             let warningHtml = '';
+            
+            // --- FIX FÜR TODAYPNL BUG ---
+            const todayDateString = new Date().toDateString();
+            const todayPnL = closedAll
+                .filter(t => new Date(t.date).toDateString() === todayDateString)
+                .reduce((acc, t) => acc + t.pnl, 0);
+
             if(journal.maxDD && parseFloat(journal.maxDD) > 0) {
                 const limit = parseFloat(journal.maxDD); let threshold = limit;
                 if(journal.ddType === 'percent') { const totalBal = startCap + closedAll.reduce((a,b)=>a+b.pnl,0); const currentBalance = Math.max(totalBal, 0); threshold = currentBalance * (limit / 100); }
@@ -1017,11 +1043,19 @@
         modal.classList.remove('hidden'); modal.classList.add('open');
         
         const isTradeOwner = t.userId === auth.currentUser.uid;
-        const showAdminInput = isAdmin && !isTradeOwner;
+        
+        // NEU: Nur anzeigen, wenn Admin UND User Feedback erlaubt hat
+        const showAdminInput = isAdmin && !isTradeOwner && inspectedUserFeedbackAllowed;
+        
         const adminInputDiv = document.getElementById('adm-feedback-input-area');
         if(adminInputDiv) {
-             if(showAdminInput) { adminInputDiv.classList.remove('hidden'); document.getElementById('adm-feedback-text').value = t.adminFeedback || ''; } 
-             else { adminInputDiv.classList.add('hidden'); }
+             if(showAdminInput) { 
+                 adminInputDiv.classList.remove('hidden'); 
+                 document.getElementById('adm-feedback-text').value = t.adminFeedback || ''; 
+             } 
+             else { 
+                 adminInputDiv.classList.add('hidden'); 
+             }
         }
 
         let html = '';
@@ -1187,6 +1221,18 @@
         if(userSnap.empty) { alert("User hat sich noch nie eingeloggt."); return; }
         const targetUid = userSnap.docs[0].id;
 
+        // NEU: Prüfen ob dieser User Feedback erlaubt hat
+        inspectedUserFeedbackAllowed = true; // Reset
+        const uData = userSnap.docs[0].data();
+        if (uData.allowCoachFeedback === false) {
+             inspectedUserFeedbackAllowed = false;
+        }
+        
+        // Visueller Hinweis im Admin Header
+        if(!inspectedUserFeedbackAllowed) {
+            document.getElementById('adm-detail-name').innerHTML += ' <span style="font-size:0.8rem; color:var(--danger); border:1px solid var(--danger); padding:2px 5px; border-radius:4px;">No Feedback</span>';
+        }
+
         const jSnap = await db.collection('journals').where('userId', '==', targetUid).get();
         inspectedUserJournals = jSnap.docs.map(d => ({id: d.id, ...d.data()}));
         
@@ -1311,6 +1357,13 @@
     function toggleTheme(isDark) { if(isDark) { document.body.classList.remove('light-mode'); localStorage.setItem('tradeTheme', 'dark'); } else { document.body.classList.add('light-mode'); localStorage.setItem('tradeTheme', 'light'); } if(document.getElementById('view-Statistik').classList.contains('active')) renderStatistics(); }
     function calcLots() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerHTML = `<div style="font-size:2rem;">${Math.max(lot,0.01).toFixed(2)} Lot</div><div style="font-size:0.9rem; color:#888;">Risk: ${riskAmt.toFixed(2)}€</div>`; } }
     function updateContractSize() { const val = document.getElementById('cType').value; if(val !== 'custom') document.getElementById('cContract').value = val; }
+
+    // --- NEUE FUNKTION: FEEDBACK TOGGLE ---
+    async function toggleFeedback(val) {
+        if(auth.currentUser) {
+            await db.collection('users').doc(auth.currentUser.uid).set({ allowCoachFeedback: val }, { merge: true });
+        }
+    }
 
     // --- NEUE FUNKTION: BILDER AUSLESEN (OCR) ---
     async function runOCR() {
