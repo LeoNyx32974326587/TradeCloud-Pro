@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud P6ro</title>
+    <title>TradeCloud Pro</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -51,7 +51,7 @@
         .nav-selector-label { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 5px; display: block; font-weight: bold; letter-spacing: 1px; }
         #navJournalSelect { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; cursor: pointer; font-size:1rem; }
 
-        /* UI COMPONENTS */
+        /* UI */
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
         .card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
         .btn-primary { background: var(--accent); color: black; padding: 15px; border: none; font-weight: 800; border-radius: 8px; width: 100%; cursor: pointer; }
@@ -68,16 +68,11 @@
         .channel-item:hover { background: rgba(255,255,255,0.05); }
         .channel-item.active { background: rgba(187, 134, 252, 0.1); color: var(--accent); font-weight: bold; border-left: 4px solid var(--accent); }
         .channel-name { font-size: 0.95rem; }
-        .channel-desc { font-size: 0.7rem; color: var(--text-sub); display: block; margin-top: 2px; }
         .chat-messages { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .chat-input-area { padding: 15px; background: var(--cell-bg); border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
-        .chat-locked-msg { text-align: center; padding: 15px; background: rgba(255,255,255,0.05); color: var(--text-sub); font-size: 0.8rem; font-style: italic; border-top: 1px solid var(--border); margin-top: auto; }
         .chat-dm-del-btn { background: none; border: none; color: var(--text-sub); font-size: 1rem; padding: 5px; cursor: pointer; }
         .chat-dm-del-btn:hover { color: var(--danger); }
         
-        /* BIG CHAT BUTTON */
-        #chat-send-btn { padding: 0 30px; font-size: 1.8rem; width: auto; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 12px; }
-
         .msg-wrapper { max-width: 85%; display: flex; flex-direction: column; position: relative; margin-bottom: 5px; }
         .msg-wrapper.me { align-self: flex-end; align-items: flex-end; }
         .msg-wrapper.other { align-self: flex-start; align-items: flex-start; }
@@ -98,15 +93,7 @@
         .chat-del-btn:hover { opacity: 1; background: rgba(255, 61, 0, 0.3); }
 
         .chat-trade-card { background: var(--cell-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; width: 240px; margin-top: 5px; cursor: pointer; }
-        
-        @media (max-width: 700px) {
-            .chat-layout { flex-direction: column; }
-            .chat-sidebar { width: 100%; height: 70px; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); }
-            .channel-item { min-width: 140px; flex-shrink: 0; justify-content: center; text-align: center; padding: 10px; border-bottom: none; border-left: none; }
-            .channel-item.active { border-bottom: 3px solid var(--accent); border-left: none; background: transparent; }
-            .channel-desc { display: none; }
-            .chat-messages { padding: 10px; }
-        }
+        #chat-send-btn { padding: 0 30px; font-size: 1.8rem; width: auto; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 12px; }
 
         /* JOURNAL & LISTS */
         .journal-full-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 30px; overflow: hidden; animation: fadeIn 0.4s; display: flex; flex-direction: column; position: relative; }
@@ -163,7 +150,6 @@
         .input-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         .popup-close { background:none; border:none; color:var(--text-sub); font-size:1.2rem; cursor:pointer; }
         .popup-title { margin:0; font-size:1.2rem; font-weight:bold; }
-        
         .adm-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--cell-bg); border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
         .adm-user-info { display: flex; align-items: center; gap: 10px; }
         .adm-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
@@ -172,7 +158,6 @@
         .adm-email { font-size: 0.8rem; color: var(--text-sub); }
         .adm-tab-btn { flex: 1; padding: 15px; border: none; background: #151517; color: #888; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; }
         .adm-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(187, 134, 252, 0.05); }
-
         .signal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.85rem; margin-top: 8px; pointer-events: none; }
         .signal-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid var(--border); }
         .sig-label { color: var(--text-sub); font-size: 0.75rem; }
@@ -183,16 +168,13 @@
         .stats-grid-view { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .chart-card { height: 300px; padding: 10px; position: relative; }
         .full-width { grid-column: span 2; }
-        
         .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: var(--text-main); }
         .hist-table th { text-align: left; padding: 15px 10px; border-bottom: 1px solid var(--border); color: var(--text-sub); font-weight: 600; }
         .hist-table td { padding: 15px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); }
         .hist-table tr:hover { background: rgba(255,255,255,0.03); }
-        
         .feedback-notification { background: linear-gradient(135deg, rgba(187,134,252,0.2), rgba(187,134,252,0.05)); border: 1px solid var(--accent); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; animation: fadeIn 0.5s; margin-bottom:15px; }
         .msg-notification { background: rgba(0, 200, 83, 0.1); border: 1px solid var(--success); color: #fff; padding: 15px; border-radius: 12px; cursor: pointer; animation: fadeIn 0.5s; display: flex; align-items: center; justify-content: space-between; font-weight: bold; margin-bottom:15px; }
         .chat-close-btn { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1.2rem; cursor: pointer; padding: 5px; margin-left: 10px; }
-        
         .cal-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .cal-cell { background: var(--cell-bg); border-radius: 6px; aspect-ratio: 1/0.85; position: relative; border: 1px solid transparent; cursor: pointer; transition: transform 0.1s; }
@@ -201,8 +183,9 @@
         .cal-date { position: absolute; top: 2px; right: 4px; font-size: 0.7rem; font-weight: 600; color: var(--text-sub); }
         .cal-pnl { position: absolute; bottom: 16px; width: 100%; text-align: center; font-size: 0.65rem; font-weight: bold; }
         .cal-trades { position: absolute; bottom: 2px; width: 100%; text-align: center; font-size: 0.55rem; color: var(--text-sub); }
-        
-        /* TRADE DETAILS DESIGN RESTORED */
+        .search-res-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); background: var(--cell-bg); border-radius: 6px; margin-bottom: 5px; }
+        .search-res-name { font-weight: bold; display: block; }
+        .search-res-email { font-size: 0.8rem; color: var(--text-sub); }
         .td-hero { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #333; }
         .td-asset { font-size: 1.8rem; font-weight: 800; color: white; display:block; }
         .td-pnl { font-size: 3rem; font-weight: 900; margin-top: 5px; display:block; }
@@ -774,7 +757,7 @@
         div.className = 'msg-notification';
         div.id = `notify-${msg.timestamp?.seconds}`;
         div.innerHTML = `
-            <div class="msg-notification-content" onclick="window.showView('Chat'); window.switchChannel('${msg.channel}')">
+            <div class="msg-notification-content" style="flex-grow:1;" onclick="window.showView('Chat'); window.switchChannel('${msg.channel}')">
                 <span class="msg-notification-sender">Neues von ${msg.senderName}</span>
                 <span style="font-weight:normal;">${msg.text.substring(0, 50)}...</span>
             </div>
@@ -866,6 +849,7 @@
                 const isSender = d.senderId === myUid;
                 const otherName = isSender ? d.targetName : d.senderName;
                 if(d.status === 'accepted') {
+                     // Add Delete Button Logic Here
                      list.innerHTML += `<div class="channel-item" id="${chatId}" onclick="window.switchChannel('${chatId}')">
                         <div style="flex-grow:1;"><div class="channel-name">📩 ${otherName}</div></div>
                         <button class="chat-dm-del-btn" onclick="window.deleteDM('${chatId}', event)">✕</button>
@@ -914,7 +898,10 @@
             const statusLabel = t.status === 'Aktiv' ? 'OPEN' : 'CLOSED';
             const color = t.status === 'Aktiv' ? '#0a84ff' : '#8e8e93';
             const thumb = msg.sharedImage ? `<img src="${msg.sharedImage}" class="ct-img">` : '';
-            content = `<div class="chat-trade-card" onclick="window.openSignalDetail('${encodeURIComponent(JSON.stringify(t))}', '${encodeURIComponent(msg.sharedImage || '')}')"><div class="ct-header"><span>${t.asset}</span><span style="color:${color}">${statusLabel}</span></div><div style="font-size:0.85rem; color:var(--text-sub);">${t.status === 'Aktiv' ? 'Signal 📡' : 'Result 🏁'}</div>${thumb}<div class="ct-footer"><span>${t.date.split('T')[0]}</span> <span>Klicken für Details</span></div></div>`;
+            // Encode safely for onclick
+            const tradeStr = encodeURIComponent(JSON.stringify(t));
+            const imgStr = encodeURIComponent(msg.sharedImage || '');
+            content = `<div class="chat-trade-card" onclick="window.openSignalDetail('${tradeStr}', '${imgStr}')"><div class="ct-header"><span>${t.asset}</span><span style="color:${color}">${statusLabel}</span></div><div style="font-size:0.85rem; color:var(--text-sub);">${t.status === 'Aktiv' ? 'Signal 📡' : 'Result 🏁'}</div>${thumb}<div class="ct-footer"><span>${t.date.split('T')[0]}</span> <span>Klicken für Details</span></div></div>`;
         }
         return `<div class="msg-wrapper ${isMe ? 'me' : 'other'}"><span class="msg-sender">${isMe ? 'Du' : msg.senderName}</span><div class="msg-bubble">${content}<span class="msg-time">${time}</span>${delBtn}</div></div>`;
     }
@@ -1122,7 +1109,22 @@
         };
 
         const uData = userSnap.docs[0].data();
-        // Use AWAIT to ensure data is loaded before rendering
+        if(uData.allowFeedback === false) {
+             document.getElementById('popup-overlay').classList.add('open');
+             document.getElementById('admin-member-modal').classList.remove('hidden');
+             document.getElementById('admin-member-modal').classList.add('open');
+             document.getElementById('adm-content-stats').innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub);'>🔒 Dieser User hat den Zugriff auf seine Trades deaktiviert.</div>";
+             document.getElementById('adm-content-trades').innerHTML = "";
+             document.getElementById('btn-adm-stats').style.display = 'none';
+             document.getElementById('btn-adm-trades').style.display = 'none';
+             document.getElementById('adm-journal-select').style.display = 'none';
+             return;
+        }
+
+        document.getElementById('btn-adm-stats').style.display = 'block';
+        document.getElementById('btn-adm-trades').style.display = 'block';
+        document.getElementById('adm-journal-select').style.display = 'block';
+        
         const jSnap = await db.collection('journals').where('userId', '==', targetUid).get();
         inspectedUserJournals = jSnap.docs.map(d => ({id: d.id, ...d.data()}));
         
@@ -1137,7 +1139,6 @@
         document.getElementById('admin-member-modal').classList.remove('hidden');
         document.getElementById('admin-member-modal').classList.add('open');
         
-        // Reset container content
         document.getElementById('adm-content-stats').innerHTML = `
              <div class="dv-stats-grid">
                 <div class="stat-box"><span class="stat-label">Total PnL</span><div class="stat-value sensitive" id="adm-stat-pnl">0.00 €</div></div>
