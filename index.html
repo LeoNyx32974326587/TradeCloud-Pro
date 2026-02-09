@@ -142,12 +142,20 @@
         .tr-pnl { font-weight: 700; font-size: 0.9rem; text-align: right; min-width: 70px; }
         .tr-arrow { color: #888; margin-left: 10px; font-size: 0.9rem; }
 
-        /* TRADE DETAIL */
+        /* TRADE DETAIL SPECIFIC STYLES */
         .td-hero { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #333; }
         .td-asset { font-size: 1.8rem; font-weight: 800; color: white; display:block; }
         .td-pnl { font-size: 3rem; font-weight: 900; margin-top: 5px; display:block; }
-        .td-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .td-box { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; display:flex; flex-direction:column; justify-content:center; }
+        .td-value-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        .td-row { display: flex; justify-content: space-between; align-items: center; background: #151517; padding: 12px; border-radius: 8px; border: 1px solid #2c2c2e; }
+        .td-row-label { color: #888; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+        .td-row-val { color: white; font-family: monospace; font-size: 1rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .td-copy-btn { background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--accent); padding: 5px; }
+        .td-note-box { background: #151517; padding: 15px; border-radius: 12px; border: 1px solid #2c2c2e; margin-bottom: 20px; font-style: italic; color: #ccc; font-size: 0.9rem; line-height: 1.5; }
+        .td-img-box { margin-bottom: 15px; }
+        .td-img-label { display: block; color: var(--accent); font-weight: bold; font-size: 0.8rem; margin-bottom: 5px; }
+        .td-img-thumb { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; border: 1px solid #333; cursor: pointer; transition: opacity 0.2s; }
+        .td-img-thumb:hover { opacity: 0.8; }
         
         /* --- WHATSAPP STYLE CHAT --- */
         .chat-container { display: flex; flex-direction: column; height: calc(100vh - 140px); background: var(--wa-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; }
@@ -1034,6 +1042,8 @@
 
             if(alreadyExists) return alert("Kontaktanfrage bereits gesendet oder Kontakt vorhanden.");
 
+            // ADMIN LOGIC: If I am admin, auto-accept
+            // NORMAL LOGIC: If I am normal, pending
             let status = 'pending';
             if (isAdmin) status = 'accepted'; 
 
