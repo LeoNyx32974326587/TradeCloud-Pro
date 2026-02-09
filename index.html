@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro</title>
+    <title>TradeCloud Prot</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -243,7 +243,7 @@
             <div id="dv-date-title" style="font-weight:700; font-size:1.2rem;">Date</div>
             <button onclick="closePopup()" class="popup-close">✕</button>
         </div>
-        <div style="padding-bottom:20px; border-bottom:1px solid #333; margin-bottom:20px;">
+        <div style="padding-bottom:20px; border-bottom:1px solid #2c2c2e; margin-bottom:20px;">
             <div style="height:180px;"><canvas id="dayChart"></canvas></div>
         </div>
         <div class="dv-stats-grid">
@@ -749,14 +749,12 @@
             const filters = ['HEUTE', 'GESTERN', 'WOCHE', 'MONAT', 'JAHR', 'GESAMT', 'ZEITRAUM'];
             const filterHtml = filters.map(f => `<button class="filter-pill ${timeframe===f?'active':''}" onclick="setJournalFilter('${journal.id}', '${f}')">${f}</button>`).join('');
             
-            // FIX: Warning Logic was crashing because todayPnL wasn't defined
+            // FIX: Warning Logic - calculated here to avoid variable scope errors
             let warningHtml = '';
             if(journal.maxDD && parseFloat(journal.maxDD) > 0) {
-                // Calculate Today PnL specifically
                 const todayStart = new Date(); todayStart.setHours(0,0,0,0);
                 const todayTrades = closedAll.filter(t => new Date(t.date) >= todayStart);
                 const todayPnL = todayTrades.reduce((a,b)=>a+b.pnl, 0);
-                
                 const limit = parseFloat(journal.maxDD); let threshold = limit;
                 if(journal.ddType === 'percent') { const totalBal = startCap + closedAll.reduce((a,b)=>a+b.pnl,0); const currentBalance = Math.max(totalBal, 0); threshold = currentBalance * (limit / 100); }
                 if(todayPnL < -threshold) warningHtml = `<div class="loss-warning"><span>⚠️</span><span>TAGESVERLUST ÜBERSCHRITTEN</span></div>`;
@@ -954,23 +952,15 @@
         if (!text) return;
         if(currentChatChannel === 'pro' && !isAdmin) return;
 
-        // Fallback for username
-        const sender = currentUserName || auth.currentUser.displayName || "User";
-
-        try {
-            await db.collection('chat').add({ 
-                text: text, 
-                senderName: sender, 
-                senderId: auth.currentUser.uid, 
-                type: 'text', 
-                channel: currentChatChannel,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-            });
-            input.value = '';
-        } catch(e) {
-            console.error("Error sending message:", e);
-            alert("Fehler beim Senden. Bist du eingeloggt?");
-        }
+        await db.collection('chat').add({ 
+            text: text, 
+            senderName: currentUserName, 
+            senderId: auth.currentUser.uid, 
+            type: 'text', 
+            channel: currentChatChannel,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp() 
+        });
+        input.value = '';
     }
     
     // --- SHARED FUNCTIONS ---
