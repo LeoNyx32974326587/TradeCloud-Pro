@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro</title>
+    <title>TradeCloud Pr4o</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -30,8 +30,8 @@
             /* WHATSAPP STYLE COLORS (DARK) */
             --wa-bg: #0b141a;
             --wa-header: #202c33;
-            --wa-bubble-in: #202c33; /* Incoming */
-            --wa-bubble-out: #005c4b; /* Outgoing */
+            --wa-bubble-in: #202c33;
+            --wa-bubble-out: #005c4b;
             --wa-input-bg: #2a3942;
             --wa-tick: #53bdeb;
         }
@@ -162,6 +162,10 @@
         .cl-name { font-weight: bold; font-size: 1rem; margin-bottom: 4px; display:flex; align-items:center; gap:5px; }
         .cl-last { font-size: 0.8rem; color: var(--text-sub); }
         .coach-tag { background: var(--accent); color: #000; padding: 1px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
+
+        /* Search Results Styles */
+        .search-result-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #222; margin-bottom: 5px; border-radius: 6px; border: 1px solid #333; }
+        .search-result-name { font-weight: bold; color: #fff; }
 
         .chat-room { display: flex; flex-direction: column; height: 100%; background: var(--wa-bg); }
         .cr-header { padding: 10px 15px; background: var(--wa-header); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
@@ -309,9 +313,9 @@
             <button class="popup-close" onclick="closePopup()">✕</button>
         </div>
         <div style="padding:15px;">
-            <p style="color:var(--text-sub); font-size:0.9rem;">Gib die E-Mail Adresse des Mitglieds ein.</p>
-            <input type="email" id="contact-email-input" placeholder="user@email.com">
-            <button onclick="sendContactRequest()" class="btn-primary" style="margin-top:10px;">Anfragen</button>
+            <p style="color:var(--text-sub); font-size:0.9rem;">Suche nach Namen:</p>
+            <input type="text" id="contact-search-input" placeholder="Name eingeben..." onkeyup="searchUsers()">
+            <div id="contact-search-results" style="margin-top:10px; max-height:200px; overflow-y:auto;"></div>
         </div>
     </div>
 
@@ -954,18 +958,47 @@
         document.getElementById('add-contact-modal').classList.add('open');
     }
 
-    async function sendContactRequest() {
-        const email = document.getElementById('contact-email-input').value.toLowerCase().trim();
-        if(!email) return;
-        if(email === auth.currentUser.email) return alert("Du kannst dich nicht selbst hinzufügen.");
+    async function searchUsers() {
+        const term = document.getElementById('contact-search-input').value.trim();
+        const resultsDiv = document.getElementById('contact-search-results');
+        
+        if(term.length < 3) {
+            resultsDiv.innerHTML = '<p style="color:var(--text-sub); font-size:0.8rem;">Tippe mindestens 3 Buchstaben...</p>';
+            return;
+        }
 
         try {
-            const userQuery = await db.collection('users').where('email', '==', email).get();
-            if(userQuery.empty) return alert("User nicht gefunden.");
-            
-            const targetUser = userQuery.docs[0];
-            const targetUid = targetUser.id;
+            // Using a simple prefix search trick for Firestore
+            const snap = await db.collection('users')
+                .where('displayName', '>=', term)
+                .where('displayName', '<=', term + '\uf8ff')
+                .limit(5)
+                .get();
 
+            if(snap.empty) {
+                resultsDiv.innerHTML = '<p style="color:var(--text-sub);">Keine User gefunden.</p>';
+                return;
+            }
+
+            resultsDiv.innerHTML = snap.docs.map(doc => {
+                const u = doc.data();
+                if(u.email === auth.currentUser.email) return ''; // Hide self
+                
+                return `
+                <div class="search-result-item">
+                    <span class="search-result-name">${u.displayName}</span>
+                    <button class="btn-small" onclick="sendContactRequestByUid('${doc.id}')">Hinzufügen</button>
+                </div>`;
+            }).join('');
+
+        } catch(e) {
+            console.error(e);
+            resultsDiv.innerHTML = '<p style="color:var(--danger);">Fehler bei der Suche.</p>';
+        }
+    }
+
+    async function sendContactRequestByUid(targetUid) {
+        try {
             // Check if relationship exists
             const existing = await db.collection('friendships')
                 .where('users', 'array-contains', auth.currentUser.uid).get();
@@ -1144,7 +1177,13 @@
 
     function renderMessage(msg) {
         const isMe = msg.senderId === auth.currentUser.uid;
-        const time = formatChatTime(msg.timestamp);
+        
+        // Handle pending timestamp
+        let time = "Just now";
+        if (msg.timestamp) {
+            time = formatChatTime(msg.timestamp);
+        }
+
         let content = `<div class="msg-text">${msg.text || ''}</div>`;
         
         let delBtn = isAdmin ? `<button style="position:absolute; top:2px; right:5px; background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer;" onclick="deleteChatMessage('${msg.id}')">✕</button>` : '';
