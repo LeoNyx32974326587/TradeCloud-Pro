@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeClou4d6 Pro</title>
+    <title>TradeCloud Pro</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -433,22 +433,26 @@
     <button onclick="showView('Übersicht')" id="btn-Übersicht">🏠 Dashboard</button>
     <button onclick="prepareCreateView()" style="color:var(--accent);">➕ Neuer Trade</button>
     <button onclick="showView('Chat')" id="btn-Chat">💬 Chat</button>
-    <button onclick="showView('TradingView')" id="btn-TradingView">📈 Chart</button>
+    
     <div class="nav-separator"></div>
     <div class="nav-selector-container">
         <label class="nav-selector-label">AKTUELLES JOURNAL ⌄</label>
         <select id="navJournalSelect" onchange="changeActiveJournal(this.value)"></select>
     </div>
-    <div class="nav-separator"></div>
     <button onclick="showView('Kalender')" id="btn-Kalender">📅 Kalender</button>
     <button onclick="showView('Statistik')" id="btn-Statistik">📈 Statistik</button>
     <button onclick="showView('Historie')" id="btn-Historie">📜 Journal</button>
+    
     <div class="nav-separator"></div>
+    <button onclick="showView('TradingView')" id="btn-TradingView">📈 Chart</button>
     <button onclick="showView('Lot Rechner')" id="btn-Lot Rechner">📊 Lot Rechner</button>
     <button onclick="showView('News')" id="btn-News">📰 News</button>
-    <button onclick="showView('Feedback')" id="btn-Feedback">📣 Feedback</button>
+    
     <div class="nav-separator"></div>
     <button onclick="showView('Einstellungen')" id="btn-Einstellungen">⚙️ Einstellungen</button>
+    <button onclick="showView('Feedback')" id="btn-Feedback">📣 Feedback</button>
+    
+    <div class="nav-separator"></div>
     <button onclick="handleLogout()" style="color: var(--danger); margin-top:20px;">🚪 Logout</button>
 </nav>
 
@@ -968,22 +972,26 @@
         }
 
         try {
-            // Using a simple prefix search trick for Firestore
-            const snap = await db.collection('users')
-                .where('displayName', '>=', term)
-                .where('displayName', '<=', term + '\uf8ff')
-                .limit(5)
-                .get();
-
+            // Using a simple prefix search trick for Firestore - NOW CASE INSENSITIVE (Client Side Filter for reliability)
+            const snap = await db.collection('users').limit(50).get(); 
+            
             if(snap.empty) {
                 resultsDiv.innerHTML = '<p style="color:var(--text-sub);">Keine User gefunden.</p>';
                 return;
             }
 
-            resultsDiv.innerHTML = snap.docs.map(doc => {
+            const hits = snap.docs.filter(doc => {
+                const data = doc.data();
+                return data.displayName && data.displayName.toLowerCase().includes(term.toLowerCase()) && data.email !== auth.currentUser.email;
+            });
+
+            if(hits.length === 0) {
+                resultsDiv.innerHTML = '<p style="color:var(--text-sub);">Keine User gefunden.</p>';
+                return;
+            }
+
+            resultsDiv.innerHTML = hits.map(doc => {
                 const u = doc.data();
-                if(u.email === auth.currentUser.email) return ''; // Hide self
-                
                 return `
                 <div class="search-result-item">
                     <span class="search-result-name">${u.displayName}</span>
@@ -1011,8 +1019,6 @@
 
             if(alreadyExists) return alert("Kontaktanfrage bereits gesendet oder Kontakt vorhanden.");
 
-            // ADMIN LOGIC: If I am admin, auto-accept
-            // NORMAL LOGIC: If I am normal, pending
             let status = 'pending';
             if (isAdmin) status = 'accepted'; 
 
@@ -1154,25 +1160,35 @@
         if(!currentChatChannel) return;
         if(unsubscribeChat) unsubscribeChat(); 
 
+        // IMPORTANT: Fallback if timestamp is null (local pending write)
         let query = db.collection('chat')
             .where('channel', '==', currentChatChannel)
             .orderBy('timestamp', 'desc')
             .limit(50);
         
-        unsubscribeChat = query.onSnapshot({ includeMetadataChanges: true }, snapshot => {
-            const messages = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()})).reverse();
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML = messages.map(msg => renderMessage(msg)).join('');
-            chatBox.scrollTop = chatBox.scrollHeight;
-            
-            // Only update notification count for PUBLIC chat to avoid confusion
-            if(currentChatChannel === 'public') {
-                lastMessageCount = messages.length;
-                if (isChatActive && lastMessageCount > 0) {
-                    localStorage.setItem('chatCount', lastMessageCount);
+        // Try/Catch for Index Errors
+        try {
+            unsubscribeChat = query.onSnapshot({ includeMetadataChanges: true }, snapshot => {
+                const messages = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()})).reverse();
+                const chatBox = document.getElementById('chat-messages');
+                chatBox.innerHTML = messages.map(msg => renderMessage(msg)).join('');
+                chatBox.scrollTop = chatBox.scrollHeight;
+                
+                if(currentChatChannel === 'public') {
+                    lastMessageCount = messages.length;
+                    if (isChatActive && lastMessageCount > 0) {
+                        localStorage.setItem('chatCount', lastMessageCount);
+                    }
                 }
-            }
-        });
+            }, error => {
+                console.error("Chat Error (Likely missing index):", error);
+                // Fallback for missing index: Client side sort (less efficient but works for low volume)
+                // If this happens, messages might appear out of order or not filtered perfectly without index
+                alert("Hinweis: Falls Chats nicht laden, bitte Admin kontaktieren (Firestore Index fehlt).");
+            });
+        } catch(e) {
+            console.error(e);
+        }
     }
 
     function renderMessage(msg) {
