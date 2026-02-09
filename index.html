@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro</title>
+    <title>TradeCloud Pro5</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -33,11 +33,13 @@
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* HEADER & NAV */
+        /* HEADER */
         header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-dark); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
         .menu-btn { cursor: pointer; font-size: 2rem; color: var(--text-main); background: none; border: none; padding: 0; margin-right: 15px; }
         #view-title { font-weight: 700; font-size: 1.2rem; }
+        .sensitive { filter: blur(var(--blur)); transition: filter 0.3s; }
         
+        /* NAV */
         .nav-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card-bg); border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 10px; padding-bottom: 50px; box-shadow: 2px 0 10px rgba(0,0,0,0.5); overflow-y: auto; display: flex; flex-direction: column; }
         .nav-drawer.open { left: 0; }
         .nav-drawer button { display: block; width: 100%; padding: 15px 25px; text-align: left; background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 1.1rem; transition: 0.2s; border-bottom:1px solid rgba(255,255,255,0.03); }
@@ -74,10 +76,8 @@
         .chat-dm-del-btn { background: none; border: none; color: var(--text-sub); font-size: 1rem; padding: 5px; cursor: pointer; }
         .chat-dm-del-btn:hover { color: var(--danger); }
         
-        /* BIG CHAT BUTTON */
-        #chat-send-btn { padding: 0 30px; font-size: 1.5rem; width: auto; height: 50px; display: flex; align-items: center; justify-content: center; }
-
-        .msg-wrapper { max-width: 85%; display: flex; flex-direction: column; position: relative; }
+        /* CHAT BUBBLES & DELETE BUTTON */
+        .msg-wrapper { max-width: 85%; display: flex; flex-direction: column; position: relative; margin-bottom: 5px; }
         .msg-wrapper.me { align-self: flex-end; align-items: flex-end; }
         .msg-wrapper.other { align-self: flex-start; align-items: flex-start; }
         .msg-sender { font-size: 0.7rem; color: var(--text-sub); margin-bottom: 4px; margin-left: 4px; }
@@ -85,8 +85,32 @@
         .msg-wrapper.me .msg-bubble { background: var(--chat-me); color: var(--text-main); border-bottom-right-radius: 2px; border-color: var(--accent); }
         .msg-wrapper.other .msg-bubble { background: var(--chat-other); color: var(--text-main); border-bottom-left-radius: 2px; }
         .msg-time { font-size: 0.65rem; color: var(--text-sub); margin-top: 4px; text-align: right; display: block; }
+        
+        /* IMPROVED CHAT DELETE BUTTON */
+        .msg-actions { display: flex; align-items: center; margin-top: 2px; }
+        .chat-del-btn { 
+            background: rgba(255, 61, 0, 0.1); 
+            border: 1px solid var(--danger); 
+            color: var(--danger); 
+            border-radius: 6px; 
+            width: 30px; 
+            height: 30px; 
+            font-size: 14px; 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            opacity: 0.5; 
+            transition: 0.2s;
+            margin-left: 5px;
+        }
+        .chat-del-btn:hover { opacity: 1; background: rgba(255, 61, 0, 0.3); }
+
         .chat-trade-card { background: var(--cell-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; width: 240px; margin-top: 5px; cursor: pointer; }
         
+        /* BIG SEND BUTTON */
+        #chat-send-btn { padding: 0 30px; font-size: 1.8rem; width: auto; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 12px; }
+
         @media (max-width: 700px) {
             .chat-layout { flex-direction: column; }
             .chat-sidebar { width: 100%; height: 70px; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); }
@@ -110,7 +134,6 @@
         .open-trades-box { background: var(--cell-bg); border: 1px solid var(--border); border-radius: 8px; flex-grow: 1; padding: 15px; display: flex; flex-direction: column; min-height: 120px; }
         .ot-title { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 5px;}
         .ot-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        .ot-thumb { width: 30px; height: 20px; object-fit: cover; border-radius: 3px; border: 1px solid var(--border); margin-left: 8px; vertical-align: middle; }
         .card-filters { display: flex; gap: 5px; padding: 10px 20px; border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .filter-pill { padding: 5px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer; color: var(--text-sub); border: 1px solid transparent; background: transparent; transition: 0.2s; white-space: nowrap; text-transform: uppercase; }
         .filter-pill:hover { background: rgba(255,255,255,0.05); }
@@ -544,42 +567,24 @@
 </div>
 
 <script>
-    // --- GLOBAL FUNCTIONS (ATTACHED TO WINDOW) ---
-    window.toggleMenu = function() { 
-        document.getElementById('navDrawer').classList.toggle('open'); 
-        document.getElementById('menu-overlay').classList.toggle('open'); 
-    };
-
-    window.closePopup = function() { 
-        document.getElementById('popup-overlay').classList.remove('open');
-        document.querySelectorAll('.modal-base').forEach(el => { el.classList.add('hidden'); el.classList.remove('open'); }); 
-        if(typeof currentDetailTradeId !== 'undefined' && currentDetailTradeId) window.closeTradeDetail();
-    };
+    window.toggleMenu = function() { document.getElementById('navDrawer').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('open'); };
+    window.closePopup = function() { document.getElementById('popup-overlay').classList.remove('open'); document.querySelectorAll('.modal-base').forEach(el => { el.classList.add('hidden'); el.classList.remove('open'); }); if(typeof currentDetailTradeId !== 'undefined' && currentDetailTradeId) window.closeTradeDetail(); };
 
     window.prepareCreateView = function() { 
         document.getElementById('editId').value = ""; 
         const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); 
         document.getElementById('datetime').value = now.toISOString().slice(0,16); 
-        document.getElementById('assetInput').value = ""; 
-        document.getElementById('pnl').value = ""; 
-        document.getElementById('note').value = ""; 
-        document.getElementById('inpEntry').value = ""; 
-        document.getElementById('inpSL').value = ""; 
-        document.getElementById('inpTP1').value = ""; 
-        document.getElementById('inpTP2').value = ""; 
-        document.getElementById('inpTP3').value = ""; 
-        if(typeof activeJournal !== 'undefined' && activeJournal && document.getElementById('inpJournalSelect')) document.getElementById('inpJournalSelect').value = activeJournal; 
+        document.getElementById('assetInput').value = ""; document.getElementById('pnl').value = ""; 
+        document.getElementById('note').value = ""; document.getElementById('inpEntry').value = ""; 
+        document.getElementById('inpSL').value = ""; document.getElementById('inpTP1').value = ""; 
+        document.getElementById('inpTP2').value = ""; document.getElementById('inpTP3').value = ""; 
+        if(typeof activeJournal !== 'undefined' && activeJournal) document.getElementById('inpJournalSelect').value = activeJournal; 
         window.toggleFormFields(); 
-        document.getElementById('trade-form-modal').classList.remove('hidden'); 
-        document.getElementById('trade-form-modal').classList.add('open'); 
-        document.getElementById('popup-overlay').classList.add('open'); 
-        document.getElementById('form-title').innerText="Neuer Trade";
+        document.getElementById('trade-form-modal').classList.remove('hidden'); document.getElementById('trade-form-modal').classList.add('open'); 
+        document.getElementById('popup-overlay').classList.add('open'); document.getElementById('form-title').innerText="Neuer Trade";
     };
 
-    window.toggleFormFields = function() { 
-        const s = document.getElementById('status').value; 
-        document.getElementById('closedFields').classList.toggle('hidden', s === 'Aktiv'); 
-    };
+    window.toggleFormFields = function() { const s = document.getElementById('status').value; document.getElementById('closedFields').classList.toggle('hidden', s === 'Aktiv'); };
 
     window.saveTrade = async function() { 
         try {
@@ -590,53 +595,25 @@
             let targetJournal = document.getElementById('inpJournalSelect').value;
             if(!targetJournal && journals.length > 0) targetJournal = journals[0].name;
 
-            const data = { 
-                userId: auth.currentUser.uid, 
-                date: document.getElementById('datetime').value, 
-                asset: asset, 
-                journal: targetJournal, // Use robust target
-                status: document.getElementById('status').value, 
-                pnl: parseFloat(document.getElementById('pnl').value) || 0, 
-                imgSetup: document.getElementById('imgSetup').value, 
-                imgResult: document.getElementById('imgResult').value, 
-                note: document.getElementById('note').value, 
-                entry: document.getElementById('inpEntry').value, 
-                sl: document.getElementById('inpSL').value, 
-                tp1: document.getElementById('inpTP1').value, 
-                tp2: document.getElementById('inpTP2').value, 
-                tp3: document.getElementById('inpTP3').value, 
-                adminFeedback: document.getElementById('inpAdminFeedback').value 
-            }; 
-            if(id) await db.collection('trades').doc(id).update(data); 
-            else await db.collection('trades').add(data); 
-            await loadData(); 
-            window.closePopup(); 
-        } catch(e) { console.error("Save Trade Error:", e); alert("Fehler beim Speichern: " + e.message); }
+            const data = { userId: auth.currentUser.uid, date: document.getElementById('datetime').value, asset: asset, journal: targetJournal, status: document.getElementById('status').value, pnl: parseFloat(document.getElementById('pnl').value) || 0, imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value, note: document.getElementById('note').value, entry: document.getElementById('inpEntry').value, sl: document.getElementById('inpSL').value, tp1: document.getElementById('inpTP1').value, tp2: document.getElementById('inpTP2').value, tp3: document.getElementById('inpTP3').value, adminFeedback: document.getElementById('inpAdminFeedback').value }; 
+            if(id) await db.collection('trades').doc(id).update(data); else await db.collection('trades').add(data); 
+            await loadData(); window.closePopup(); 
+        } catch(e) { console.error(e); alert("Fehler beim Speichern"); }
     };
 
     window.editTrade = function(id, closeNow) { 
-        const t = trades.find(x => x.id === id); 
-        if(!t) return;
-        document.getElementById('editId').value = t.id; 
-        document.getElementById('datetime').value = t.date; 
-        document.getElementById('assetInput').value = t.asset; 
-        document.getElementById('inpJournalSelect').value = t.journal || (journals[0] ? journals[0].name : 'Main'); 
-        document.getElementById('status').value = closeNow ? 'Geschlossen' : t.status; 
-        document.getElementById('pnl').value = t.pnl; 
-        document.getElementById('imgSetup').value = t.imgSetup || ''; 
-        document.getElementById('imgResult').value = t.imgResult || ''; 
-        document.getElementById('note').value = t.note || ''; 
-        document.getElementById('inpEntry').value = t.entry || ''; 
-        document.getElementById('inpSL').value = t.sl || ''; 
-        document.getElementById('inpTP1').value = t.tp1 || ''; 
-        document.getElementById('inpTP2').value = t.tp2 || ''; 
-        document.getElementById('inpTP3').value = t.tp3 || ''; 
+        const t = trades.find(x => x.id === id); if(!t) return;
+        document.getElementById('editId').value = t.id; document.getElementById('datetime').value = t.date; 
+        document.getElementById('assetInput').value = t.asset; document.getElementById('inpJournalSelect').value = t.journal || (journals[0] ? journals[0].name : 'Main'); 
+        document.getElementById('status').value = closeNow ? 'Geschlossen' : t.status; document.getElementById('pnl').value = t.pnl; 
+        document.getElementById('imgSetup').value = t.imgSetup || ''; document.getElementById('imgResult').value = t.imgResult || ''; 
+        document.getElementById('note').value = t.note || ''; document.getElementById('inpEntry').value = t.entry || ''; 
+        document.getElementById('inpSL').value = t.sl || ''; document.getElementById('inpTP1').value = t.tp1 || ''; 
+        document.getElementById('inpTP2').value = t.tp2 || ''; document.getElementById('inpTP3').value = t.tp3 || ''; 
         document.getElementById('inpAdminFeedback').value = t.adminFeedback || ''; 
         document.getElementById('adm-feedback-input-area').classList.toggle('hidden', !isAdmin); 
-        document.getElementById('form-title').innerText="Trade Bearbeiten"; 
-        window.toggleFormFields(); 
-        document.getElementById('trade-form-modal').classList.remove('hidden'); 
-        document.getElementById('trade-form-modal').classList.add('open'); 
+        document.getElementById('form-title').innerText="Trade Bearbeiten"; window.toggleFormFields(); 
+        document.getElementById('trade-form-modal').classList.remove('hidden'); document.getElementById('trade-form-modal').classList.add('open'); 
         document.getElementById('popup-overlay').classList.add('open'); 
     };
     
@@ -671,7 +648,7 @@
 
     auth.onAuthStateChanged(async (user) => {
         if(user) {
-            await db.collection('users').doc(user.uid).set({ email: user.email.toLowerCase().trim(), displayName: user.displayName || 'Trader', photoURL: user.photoURL || '', allowFeedback: true }, { merge: true });
+            await db.collection('users').doc(user.uid).set({ email: user.email.toLowerCase(), displayName: user.displayName||'User' }, {merge:true});
             isAdmin = (user.email === "leon.luca.lauterbach@gmail.com");
             if(isAdmin) { document.getElementById('admin-panel').classList.remove('hidden'); window.admLoad(); document.getElementById('btn-share-pro').classList.remove('hidden'); }
             finishLogin(user);
@@ -679,27 +656,23 @@
     });
 
     async function finishLogin(user) {
-        try {
-            const firstName = user.email.split('@')[0].split('.')[0];
-            currentUserName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
-            document.getElementById('user-greeting-name').innerText = currentUserName;
-            const uDoc = await db.collection('users').doc(user.uid).get();
-            const uData = uDoc.data();
-            if(uData && document.getElementById('feedback-toggle')) document.getElementById('feedback-toggle').checked = (uData.allowFeedback !== false);
-            document.getElementById('auth-overlay').classList.add('hidden');
-            document.getElementById('app-content').classList.remove('hidden');
-            document.getElementById('main-header').classList.remove('hidden');
-            await loadData();
-            loadChat('general');
-            window.loadDirectMessages(); 
-        } catch(e) { console.error("Login Error:", e); }
+        currentUserName = (user.displayName || user.email.split('@')[0]).replace(/\b\w/g, l => l.toUpperCase());
+        document.getElementById('user-greeting-name').innerText = currentUserName;
+        const uDoc = await db.collection('users').doc(user.uid).get();
+        if(uDoc.exists && document.getElementById('feedback-toggle')) document.getElementById('feedback-toggle').checked = (uDoc.data().allowFeedback !== false);
+        document.getElementById('auth-overlay').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        document.getElementById('main-header').classList.remove('hidden');
+        await loadData();
+        loadChat('general');
+        window.loadDirectMessages();
     }
 
     window.toggleFeedbackSetting = async function(val) { if(auth.currentUser) await db.collection('users').doc(auth.currentUser.uid).set({ allowFeedback: val }, { merge: true }); }
 
     async function loadData() {
+        if(!auth.currentUser) return;
         try {
-            if(!auth.currentUser) return;
             const jSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get();
             journals = jSnap.docs.map(d => ({id: d.id, ...d.data()}));
             if(journals.length === 0) {
@@ -707,19 +680,20 @@
                 const newSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get();
                 journals = newSnap.docs.map(d => ({id: d.id, ...d.data()}));
             }
-            if(!activeJournal || !journals.find(j => j.name === activeJournal)) activeJournal = journals.length > 0 ? journals[0].name : 'Main';
-            
+            // FORCE FIRST JOURNAL AS ACTIVE IF NONE SET
+            if(!activeJournal || !journals.find(j => j.name === activeJournal)) activeJournal = journals[0].name;
+
             const tSnap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
             trades = tSnap.docs.map(d => ({id: d.id, ...d.data()}));
             
-            // Normalize old trades
+            // Normalize old trades to use first journal if missing
             trades.forEach(t => { if(!t.journal) t.journal = journals[0].name; });
 
             window.populateSelectors();
             window.renderDashboard();
             if(document.getElementById('view-Historie').classList.contains('active')) window.renderHistory();
             if(document.getElementById('view-Statistik').classList.contains('active')) renderStatistics();
-        } catch(e) { console.error("Data Load Error:", e); }
+        } catch(e) { console.error(e); }
     }
 
     window.populateSelectors = function() {
@@ -727,7 +701,10 @@
         const html = journals.map(j => `<option value="${j.name}">${j.name}</option>`).join('');
         document.getElementById('navJournalSelect').innerHTML = html;
         document.getElementById('inpJournalSelect').innerHTML = html;
-        if(activeJournal) { document.getElementById('navJournalSelect').value = activeJournal; document.getElementById('inpJournalSelect').value = activeJournal; }
+        if(activeJournal) {
+            document.getElementById('navJournalSelect').value = activeJournal;
+            document.getElementById('inpJournalSelect').value = activeJournal;
+        }
     }
 
     window.changeActiveJournal = function(val) {
@@ -756,6 +733,7 @@
                 const timeframe = journalFilters[journal.id] || 'GESAMT';
                 let tradesInPeriod = filterTradesByTime(journal, timeframe);
                 const startCap = parseFloat(journal.startCap) || 0;
+                // Case-insensitive check
                 const closedAll = trades.filter(t => (t.journal || 'Main').toLowerCase() === journal.name.toLowerCase() && t.status === 'Geschlossen').sort((a,b)=>new Date(a.date)-new Date(b.date));
 
                 let baseBalance = startCap;
@@ -776,8 +754,8 @@
 
                 const pnlColor = totalPnL >= 0 ? 'var(--success)' : 'var(--danger)';
                 const canvasId = `chart-${journal.id}`;
+                // FIX: Open trades filtering
                 const open = trades.filter(t => (t.journal || 'Main').toLowerCase() === journal.name.toLowerCase() && t.status === 'Aktiv');
-                
                 let openTradesHtml = '<p style="color:var(--text-sub); font-style:italic; font-size:0.8rem; text-align:center; padding-top:20px;">Keine offenen Trades.</p>';
                 if(open.length > 0) {
                     openTradesHtml = open.map(t => {
@@ -822,6 +800,7 @@
     }
 
     function filterTradesByTime(journal, timeframe) {
+        // FIX: Robust Comparison
         const jTrades = trades.filter(t => (t.journal || 'Main').toLowerCase() === journal.name.toLowerCase() && t.status === 'Geschlossen');
         const now = new Date();
         let startDate = null; let endDate = null;
@@ -1009,7 +988,14 @@
                      </div>`;
                 } else if(d.status === 'pending') {
                     if(!isSender) {
-                        list.innerHTML += `<div class="channel-item" style="background:rgba(187,134,252,0.1); flex-direction:column; align-items:start;"><div style="font-size:0.7rem; color:var(--accent);">Anfrage von:</div><div style="font-weight:bold; margin-bottom:5px;">${otherName}</div><div style="display:flex; gap:10px; width:100%;"><button class="btn-small" style="flex:1; border-color:var(--success); color:var(--success);" onclick="window.answerRequest('${chatId}', 'accepted')">✓</button><button class="btn-small" style="flex:1; border-color:var(--danger); color:var(--danger);" onclick="window.answerRequest('${chatId}', 'rejected')">✕</button></div></div>`;
+                        list.innerHTML += `<div class="channel-item" style="background:rgba(187,134,252,0.1); flex-direction:column; align-items:start;">
+                            <div style="font-size:0.7rem; color:var(--accent);">Anfrage von:</div>
+                            <div style="font-weight:bold; margin-bottom:5px;">${otherName}</div>
+                            <div style="display:flex; gap:10px; width:100%;">
+                                <button class="btn-small" style="flex:1; border-color:var(--success); color:var(--success);" onclick="window.answerRequest('${chatId}', 'accepted')">✓</button>
+                                <button class="btn-small" style="flex:1; border-color:var(--danger); color:var(--danger);" onclick="window.answerRequest('${chatId}', 'rejected')">✕</button>
+                            </div>
+                        </div>`;
                     } else {
                         list.innerHTML += `<div class="channel-item" style="opacity:0.6;"><div><div class="channel-name" style="font-style:italic;">Wartet auf ${otherName}...</div></div></div>`;
                     }
@@ -1079,6 +1065,56 @@
         }
     }
     
+    // --- SHARED FUNCTIONS ---
+    function renderNotificationsArea() {
+        const area = document.getElementById('dashboard-notification-area');
+        area.innerHTML = '';
+        const storedChatCount = parseInt(localStorage.getItem('chatCount') || '0');
+        if (lastMessageCount > storedChatCount && !isChatActive) {
+            area.innerHTML += `<div id="chat-notify-box" class="chat-notification"><div onclick="window.showView('Chat')" style="flex-grow:1; display:flex; align-items:center; gap:10px;">💬 Neue Nachricht im Community Chat!</div><button class="chat-close-btn" onclick="window.dismissChatNotification(event)">✕</button></div>`;
+        }
+        const unreadFeedbackTrades = trades.filter(t => t.adminFeedback && !t.feedbackRead);
+        if(unreadFeedbackTrades.length > 0) {
+            unreadFeedbackTrades.forEach(t => {
+                const tradeDataString = encodeURIComponent(JSON.stringify(t));
+                const imgUrlString = encodeURIComponent(t.imgSetup || t.imgResult || '');
+                area.innerHTML += `<div class="feedback-notification"><div class="fn-header"><div class="fn-title"><span>💬</span> Coach Feedback zu ${t.asset}</div></div><div class="fn-content">"${t.adminFeedback.substring(0, 80)}${t.adminFeedback.length > 80 ? '...' : ''}"</div><div class="fn-actions"><button class="btn-primary" style="padding:10px 20px;" onclick="window.openSignalDetail('${tradeDataString}', '${imgUrlString}')">Ansehen</button></div></div>`;
+            });
+        }
+    }
+    window.dismissChatNotification = function(e) { e.stopPropagation(); const box = document.getElementById('chat-notify-box'); if(box) box.remove(); document.getElementById('btn-Chat').innerHTML = '💬 Chat'; if(lastMessageCount > 0) localStorage.setItem('chatCount', lastMessageCount); }
+    window.setJournalFilter = function(journalId, timeframe) { if(timeframe === 'ZEITRAUM') { configuringJournalId = journalId; document.getElementById('popup-overlay').classList.add('open'); document.getElementById('date-range-modal').classList.remove('hidden'); document.getElementById('date-range-modal').classList.add('open'); } else { journalFilters[journalId] = timeframe; renderDashboard(); } }
+    window.applyCustomDate = function() { const start = document.getElementById('custom-start').value; const end = document.getElementById('custom-end').value; if(start && end && configuringJournalId) { journalFilters[configuringJournalId] = 'ZEITRAUM'; journalCustomDates[configuringJournalId] = { start, end }; renderDashboard(); window.closePopup(); } }
+    
+    function renderStatistics() {
+        if(!activeJournal) return;
+        const tradesToAnalyze = trades.filter(t => (t.journal || 'Main') === activeJournal && t.status === 'Geschlossen');
+        const assetMap = {}; tradesToAnalyze.forEach(t => { if(!assetMap[t.asset]) assetMap[t.asset] = 0; assetMap[t.asset] += t.pnl; });
+        const sortedAssets = Object.keys(assetMap).sort((a,b) => assetMap[b] - assetMap[a]); 
+        const daysMap = {0:0,1:0,2:0,3:0,4:0,5:0,6:0}; tradesToAnalyze.forEach(t => { daysMap[new Date(t.date).getDay()] += t.pnl; });
+        const dayLabels = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+        const hourMap = new Array(24).fill(0); tradesToAnalyze.forEach(t => { hourMap[new Date(t.date).getHours()] += t.pnl; });
+        const hourLabels = hourMap.map((_, i) => `${i}:00`);
+        const ctxA = document.getElementById('assetChart'); 
+        if(ctxA) {
+            const ctx = ctxA.getContext('2d');
+            if(assetChartInstance) assetChartInstance.destroy();
+            assetChartInstance = new Chart(ctx, { type: 'bar', data: { labels: sortedAssets, datasets: [{ label: 'PnL', data: sortedAssets.map(a => assetMap[a]), backgroundColor: sortedAssets.map(a => assetMap[a] >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: sortedAssets.map(a => assetMap[a] >= 0 ? '#00c853' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
+        }
+        const ctxW = document.getElementById('weekdayChart');
+        if(ctxW) {
+            const ctx = ctxW.getContext('2d');
+            if(weekdayChartInstance) weekdayChartInstance.destroy();
+            weekdayChartInstance = new Chart(ctx, { type: 'bar', data: { labels: dayLabels, datasets: [{ label: 'PnL', data: [0,1,2,3,4,5,6].map(d => daysMap[d]), backgroundColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: [0,1,2,3,4,5,6].map(d => daysMap[d] >= 0 ? '#00c853' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
+        }
+        const ctxH = document.getElementById('hourChart');
+        if(ctxH) {
+            const ctx = ctxH.getContext('2d');
+            if(hourChartInstance) hourChartInstance.destroy();
+            hourChartInstance = new Chart(ctx, { type: 'bar', data: { labels: hourLabels, datasets: [{ label: 'PnL', data: hourMap, backgroundColor: hourMap.map(v => v >= 0 ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'), borderColor: hourMap.map(v => v >= 0 ? '#00c853' : '#ff453a'), borderWidth: 1 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#222'}}}, plugins:{legend:{display:false}} } });
+        }
+    }
+    
     window.deleteChatMessage = function(id) { msgToDeleteId = id; document.getElementById('popup-overlay').classList.add('open'); document.getElementById('delete-modal').classList.remove('hidden'); document.getElementById('delete-modal').classList.add('open'); }
     window.confirmDeleteMessage = async function() { if(msgToDeleteId) { await db.collection('chat').doc(msgToDeleteId).delete(); window.closePopup(); } }
     window.closeDeleteModal = function() { window.closePopup(); }
@@ -1099,8 +1135,34 @@
             document.getElementById('sig-tp3').value = trade.tp3 || '';
         } else { sigDiv.classList.add('hidden'); }
         document.getElementById('popup-overlay').classList.add('open');
-        document.getElementById('share-modal').classList.remove('hidden'); document.getElementById('share-modal').classList.add('open'); 
+        document.getElementById('share-channel-modal').classList.remove('hidden'); 
+        document.getElementById('share-channel-modal').classList.add('open');
     }
+    
+    // NEW: Share Workflow Step 2
+    window.selectShareChannelTarget = function(channel) {
+        selectedShareChannel = channel;
+        document.getElementById('share-channel-modal').classList.remove('open');
+        document.getElementById('share-channel-modal').classList.add('hidden');
+        
+        const trade = trades.find(t => t.id === shareTradeId);
+        document.querySelectorAll('.share-opt').forEach(el => el.classList.remove('selected', 'disabled'));
+        if(!trade.imgSetup) document.getElementById('opt-setup').classList.add('disabled');
+        if(!trade.imgResult) document.getElementById('opt-result').classList.add('disabled');
+        const sigDiv = document.getElementById('signal-inputs');
+        if(trade.status === 'Aktiv') {
+            sigDiv.classList.remove('hidden');
+            document.getElementById('sig-entry').value = trade.entry || '';
+            document.getElementById('sig-sl').value = trade.sl || '';
+            document.getElementById('sig-tp1').value = trade.tp1 || '';
+            document.getElementById('sig-tp2').value = trade.tp2 || '';
+            document.getElementById('sig-tp3').value = trade.tp3 || '';
+        } else { sigDiv.classList.add('hidden'); }
+        
+        document.getElementById('share-modal').classList.remove('hidden'); 
+        document.getElementById('share-modal').classList.add('open');
+    }
+
     window.closeShareModal = function() { window.closePopup(); }
     window.selectShareOption = function(type) {
         const trade = trades.find(t => t.id === shareTradeId);
@@ -1112,7 +1174,7 @@
     }
     window.confirmShare = async function() {
         if(!shareTradeId || !shareType) return alert("Bitte wähle aus, was du teilen möchtest.");
-        if(!selectedShareChannel) selectedShareChannel = 'general'; // Fallback
+        if(!selectedShareChannel) selectedShareChannel = 'general';
         
         const trade = trades.find(t => t.id === shareTradeId);
         const tradeCopy = { ...trade }; delete tradeCopy.pnl; delete tradeCopy.userId; 
@@ -1212,111 +1274,6 @@
              let r=0; const data = dayTrades.map(t=>{r+=t.pnl; return r;});
              dayChart = new Chart(ctx, { type:'line', data:{ labels:dayTrades.map(t=>''), datasets:[{ data, borderColor: sum >= 0 ? '#00c853' : '#ff453a', borderWidth: 2, fill: true, backgroundColor: sum >= 0 ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255, 69, 58, 0.1)', tension: 0.1, pointRadius: 0 }] }, options:{ responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{grid:{color:'#333'}}} } });
         }
-    }
-    
-    window.closeTradeDetail = async function() {
-        document.getElementById('trade-detail-view').classList.remove('open');
-        document.getElementById('trade-detail-view').classList.add('hidden');
-        if(document.getElementById('day-detail-view').classList.contains('hidden') && !document.getElementById('admin-member-modal').classList.contains('open')) {
-             document.getElementById('popup-overlay').classList.remove('open');
-        }
-        if(currentDetailTradeId) {
-            const t = trades.find(x => x.id === currentDetailTradeId);
-            if(t && t.adminFeedback && !isAdmin && t.userId === auth.currentUser.uid) {
-                 await db.collection('trades').doc(currentDetailTradeId).update({ adminFeedback: "", feedbackRead: true });
-                 await loadData(); 
-            }
-            currentDetailTradeId = null;
-        }
-    }
-    window.copyText = function(val, btnId) { if(!val) return; navigator.clipboard.writeText(val).then(() => { const btn = document.getElementById(btnId); btn.innerText = '✓'; setTimeout(() => { btn.innerText = '📋'; }, 1500); }); }
-    function formatChatTime(timestamp) { if (!timestamp) return ''; const date = timestamp.toDate(); return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-    window.showView = function(v) { 
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active')); 
-        document.getElementById('view-' + v.replace(/\s+/g, '-')).classList.add('active'); 
-        document.getElementById('view-title').innerText = v.toUpperCase(); 
-        document.getElementById('navDrawer').classList.remove('open'); 
-        document.getElementById('menu-overlay').classList.remove('open'); 
-        document.querySelectorAll('.nav-drawer button').forEach(b => b.classList.remove('nav-active')); 
-        const btn = document.getElementById('btn-' + v); if(btn) btn.classList.add('nav-active'); 
-        
-        isChatActive = (v === 'Chat');
-        if (isChatActive) {
-            document.getElementById('chat-notification').classList.add('hidden');
-            document.getElementById('btn-Chat').innerHTML = '💬 Chat';
-            hasNewChatMessage = false;
-            if(lastMessageCount > 0) localStorage.setItem('chatCount', lastMessageCount);
-        }
-
-        if(v === 'Übersicht') renderDashboard(); 
-        if(v === 'Kalender') renderCalendar(); 
-        if(v === 'Historie') renderHistory(); 
-        if(v === 'Statistik') renderStatistics(); 
-        if(v === 'Einstellungen') renderSettingsList(); 
-        if(v === 'News') { const b=document.getElementById('news-box'); b.innerHTML=''; const s=document.createElement('script'); s.src="https://s3.tradingview.com/external-embedding/embed-widget-events.js"; s.async=true; s.innerHTML=JSON.stringify({"colorTheme":document.body.classList.contains('light-mode')?'light':'dark',"width":"100%","height":"100%","locale":"de"}); b.appendChild(s); } 
-        if(v === 'TradingView') setTimeout(renderTradingViewWidget, 50);
-    }
-    window.togglePrivacy = function() { privacyMode = !privacyMode; document.documentElement.style.setProperty('--blur', privacyMode ? '5px' : '0px'); }
-    window.handleLogout = function() { auth.signOut().then(()=>location.reload()); }
-    window.loginGoogle = function() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-    window.toggleTheme = function(isDark) { if(isDark) { document.body.classList.remove('light-mode'); localStorage.setItem('tradeTheme', 'dark'); } else { document.body.classList.add('light-mode'); localStorage.setItem('tradeTheme', 'light'); } if(document.getElementById('view-Statistik').classList.contains('active')) renderStatistics(); }
-    window.calcLots = function() { const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value), ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value); if(bal && r && ent && sl) { const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000); document.getElementById('cRes').innerHTML = `<div style="font-size:2rem;">${Math.max(lot,0.01).toFixed(2)} Lot</div><div style="font-size:0.9rem; color:#888;">Risk: ${riskAmt.toFixed(2)}€</div>`; } }
-    window.updateContractSize = function() { const val = document.getElementById('cType').value; if(val !== 'custom') document.getElementById('cContract').value = val; }
-    
-    // Admin Utils
-    window.admLoad = async function() { try { const s = await db.collection('members').get(); const listEl = document.getElementById('admList'); listEl.innerHTML = ''; for(const doc of s.docs) { const mData = doc.data(); const mId = doc.id; let displayName = "User"; let photoURL = ""; const uQuery = await db.collection('users').where('email', '==', mData.email).get(); if(!uQuery.empty) { const uData = uQuery.docs[0].data(); displayName = uData.displayName; photoURL = uData.photoURL; } const imgHtml = photoURL ? `<img src="${photoURL}" class="adm-pic">` : `<div class="adm-pic" style="background:#333; display:flex; justify-content:center; align-items:center;">👤</div>`; listEl.innerHTML += `<div class="adm-row"><div class="adm-user-info">${imgHtml}<div class="adm-text"><span class="adm-name">${displayName}</span><span class="adm-email">${mData.email}</span></div></div><div><button class="btn-icon" onclick="window.openMemberDetail('${mId}', '${mData.email}')" style="font-size:1rem; margin-right:5px;">👁️</button><button class="btn-icon btn-danger-hover" onclick="window.admDel('${mId}')" style="font-size:1rem;">✕</button></div></div>`; } } catch(e){ console.error(e); } }
-    window.admAdd = async function() { const e=document.getElementById('admEmail').value.toLowerCase().trim(); if(e) { await db.collection('members').add({email:e}); document.getElementById('admEmail').value=''; window.admLoad(); } }
-    window.admDel = async function(id) { if(confirm("Löschen?")) { await db.collection('members').doc(id).delete(); window.admLoad(); } }
-    
-    window.saveJournalInput = async function() { const name = document.getElementById('newJName').value.trim(); const cap = parseFloat(document.getElementById('newJCap').value)||0; const maxDD = document.getElementById('newJMaxDD').value; const ddType = document.getElementById('newJDDType').value; if(!name) return alert("Name fehlt!"); if(editingJournalId) { const oldJ = journals.find(j=>j.id===editingJournalId); await db.collection('journals').doc(editingJournalId).update({name, startCap:cap, maxDD, ddType}); if(name!==oldJ.name) { const batch=db.batch(); (await db.collection('trades').where('userId','==',auth.currentUser.uid).where('journal','==',oldJ.name).get()).docs.forEach(doc=>batch.update(doc.ref,{journal:name})); await batch.commit(); if(activeJournal===oldJ.name) activeJournal=name; } window.cancelEdit(); } else { await db.collection('journals').add({userId:auth.currentUser.uid, name, startCap:cap, maxDD, ddType, hidden:false}); document.getElementById('newJName').value=''; document.getElementById('newJCap').value=''; } await loadData(); renderSettingsList(); }
-    window.prepareEditJournal = function(id) { const j = journals.find(x => x.id === id); if(!j) return; document.getElementById('journal-form-title').innerText = "Journal Bearbeiten"; document.getElementById('newJName').value = j.name; document.getElementById('newJCap').value = j.startCap || ''; document.getElementById('newJMaxDD').value = j.maxDD || ''; document.getElementById('newJDDType').value = j.ddType || 'eur'; document.getElementById('btn-save-journal').innerText = "Speichern"; document.getElementById('btn-cancel-journal').classList.remove('hidden'); editingJournalId = id; }
-    window.cancelEdit = function() { document.getElementById('journal-form-title').innerText = "Neues Journal"; document.getElementById('newJName').value = ''; document.getElementById('newJCap').value = ''; document.getElementById('newJMaxDD').value = ''; document.getElementById('btn-save-journal').innerText = "Erstellen"; document.getElementById('btn-cancel-journal').classList.add('hidden'); editingJournalId = null; }
-    window.toggleJournalVisibility = async function(id, currentHidden) { await db.collection('journals').doc(id).update({ hidden: !currentHidden }); await loadData(); renderSettingsList(); }
-    window.deleteJournal = async function(id, name) { if(!confirm(`Warnung: Journal '${name}' und ALLE Trades löschen?`)) return; await db.collection('journals').doc(id).delete(); const batch = db.batch(); const tQuery = await db.collection('trades').where('userId', '==', auth.currentUser.uid).where('journal', '==', name).get(); tQuery.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit(); if(activeJournal === name) activeJournal = null; await loadData(); renderSettingsList(); }
-    function renderSettingsList() { document.getElementById('settings-journal-list').innerHTML = journals.map(j => { const isHidden = j.hidden === true; const opacity = isHidden ? '0.5' : '1'; const eye = isHidden ? '🙈' : '👁️'; return `<div class="settings-list-item" style="opacity:${opacity}"><div><strong>${j.name}</strong> <small style="color:var(--text-sub)">${j.startCap ? j.startCap+'€' : ''}</small></div><div><button class="btn-small" onclick="window.toggleJournalVisibility('${j.id}', ${isHidden})">${eye}</button><button class="btn-small" onclick="window.prepareEditJournal('${j.id}')">✎</button><button class="btn-small btn-danger-hover" onclick="window.deleteJournal('${j.id}', '${j.name}')">🗑</button></div></div>`; }).join(''); }
-    
-    async function submitAdminFeedback() {
-        const text = document.getElementById('adm-feedback-text').value;
-        if(currentDetailTradeId && text) {
-            await db.collection('trades').doc(currentDetailTradeId).update({ adminFeedback: text, feedbackRead: false });
-            alert("Feedback gesendet!"); closeTradeDetail();
-        }
-    }
-    
-    // NEW: Share Workflow Step 1
-    window.shareTrade = function(id) {
-        shareTradeId = id; 
-        shareType = null;
-        selectedShareChannel = null;
-        const trade = trades.find(t => t.id === id);
-        if(!trade) return;
-        document.getElementById('popup-overlay').classList.add('open');
-        document.getElementById('share-channel-modal').classList.remove('hidden'); 
-        document.getElementById('share-channel-modal').classList.add('open');
-    }
-    
-    // NEW: Share Workflow Step 2
-    window.selectShareChannelTarget = function(channel) {
-        selectedShareChannel = channel;
-        document.getElementById('share-channel-modal').classList.remove('open');
-        document.getElementById('share-channel-modal').classList.add('hidden');
-        
-        const trade = trades.find(t => t.id === shareTradeId);
-        document.querySelectorAll('.share-opt').forEach(el => el.classList.remove('selected', 'disabled'));
-        if(!trade.imgSetup) document.getElementById('opt-setup').classList.add('disabled');
-        if(!trade.imgResult) document.getElementById('opt-result').classList.add('disabled');
-        const sigDiv = document.getElementById('signal-inputs');
-        if(trade.status === 'Aktiv') {
-            sigDiv.classList.remove('hidden');
-            document.getElementById('sig-entry').value = trade.entry || '';
-            document.getElementById('sig-sl').value = trade.sl || '';
-            document.getElementById('sig-tp1').value = trade.tp1 || '';
-            document.getElementById('sig-tp2').value = trade.tp2 || '';
-            document.getElementById('sig-tp3').value = trade.tp3 || '';
-        } else { sigDiv.classList.add('hidden'); }
-        
-        document.getElementById('share-modal').classList.remove('hidden'); 
-        document.getElementById('share-modal').classList.add('open');
     }
 </script>
 </body>
