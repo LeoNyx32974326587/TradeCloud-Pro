@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro</title>
+    <title>TradeClou4444d Pro</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -430,11 +430,13 @@
 
 <nav class="nav-drawer" id="navDrawer">
     <div style="text-align:right; padding:10px 20px;"><button class="btn-icon" onclick="toggleMenu()" style="border:none;background:none;font-size:1.5rem;color:var(--text-sub);">✕</button></div>
+    
     <button onclick="showView('Übersicht')" id="btn-Übersicht">🏠 Dashboard</button>
     <button onclick="prepareCreateView()" style="color:var(--accent);">➕ Neuer Trade</button>
     <button onclick="showView('Chat')" id="btn-Chat">💬 Chat</button>
     
     <div class="nav-separator"></div>
+    
     <div class="nav-selector-container">
         <label class="nav-selector-label">AKTUELLES JOURNAL ⌄</label>
         <select id="navJournalSelect" onchange="changeActiveJournal(this.value)"></select>
@@ -444,11 +446,13 @@
     <button onclick="showView('Historie')" id="btn-Historie">📜 Journal</button>
     
     <div class="nav-separator"></div>
+    
     <button onclick="showView('TradingView')" id="btn-TradingView">📈 Chart</button>
     <button onclick="showView('Lot Rechner')" id="btn-Lot Rechner">📊 Lot Rechner</button>
     <button onclick="showView('News')" id="btn-News">📰 News</button>
     
     <div class="nav-separator"></div>
+    
     <button onclick="showView('Einstellungen')" id="btn-Einstellungen">⚙️ Einstellungen</button>
     <button onclick="showView('Feedback')" id="btn-Feedback">📣 Feedback</button>
     
@@ -963,7 +967,7 @@
     }
 
     async function searchUsers() {
-        const term = document.getElementById('contact-search-input').value.trim();
+        const term = document.getElementById('contact-search-input').value.trim().toLowerCase();
         const resultsDiv = document.getElementById('contact-search-results');
         
         if(term.length < 3) {
@@ -972,7 +976,8 @@
         }
 
         try {
-            // Using a simple prefix search trick for Firestore - NOW CASE INSENSITIVE (Client Side Filter for reliability)
+            // FIX: Using client-side filtering for case-insensitive search
+            // (Firestore doesn't support native case-insensitive search easily)
             const snap = await db.collection('users').limit(50).get(); 
             
             if(snap.empty) {
@@ -982,7 +987,7 @@
 
             const hits = snap.docs.filter(doc => {
                 const data = doc.data();
-                return data.displayName && data.displayName.toLowerCase().includes(term.toLowerCase()) && data.email !== auth.currentUser.email;
+                return data.displayName && data.displayName.toLowerCase().includes(term) && data.email !== auth.currentUser.email;
             });
 
             if(hits.length === 0) {
@@ -1019,6 +1024,8 @@
 
             if(alreadyExists) return alert("Kontaktanfrage bereits gesendet oder Kontakt vorhanden.");
 
+            // ADMIN LOGIC: If I am admin, auto-accept
+            // NORMAL LOGIC: If I am normal, pending
             let status = 'pending';
             if (isAdmin) status = 'accepted'; 
 
@@ -1160,16 +1167,23 @@
         if(!currentChatChannel) return;
         if(unsubscribeChat) unsubscribeChat(); 
 
-        // IMPORTANT: Fallback if timestamp is null (local pending write)
+        // FIX: Remove orderBy to prevent index error initially
+        // We will sort in Javascript instead
         let query = db.collection('chat')
             .where('channel', '==', currentChatChannel)
-            .orderBy('timestamp', 'desc')
             .limit(50);
         
-        // Try/Catch for Index Errors
         try {
             unsubscribeChat = query.onSnapshot({ includeMetadataChanges: true }, snapshot => {
-                const messages = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()})).reverse();
+                let messages = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                
+                // Sort client side by timestamp
+                messages.sort((a, b) => {
+                    const tA = a.timestamp ? a.timestamp.toMillis() : Date.now();
+                    const tB = b.timestamp ? b.timestamp.toMillis() : Date.now();
+                    return tA - tB;
+                });
+
                 const chatBox = document.getElementById('chat-messages');
                 chatBox.innerHTML = messages.map(msg => renderMessage(msg)).join('');
                 chatBox.scrollTop = chatBox.scrollHeight;
@@ -1181,10 +1195,7 @@
                     }
                 }
             }, error => {
-                console.error("Chat Error (Likely missing index):", error);
-                // Fallback for missing index: Client side sort (less efficient but works for low volume)
-                // If this happens, messages might appear out of order or not filtered perfectly without index
-                alert("Hinweis: Falls Chats nicht laden, bitte Admin kontaktieren (Firestore Index fehlt).");
+                console.error("Chat Error:", error);
             });
         } catch(e) {
             console.error(e);
@@ -1194,7 +1205,7 @@
     function renderMessage(msg) {
         const isMe = msg.senderId === auth.currentUser.uid;
         
-        // Handle pending timestamp
+        // Handle pending timestamp (when just sent, timestamp is null initially)
         let time = "Just now";
         if (msg.timestamp) {
             time = formatChatTime(msg.timestamp);
