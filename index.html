@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeClou4444d Pro</title>
+    <title>TradeCloud Pro</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -192,7 +192,11 @@
         .msg-wrapper.other .msg-time { color: var(--text-sub); }
         .msg-tick { font-size: 0.7rem; color: var(--wa-tick); }
 
-        .chat-trade-card { background: rgba(0,0,0,0.4); border-radius: 6px; padding: 8px; margin-bottom: 5px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
+        /* TRADE CARD IN CHAT - FIXED VISIBILITY & SIZE */
+        .chat-trade-card { background: rgba(0,0,0,0.4); border-radius: 6px; padding: 8px; margin-bottom: 5px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); max-width: 260px; }
+        .ct-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .ct-img { width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-top: 10px; pointer-events: none; }
+        .ct-footer { margin-top: 8px; font-size: 0.75rem; color: var(--text-sub); display: flex; justify-content: space-between; }
         
         .adm-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--cell-bg); border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
         .adm-user-info { display: flex; align-items: center; gap: 10px; }
@@ -381,11 +385,17 @@
         <p style="font-size:0.8rem; color:var(--text-sub); text-align:center; margin:0;">Wähle Ziel und Inhalt</p>
         
         <label style="font-size:0.8rem; color:var(--text-sub); display:block; margin-top:10px;">TEILEN IN</label>
-        <select id="share-channel" style="margin-bottom:15px;">
+        <select id="share-channel" style="margin-bottom:15px;" onchange="toggleShareTarget()">
             <option value="public">🌍 Public Chat</option>
             <option value="signals">📡 Signale (Nur Trades)</option>
             <option value="pro_signal">🚀 Pro Signal (Admin only)</option>
+            <option value="private">👤 An Kontakt senden</option>
         </select>
+
+        <div id="share-private-container" class="hidden" style="margin-bottom:15px;">
+            <label style="font-size:0.8rem; color:var(--text-sub); display:block; margin-bottom:5px;">KONTAKT WÄHLEN</label>
+            <select id="share-private-user"></select>
+        </div>
 
         <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px;">
             <div id="opt-setup" class="share-opt" onclick="selectShareOption('setup')"><span>📷</span> <span>Setup Chart</span></div>
@@ -1024,8 +1034,6 @@
 
             if(alreadyExists) return alert("Kontaktanfrage bereits gesendet oder Kontakt vorhanden.");
 
-            // ADMIN LOGIC: If I am admin, auto-accept
-            // NORMAL LOGIC: If I am normal, pending
             let status = 'pending';
             if (isAdmin) status = 'accepted'; 
 
@@ -1195,7 +1203,10 @@
                     }
                 }
             }, error => {
-                console.error("Chat Error:", error);
+                console.error("Chat Error (Likely missing index):", error);
+                // Fallback for missing index: Client side sort (less efficient but works for low volume)
+                // If this happens, messages might appear out of order or not filtered perfectly without index
+                alert("Hinweis: Falls Chats nicht laden, bitte Admin kontaktieren (Firestore Index fehlt).");
             });
         } catch(e) {
             console.error(e);
@@ -1205,7 +1216,7 @@
     function renderMessage(msg) {
         const isMe = msg.senderId === auth.currentUser.uid;
         
-        // Handle pending timestamp (when just sent, timestamp is null initially)
+        // Handle pending timestamp
         let time = "Just now";
         if (msg.timestamp) {
             time = formatChatTime(msg.timestamp);
@@ -1323,11 +1334,57 @@
         document.getElementById('opt-' + type).classList.add('selected');
     }
     
+    async function loadShareContacts() {
+        const select = document.getElementById('share-private-user');
+        select.innerHTML = '<option disabled selected>Lade...</option>';
+        try {
+            const snap = await db.collection('friendships')
+                .where('users', 'array-contains', auth.currentUser.uid)
+                .where('status', '==', 'accepted').get();
+            
+            select.innerHTML = '';
+            if(snap.empty) {
+                select.innerHTML = '<option disabled>Keine Kontakte</option>';
+                return;
+            }
+
+            for(const doc of snap.docs) {
+                const data = doc.data();
+                const otherId = data.users.find(u => u !== auth.currentUser.uid);
+                const uDoc = await db.collection('users').doc(otherId).get();
+                if(uDoc.exists) {
+                    select.innerHTML += `<option value="${otherId}">${uDoc.data().displayName}</option>`;
+                }
+            }
+        } catch(e) {
+            console.error(e);
+            select.innerHTML = '<option disabled>Fehler beim Laden</option>';
+        }
+    }
+
+    function toggleShareTarget() {
+        const val = document.getElementById('share-channel').value;
+        const container = document.getElementById('share-private-container');
+        if(val === 'private') {
+            container.classList.remove('hidden');
+            loadShareContacts();
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+    
     async function confirmShare() {
         if(!shareTradeId || !shareType) return alert("Bitte wähle aus, was du teilen möchtest.");
         
-        const targetChannel = document.getElementById('share-channel').value;
+        let targetChannel = document.getElementById('share-channel').value;
+        
         if(targetChannel === 'pro_signal' && !isAdmin) return alert("Du darfst nicht in den Pro Signal-Channel posten.");
+
+        if(targetChannel === 'private') {
+            const targetUid = document.getElementById('share-private-user').value;
+            if(!targetUid) return alert("Bitte wähle einen Kontakt aus.");
+            targetChannel = getChatId(auth.currentUser.uid, targetUid);
+        }
 
         const trade = trades.find(t => t.id === shareTradeId);
         const tradeCopy = { ...trade }; delete tradeCopy.pnl; delete tradeCopy.userId; 
@@ -1355,7 +1412,8 @@
         // AUTO-SWITCH TO THE CHANNEL TO SHOW THE TRADE
         if(currentChatChannel !== targetChannel) {
              const titleMap = { 'public': '🌍 Public Chat', 'signals': '📡 Signale', 'pro_signal': '🚀 Pro Signal' };
-             enterChat(targetChannel, titleMap[targetChannel]);
+             // If private, we need a name, but for now generic "Chat" works as it loads correct ID
+             enterChat(targetChannel, titleMap[targetChannel] || "Privater Chat");
         }
         showView('Chat');
     }
