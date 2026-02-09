@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeCloud Pro - WhatsApp Style</title>
+    <title>TradeCloud Pro - WhatsApp Sty22le</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -333,7 +333,7 @@
         <select id="share-channel" style="margin-bottom:15px;">
             <option value="public">🌍 Public Chat</option>
             <option value="signals">📡 Signale (Nur Trades)</option>
-            <option value="admin">🛡️ Admin Chat</option>
+            <option value="pro_signal">🚀 Pro Signal (Admin only)</option>
         </select>
 
         <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px;">
@@ -426,9 +426,9 @@
                         <div class="cl-avatar" style="background:#e9c46a; color:black;">📡</div>
                         <div class="cl-info"><div class="cl-name">Signale</div><div class="cl-last">Nur Trades</div></div>
                     </div>
-                    <div class="cl-item" onclick="enterChat('admin', '🛡️ Admin')">
-                        <div class="cl-avatar" style="background:#e76f51;">🛡️</div>
-                        <div class="cl-info"><div class="cl-name">Admin Channel</div><div class="cl-last">Ankündigungen</div></div>
+                    <div class="cl-item" onclick="enterChat('pro_signal', '🚀 Pro Signal')">
+                        <div class="cl-avatar" style="background:#e76f51;">🚀</div>
+                        <div class="cl-info"><div class="cl-name">Pro Signal</div><div class="cl-last">Trades & Infos vom Coach</div></div>
                     </div>
                     
                     <div style="padding:10px 15px; font-size:0.8rem; color:var(--text-sub); font-weight:bold; margin-top:10px;">MITGLIEDER (Private Nachrichten)</div>
@@ -946,7 +946,7 @@
         if (channel === 'signals') {
             inputArea.classList.add('hidden');
             readOnlyMsg.classList.remove('hidden');
-        } else if (channel === 'admin') {
+        } else if (channel === 'pro_signal') {
             if (!isAdmin) {
                 inputArea.classList.add('hidden');
                 readOnlyMsg.classList.remove('hidden');
@@ -1035,7 +1035,7 @@
         const text = input.value.trim();
         if (!text || !currentChatChannel) return;
         
-        if (currentChatChannel === 'admin' && !isAdmin) return;
+        if (currentChatChannel === 'pro_signal' && !isAdmin) return;
 
         await db.collection('chat').add({ 
             text: text, 
@@ -1108,7 +1108,7 @@
         if(!shareTradeId || !shareType) return alert("Bitte wähle aus, was du teilen möchtest.");
         
         const targetChannel = document.getElementById('share-channel').value;
-        if(targetChannel === 'admin' && !isAdmin) return alert("Du darfst nicht in den Admin-Channel posten.");
+        if(targetChannel === 'pro_signal' && !isAdmin) return alert("Du darfst nicht in den Pro Signal-Channel posten.");
 
         const trade = trades.find(t => t.id === shareTradeId);
         const tradeCopy = { ...trade }; delete tradeCopy.pnl; delete tradeCopy.userId; 
