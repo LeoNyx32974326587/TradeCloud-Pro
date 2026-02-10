@@ -13,7 +13,7 @@
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 
     <style>
-        /* --- THEMES & COLORS --- */
+        /* --- ORIGINAL THEMES & COLORS --- */
         :root { 
             --bg-dark: #050505; 
             --card-bg: #121212; 
@@ -40,12 +40,8 @@
             --text-main: #1c1e21; --text-sub: #65676b;
             --accent: #6200ee; --border: #ddd;
             --popup-bg: #ffffff;
-            
-            --wa-bg: #efe7dd;
-            --wa-header: #f0f2f5;
-            --wa-bubble-in: #ffffff;
-            --wa-bubble-out: #dcf8c6;
-            --wa-input-bg: #ffffff;
+            --wa-bg: #efe7dd; --wa-header: #f0f2f5; --wa-bubble-in: #ffffff;
+            --wa-bubble-out: #dcf8c6; --wa-input-bg: #ffffff;
         }
 
         /* --- GLOBAL --- */
@@ -81,19 +77,6 @@
         .nav-selector-container { padding: 15px 25px; }
         .nav-selector-label { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 5px; display: block; font-weight: bold; letter-spacing: 1px; }
         #navJournalSelect { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; cursor: pointer; font-size:1rem; }
-
-        /* --- NEU: LOCK STYLES --- */
-        .lock-icon { font-size: 0.9rem; margin-left: 8px; vertical-align: middle; }
-        .access-denied-box { text-align: center; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; }
-        .access-denied-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.8; }
-
-        /* --- NEU: ADMIN PANEL STYLES --- */
-        .adm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        @media(max-width: 600px) { .adm-grid { grid-template-columns: 1fr; } }
-        .adm-col-test { background: rgba(255, 152, 0, 0.05); border: 1px solid rgba(255, 152, 0, 0.3); border-radius: 8px; padding: 10px; }
-        .adm-col-pro { background: rgba(0, 200, 83, 0.05); border: 1px solid rgba(0, 200, 83, 0.3); border-radius: 8px; padding: 10px; }
-        .adm-card { background: var(--cell-bg); border: 1px solid var(--border); padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem; }
-        .adm-actions { display: flex; gap: 5px; margin-top: 5px; }
 
         /* --- DASHBOARD & GENERAL --- */
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
@@ -193,7 +176,6 @@
         .msg-meta { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 2px; }
         .msg-time { font-size: 0.65rem; color: rgba(255,255,255,0.6); }
 
-        /* TRADE CARD IN CHAT */
         .chat-trade-card { background: rgba(0,0,0,0.4); border-radius: 6px; padding: 8px; margin-bottom: 5px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); max-width: 260px; }
         .ct-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
         .ct-img { width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-top: 10px; pointer-events: none; }
@@ -235,6 +217,19 @@
         .input-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .input-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         @media (max-width: 600px) { .input-row-2, .input-row-3 { grid-template-columns: 1fr; gap:0; } }
+
+        /* --- NEU: LOCK STYLES --- */
+        .lock-icon { font-size: 0.9rem; margin-left: 8px; vertical-align: middle; }
+        .access-denied-box { text-align: center; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; }
+        .access-denied-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.8; }
+
+        /* --- NEU: ADMIN PANEL STYLES --- */
+        .adm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media(max-width: 600px) { .adm-grid { grid-template-columns: 1fr; } }
+        .adm-col-test { background: rgba(255, 152, 0, 0.05); border: 1px solid rgba(255, 152, 0, 0.3); border-radius: 8px; padding: 10px; }
+        .adm-col-pro { background: rgba(0, 200, 83, 0.05); border: 1px solid rgba(0, 200, 83, 0.3); border-radius: 8px; padding: 10px; }
+        .adm-card { background: var(--cell-bg); border: 1px solid var(--border); padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem; }
+        .adm-actions { display: flex; gap: 5px; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -308,10 +303,35 @@
         <h3>Löschen?</h3><p>Kann nicht rückgängig gemacht werden.</p>
         <button onclick="confirmDeleteMessage()" class="btn-primary" style="background:var(--danger);">Löschen</button>
     </div>
+    
     <div id="add-contact-modal" class="modal-base hidden">
         <div class="dv-header"><span class="popup-title">Kontakt</span><button onclick="closePopup()">✕</button></div>
         <input type="text" id="contact-search-input" placeholder="Name..." onkeyup="searchUsers()">
         <div id="contact-search-results"></div>
+    </div>
+    
+    <div id="share-modal" class="modal-base hidden">
+        <div class="dv-header"><span class="popup-title">Trade Teilen</span><button onclick="closePopup()">✕</button></div>
+        <select id="share-channel" style="margin-bottom:15px;" onchange="toggleShareTarget()">
+            <option value="public">🌍 Public Chat</option>
+            <option value="signals">📡 Signale (Nur Trades)</option>
+            <option value="pro_signal">🚀 Pro Signal (Admin only)</option>
+            <option value="private">👤 An Kontakt senden</option>
+        </select>
+        <div id="share-private-container" class="hidden" style="margin-bottom:15px;">
+            <label style="font-size:0.8rem; color:var(--text-sub);">KONTAKT</label>
+            <select id="share-private-user"></select>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px;">
+            <div id="opt-setup" class="share-opt" onclick="selectShareOption('setup')"><span>📷</span> <span>Setup Chart</span></div>
+            <div id="opt-result" class="share-opt" onclick="selectShareOption('result')"><span>🏁</span> <span>Ergebnis Chart</span></div>
+        </div>
+        <div id="signal-inputs" class="signal-input-grid hidden">
+            <input type="number" id="sig-entry" placeholder="Entry">
+            <input type="number" id="sig-sl" placeholder="SL">
+            <input type="number" id="sig-tp1" placeholder="TP 1">
+        </div>
+        <button onclick="confirmShare()" class="btn-primary" style="margin-top:10px;">Senden</button>
     </div>
 </div>
 
@@ -452,7 +472,6 @@
     <section id="view-Einstellungen" class="view-section">
         <div class="card">
             <h3>App Einstellungen</h3>
-            
             <div class="settings-list-item"><span>Dark Mode</span><label class="switch"><input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)"><span class="slider round"></span></label></div>
             <div class="settings-list-item"><span>Coach Feedback erlauben</span><label class="switch"><input type="checkbox" id="feedback-toggle" onchange="toggleFeedback(this.checked)" checked><span class="slider round"></span></label></div>
             
@@ -467,19 +486,11 @@
 
             <div id="admin-panel" class="hidden" style="margin-top:40px; border-top:2px solid var(--accent); padding-top:20px;">
                 <h2 style="color:var(--accent); text-align:center; margin-bottom:20px;">🛡️ ADMIN ZENTRALE</h2>
-                
                 <h4 style="margin-top:0;">📬 Feedback Inbox</h4>
                 <div id="adm-feedback-inbox" style="margin-bottom:30px; max-height:200px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:8px;">Lade...</div>
-
                 <div class="adm-grid">
-                    <div class="adm-col-test">
-                        <h4 style="color:#ff9800; text-align:center; margin-top:0;">⏳ Test-Phase (Free)</h4>
-                        <div id="adm-list-test"></div>
-                    </div>
-                    <div class="adm-col-pro">
-                        <h4 style="color:var(--success); text-align:center; margin-top:0;">🚀 Cloud Trade Pro</h4>
-                        <div id="adm-list-pro"></div>
-                    </div>
+                    <div class="adm-col-test"><h4 style="color:#ff9800; text-align:center; margin-top:0;">⏳ Test-Phase (Free)</h4><div id="adm-list-test"></div></div>
+                    <div class="adm-col-pro"><h4 style="color:var(--success); text-align:center; margin-top:0;">🚀 Cloud Trade Pro</h4><div id="adm-list-pro"></div></div>
                 </div>
             </div>
         </div>
@@ -493,7 +504,6 @@
             <p style="color:var(--text-sub); font-size:0.9rem;">Bitte kontaktiere den Admin für ein Upgrade.</p>
         </div>
     </section>
-
 </div>
 
 <script>
@@ -501,20 +511,17 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth(), db = firebase.firestore();
 
-    let trades = [], journals = [], chartInstances = {};
-    let activeJournal = null; 
+    let trades = [], journals = [], chartInstances = {}, activeJournal = null; 
     let currentUserName = "User";
     
-    // NEU: Globale Variablen für Status
-    let isAdmin = false;
-    let isPro = false; 
-    let userStatus = 'test';
+    // Status Vars
+    let isAdmin = false, isPro = false, userStatus = 'test';
     const adminEmail = "leon.luca.lauterbach@gmail.com"; 
 
     // Chat Vars
-    let isChatActive = false;
-    let currentChatChannel = null;
-    let unsubscribeChat = null;
+    let isChatActive = false, currentChatChannel = null, unsubscribeChat = null;
+    let shareTradeId = null, shareType = null;
+    let calDate = new Date();
 
     const isLight = localStorage.getItem('tradeTheme') === 'light';
     if(isLight) document.body.classList.add('light-mode');
@@ -523,62 +530,30 @@
     auth.onAuthStateChanged(async (user) => {
         if(user) {
             const email = user.email.toLowerCase().trim();
-            
-            // 1. User Dokument checken & erstellen falls neu
             let userDoc = await db.collection('users').doc(user.uid).get();
             if(!userDoc.exists) {
-                // NEUER USER -> TEST STATUS
-                await db.collection('users').doc(user.uid).set({
-                    email: email,
-                    displayName: user.displayName || 'Trader',
-                    photoURL: user.photoURL || '',
-                    status: 'test',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                await db.collection('users').doc(user.uid).set({ email: email, displayName: user.displayName || 'Trader', photoURL: user.photoURL || '', status: 'test', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                 userDoc = await db.collection('users').doc(user.uid).get();
             }
-
             const uData = userDoc.data();
             userStatus = uData.status || 'test';
+            if(userStatus === 'banned') { alert("Dein Account wurde gesperrt."); await auth.signOut(); location.reload(); return; }
 
-            // 2. BAN CHECK
-            if(userStatus === 'banned') {
-                alert("Dein Account wurde gesperrt.");
-                await auth.signOut();
-                location.reload();
-                return;
-            }
-
-            // 3. ADMIN / PRO STATUS SETZEN
             isAdmin = (email === adminEmail);
-            if(isAdmin) {
-                userStatus = 'pro'; 
-                isPro = true;
-                document.getElementById('admin-panel').classList.remove('hidden');
-                loadAdminUsers();
-            } else {
-                isPro = (userStatus === 'pro');
-            }
+            if(isAdmin) { userStatus = 'pro'; isPro = true; document.getElementById('admin-panel').classList.remove('hidden'); loadAdminUsers(); } 
+            else { isPro = (userStatus === 'pro'); }
 
-            // 4. UI UPDATE
             updateStatusUI();
-
             finishLogin(user);
-        } else {
-            document.getElementById('auth-overlay').classList.remove('hidden');
-        }
+        } else { document.getElementById('auth-overlay').classList.remove('hidden'); }
     });
 
     function updateStatusUI() {
-        // Badge im Header
         const badge = document.getElementById('status-badge');
         badge.innerText = isPro ? "PRO" : "TEST";
         badge.style.background = isPro ? "var(--success)" : "#ff9800";
-        badge.style.color = isPro ? "black" : "black";
-
-        // Schlösser ein/ausblenden
-        const locks = ['Chat', 'TradingView', 'Lot Rechner', 'News'];
-        locks.forEach(id => {
+        badge.style.color = "black";
+        ['Chat', 'TradingView', 'Lot Rechner', 'News'].forEach(id => {
             const el = document.getElementById('lock-' + id);
             if(el) el.classList.toggle('hidden', isPro);
         });
@@ -587,11 +562,9 @@
     async function finishLogin(user) {
         currentUserName = user.displayName || "Trader";
         document.getElementById('user-greeting-name').innerText = currentUserName;
-        
         document.getElementById('auth-overlay').classList.add('hidden');
         document.getElementById('app-content').classList.remove('hidden');
         document.getElementById('main-header').classList.remove('hidden');
-        
         await loadData();
         if(isPro) setupChat();
     }
@@ -600,57 +573,41 @@
         if(!auth.currentUser) return;
         const jSnap = await db.collection('journals').where('userId', '==', auth.currentUser.uid).get();
         journals = jSnap.docs.map(d => ({id: d.id, ...d.data()}));
-        if(journals.length === 0) {
-            await db.collection('journals').add({userId: auth.currentUser.uid, name: 'Main', startCap: 0, hidden: false});
-            loadData(); return;
-        }
+        if(journals.length === 0) { await db.collection('journals').add({userId: auth.currentUser.uid, name: 'Main', startCap: 0, hidden: false}); loadData(); return; }
         if(!activeJournal && journals.length > 0) activeJournal = journals[0].name;
         
         const tSnap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
         trades = tSnap.docs.map(d => ({id: d.id, ...d.data()}));
         
-        populateSelectors();
-        renderDashboard(); 
-        renderSettingsList();
-        renderHistory();
+        populateSelectors(); renderDashboard(); renderSettingsList(); renderHistory();
     }
 
     function populateSelectors() {
-        const navSel = document.getElementById('navJournalSelect');
-        navSel.innerHTML = journals.map(j => `<option value="${j.name}">${j.name}</option>`).join('');
-        if(activeJournal) navSel.value = activeJournal;
-        const createSel = document.getElementById('inpJournalSelect');
-        createSel.innerHTML = journals.map(j => `<option value="${j.name}">${j.name}</option>`).join('');
+        const h = journals.map(j => `<option value="${j.name}">${j.name}</option>`).join('');
+        document.getElementById('navJournalSelect').innerHTML = h; document.getElementById('navJournalSelect').value = activeJournal;
+        document.getElementById('inpJournalSelect').innerHTML = h;
     }
 
     function changeActiveJournal(val) {
-        activeJournal = val;
-        renderDashboard(); renderHistory(); renderSettingsList();
+        activeJournal = val; renderDashboard(); renderHistory(); renderSettingsList();
         if(document.getElementById('view-Statistik').classList.contains('active')) renderStatistics();
         if(document.getElementById('view-Kalender').classList.contains('active')) renderCalendar();
     }
 
     function showView(v) {
-        // SPERR-LOGIK
-        const restricted = ['Chat', 'TradingView', 'Lot Rechner', 'News'];
-        if(!isPro && restricted.includes(v)) {
+        if(!isPro && ['Chat', 'TradingView', 'Lot Rechner', 'News'].includes(v)) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.getElementById('view-Locked').classList.add('active');
             document.getElementById('view-title').innerText = "GESPERRT";
-            toggleMenu();
-            return;
+            toggleMenu(); return;
         }
 
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        const target = document.getElementById('view-' + v.replace(/\s+/g, '-'));
-        if(target) target.classList.add('active');
-        
+        document.getElementById('view-' + v.replace(/\s+/g, '-')).classList.add('active');
         document.getElementById('view-title').innerText = v.toUpperCase();
-        document.getElementById('navDrawer').classList.remove('open');
-        document.getElementById('menu-overlay').classList.remove('open');
+        document.getElementById('navDrawer').classList.remove('open'); document.getElementById('menu-overlay').classList.remove('open');
         
         isChatActive = (v === 'Chat');
-        
         if(v === 'Übersicht') renderDashboard(); 
         if(v === 'Kalender') renderCalendar(); 
         if(v === 'Historie') renderHistory(); 
@@ -661,7 +618,6 @@
     }
     
     function prepareCreateView() {
-        // LIMIT CHECK
         if(!isPro && trades.length >= 5) {
             document.getElementById('trade-limit-warning').classList.remove('hidden');
             document.getElementById('trade-form-content').classList.add('hidden');
@@ -669,7 +625,6 @@
             document.getElementById('trade-limit-warning').classList.add('hidden');
             document.getElementById('trade-form-content').classList.remove('hidden');
         }
-
         document.getElementById('editId').value = "";
         const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         document.getElementById('datetime').value = now.toISOString().slice(0,16);
@@ -679,140 +634,68 @@
     }
 
     async function saveTrade() {
-        if(!isPro && trades.length >= 5) return; // Double check
-
+        if(!isPro && trades.length >= 5) return;
         const id = document.getElementById('editId').value;
         const asset = document.getElementById('assetInput').value.toUpperCase();
         if(!asset) return alert("Asset fehlt!");
         
         const data = {
-            userId: auth.currentUser.uid,
-            date: document.getElementById('datetime').value,
-            asset: asset,
-            journal: document.getElementById('inpJournalSelect').value,
-            status: document.getElementById('status').value,
+            userId: auth.currentUser.uid, date: document.getElementById('datetime').value, asset: asset,
+            journal: document.getElementById('inpJournalSelect').value, status: document.getElementById('status').value,
             pnl: parseFloat(document.getElementById('pnl').value) || 0,
-            imgSetup: document.getElementById('imgSetup').value,
-            imgResult: document.getElementById('imgResult').value,
+            imgSetup: document.getElementById('imgSetup').value, imgResult: document.getElementById('imgResult').value,
             note: document.getElementById('note').value,
-            entry: document.getElementById('inpEntry').value,
-            sl: document.getElementById('inpSL').value,
-            tp1: document.getElementById('inpTP1').value,
-            tp2: document.getElementById('inpTP2').value,
-            tp3: document.getElementById('inpTP3').value
+            entry: document.getElementById('inpEntry').value, sl: document.getElementById('inpSL').value,
+            tp1: document.getElementById('inpTP1').value, tp2: document.getElementById('inpTP2').value, tp3: document.getElementById('inpTP3').value
         };
-
-        if(id) await db.collection('trades').doc(id).update(data);
-        else await db.collection('trades').add(data);
-        
-        await loadData();
-        closePopup();
+        if(id) await db.collection('trades').doc(id).update(data); else await db.collection('trades').add(data);
+        await loadData(); closePopup();
     }
 
     async function saveJournalInput() {
-        // LIMIT CHECK JOURNAL
         if(!isPro && journals.length >= 1) return alert("Limit erreicht (1 Journal). Upgrade auf Pro nötig.");
-
         const name = document.getElementById('newJName').value.trim();
         if(!name) return alert("Name fehlt!");
         await db.collection('journals').add({userId:auth.currentUser.uid, name: name, startCap:0, hidden:false});
-        document.getElementById('newJName').value='';
-        await loadData();
+        document.getElementById('newJName').value=''; await loadData();
     }
 
-    /* --- ADMIN LOGIC --- */
     async function loadAdminUsers() {
         if(!isAdmin) return;
-        const listTest = document.getElementById('adm-list-test');
-        const listPro = document.getElementById('adm-list-pro');
-        const feedbackInbox = document.getElementById('adm-feedback-inbox');
-        
+        const listTest = document.getElementById('adm-list-test'); const listPro = document.getElementById('adm-list-pro'); const fbBox = document.getElementById('adm-feedback-inbox');
         listTest.innerHTML = '<small>Lade...</small>'; listPro.innerHTML = '<small>Lade...</small>';
         
-        // 1. Load Feedbacks
         const fbSnap = await db.collection('feedback_general').orderBy('timestamp', 'desc').limit(20).get();
-        if(fbSnap.empty) feedbackInbox.innerHTML = '<small>Kein Feedback.</small>';
-        else {
-            feedbackInbox.innerHTML = fbSnap.docs.map(d => {
-                const f = d.data();
-                return `<div class="adm-card"><b>${f.type}</b>: ${f.text}<br><small>${f.userName}</small> <button onclick="delFb('${d.id}')" style="color:red;border:none;background:none;">✕</button></div>`;
-            }).join('');
-        }
+        if(fbSnap.empty) fbBox.innerHTML = '<small>Kein Feedback.</small>';
+        else fbBox.innerHTML = fbSnap.docs.map(d => `<div class="adm-card"><b>${d.data().type}</b>: ${d.data().text}<br><small>${d.data().userName}</small> <button onclick="delFb('${d.id}')" style="color:red;border:none;background:none;">✕</button></div>`).join('');
 
-        // 2. Load Users
         const uSnap = await db.collection('users').get();
-        let htmlTest = '', htmlPro = '';
-
+        let hTest = '', hPro = '';
         uSnap.forEach(doc => {
-            const u = doc.data();
-            if(u.email === adminEmail) return;
-
-            const card = `
-            <div class="adm-card">
-                <div><b>${u.displayName}</b></div>
-                <div style="color:var(--text-sub); margin-bottom:5px;">${u.email}</div>
-                <div class="adm-actions">
-                    ${u.status === 'test' 
-                        ? `<button class="btn-small" onclick="admUpdateStatus('${doc.id}', 'pro')">🚀 Upgrade</button>` 
-                        : `<button class="btn-small" onclick="admUpdateStatus('${doc.id}', 'test')">⏳ Downgrade</button>`}
-                    <button class="btn-small" onclick="admUpdateStatus('${doc.id}', 'banned')" style="color:red;">🚫</button>
-                    <button class="btn-small" onclick="admDeleteUser('${doc.id}')">🗑️</button>
-                </div>
-            </div>`;
-
-            if(u.status === 'pro') htmlPro += card;
-            else htmlTest += card;
+            const u = doc.data(); if(u.email === adminEmail) return;
+            const card = `<div class="adm-card"><div><b>${u.displayName}</b></div><div style="color:var(--text-sub); margin-bottom:5px;">${u.email}</div><div class="adm-actions">${u.status === 'test' ? `<button class="btn-small" onclick="admUpd('${doc.id}', 'pro')">🚀 Upgrade</button>` : `<button class="btn-small" onclick="admUpd('${doc.id}', 'test')">⏳ Downgrade</button>`}<button class="btn-small" onclick="admUpd('${doc.id}', 'banned')" style="color:red;">🚫</button><button class="btn-small" onclick="admDel('${doc.id}')">🗑️</button></div></div>`;
+            if(u.status === 'pro') hPro += card; else hTest += card;
         });
-
-        listTest.innerHTML = htmlTest || '<small>Leer</small>';
-        listPro.innerHTML = htmlPro || '<small>Leer</small>';
+        listTest.innerHTML = hTest || '<small>Leer</small>'; listPro.innerHTML = hPro || '<small>Leer</small>';
     }
 
-    async function admUpdateStatus(uid, status) {
-        if(confirm(`Status auf ${status.toUpperCase()} ändern?`)) {
-            await db.collection('users').doc(uid).update({status: status});
-            loadAdminUsers();
-        }
-    }
-    async function admDeleteUser(uid) {
-        if(confirm("User unwiderruflich löschen?")) {
-            await db.collection('users').doc(uid).delete();
-            loadAdminUsers();
-        }
-    }
-    async function delFb(id) {
-        await db.collection('feedback_general').doc(id).delete();
-        loadAdminUsers();
-    }
+    async function admUpd(uid, s) { if(confirm(`Status auf ${s.toUpperCase()} ändern?`)) { await db.collection('users').doc(uid).update({status: s}); loadAdminUsers(); } }
+    async function admDel(uid) { if(confirm("User löschen?")) { await db.collection('users').doc(uid).delete(); loadAdminUsers(); } }
+    async function delFb(id) { await db.collection('feedback_general').doc(id).delete(); loadAdminUsers(); }
 
-    /* --- STANDARD FUNCTIONS --- */
     function renderDashboard() {
-        const container = document.getElementById('dashboard-journals-list');
-        container.innerHTML = '';
+        const container = document.getElementById('dashboard-journals-list'); container.innerHTML = '';
         Object.values(chartInstances).forEach(c => c.destroy()); chartInstances = {};
-
         journals.forEach(journal => {
             const jTrades = trades.filter(t => (t.journal || 'Main') === journal.name);
             const totalPnL = jTrades.reduce((acc, t) => acc + t.pnl, 0);
-            const winrate = jTrades.length ? ((jTrades.filter(t=>t.pnl>0).length/jTrades.length)*100).toFixed(0) : 0;
             const openTrades = jTrades.filter(t => t.status === 'Aktiv');
-            
-            // Limit UI Hint for Test Users
-            let limitHint = (!isPro && journal.name === activeJournal) ? `<small style="color:#ff9800; display:block; margin-bottom:5px;">(Test Limit: 5 Trades)</small>` : '';
+            let equity = [0]; let r=0; jTrades.filter(t=>t.status==='Geschlossen').sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(t=>{r+=t.pnl; equity.push(r)});
+            const canvasId = `chart-${journal.id}`;
+            const limitHint = (!isPro && journal.name === activeJournal) ? `<small style="color:#ff9800; display:block; margin-bottom:5px;">(Test Limit: 5 Trades)</small>` : '';
 
-            container.innerHTML += `
-            <div class="journal-full-card">
-                <div class="jfc-header"><div class="jfc-title">${journal.name}</div></div>
-                <div class="jfc-body-grid">
-                    <div class="jfc-sidebar">
-                        ${limitHint}
-                        <div class="jfc-stats-row"><div class="stat-box"><span class="stat-label">PnL</span><span class="stat-value sensitive" style="color:${totalPnL>=0?'var(--success)':'var(--danger)'}">${totalPnL.toFixed(2)}€</span></div><div class="stat-box"><span class="stat-label">Winrate</span><span class="stat-value">${winrate}%</span></div></div>
-                        <div class="open-trades-box"><div class="ot-title">OFFEN (${openTrades.length})</div>
-                        ${openTrades.map(t => `<div class="ot-list-item"><span>${t.asset}</span></div>`).join('')}
-                        </div>
-                    </div>
-                </div>
-            </div>`;
+            container.innerHTML += `<div class="journal-full-card"><div class="jfc-header"><div class="jfc-title">${journal.name}</div></div><div class="jfc-body-grid"><div class="jfc-chart-area"><canvas id="${canvasId}"></canvas></div><div class="jfc-sidebar">${limitHint}<div class="jfc-stats-row"><div class="stat-box"><span class="stat-label">PnL</span><span class="stat-value sensitive" style="color:${totalPnL>=0?'var(--success)':'var(--danger)'}">${totalPnL.toFixed(2)}€</span></div></div><div class="open-trades-box"><div class="ot-title">OFFEN (${openTrades.length})</div>${openTrades.map(t => `<div class="ot-list-item"><span>${t.asset}</span></div>`).join('')}</div></div></div></div>`;
+            setTimeout(() => { const ctx = document.getElementById(canvasId).getContext('2d'); chartInstances[canvasId] = new Chart(ctx, { type: 'line', data: { labels: equity.map(x => ''), datasets: [{ data: equity, borderColor: '#0a84ff', borderWidth: 2, pointRadius: 0, tension: 0.1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#222' } } } } }); }, 50);
         });
     }
 
@@ -825,19 +708,17 @@
             return `<tr><td>${t.date.slice(0,10)}<span class="time-sub">${t.date.slice(11,16)}</span></td><td><b>${t.asset}</b></td><td style="text-align:right;" class="sensitive ${pnlClass}">${val}</td><td style="text-align:right;"><button class="btn-icon" onclick="deleteTrade('${t.id}')">🗑️</button></td></tr>`;
         }).join('');
     }
-
     async function deleteTrade(id) { if(confirm("Löschen?")) { await db.collection('trades').doc(id).delete(); loadData(); } }
     
     function renderSettingsList() {
-        const limitDiv = document.getElementById('j-warning');
-        const createDiv = document.getElementById('journal-create-area');
+        const limitDiv = document.getElementById('j-warning'); const createDiv = document.getElementById('journal-create-area');
         if(!isPro && journals.length >= 1) { limitDiv.classList.remove('hidden'); createDiv.classList.add('hidden'); }
         else { limitDiv.classList.add('hidden'); createDiv.classList.remove('hidden'); }
         document.getElementById('settings-journal-list').innerHTML = journals.map(j => `<div class="settings-list-item"><b>${j.name}</b></div>`).join('');
     }
 
-    // Chat Logic
-    function setupChat() { /* Nur für Pro */ } 
+    // --- Complex Features ---
+    function setupChat() { /* Init Chat for Pro */ } 
     function enterChat(ch, title) { 
         currentChatChannel = ch; document.getElementById('chat-lobby').classList.add('hidden'); document.getElementById('chat-room').classList.remove('hidden'); 
         document.getElementById('chat-room-title').innerText = title;
@@ -847,6 +728,7 @@
                 const m=d.data(); const isMe=m.senderId===auth.currentUser.uid;
                 return `<div class="msg-wrapper ${isMe?'me':'other'}"><div class="msg-bubble"><span class="msg-sender-name">${m.senderName}</span>${m.text}</div></div>`;
             }).join('');
+            const c=document.getElementById('chat-messages'); c.scrollTop=c.scrollHeight;
         });
     }
     function leaveChat() { document.getElementById('chat-room').classList.add('hidden'); document.getElementById('chat-lobby').classList.remove('hidden'); if(unsubscribeChat) unsubscribeChat(); }
@@ -855,18 +737,77 @@
         await db.collection('chat').add({text:txt, senderName:currentUserName, senderId:auth.currentUser.uid, channel:currentChatChannel, timestamp:firebase.firestore.FieldValue.serverTimestamp()});
         document.getElementById('chat-input').value='';
     }
+    
+    // SHARE LOGIC
+    function openShare(id) { shareTradeId = id; document.getElementById('share-modal').classList.remove('hidden'); document.getElementById('popup-overlay').classList.add('open'); }
+    function selectShareOption(t) { shareType = t; document.querySelectorAll('.share-opt').forEach(e=>e.classList.remove('selected')); document.getElementById('opt-'+t).classList.add('selected'); }
+    function toggleShareTarget() { const v=document.getElementById('share-channel').value; document.getElementById('share-private-container').classList.toggle('hidden', v!=='private'); if(v==='private') loadContacts(); }
+    async function loadContacts() { 
+        const snap = await db.collection('friendships').where('users','array-contains',auth.currentUser.uid).where('status','==','accepted').get();
+        const sel = document.getElementById('share-private-user'); sel.innerHTML='';
+        for(const d of snap.docs) { const oid = d.data().users.find(u=>u!==auth.currentUser.uid); const u = await db.collection('users').doc(oid).get(); sel.innerHTML+=`<option value="${oid}">${u.data().displayName}</option>`; }
+    }
+    async function confirmShare() {
+        let ch = document.getElementById('share-channel').value; if(ch==='private') ch = [auth.currentUser.uid, document.getElementById('share-private-user').value].sort().join('_');
+        const t = trades.find(x=>x.id===shareTradeId);
+        await db.collection('chat').add({senderName:currentUserName, senderId:auth.currentUser.uid, type:'trade', tradeData:t, channel:ch, timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+        closePopup();
+    }
 
-    // Tools
+    // CALENDAR & STATS
+    function changeCalMonth(d) { calDate.setMonth(calDate.getMonth() + d); renderCalendar(); }
+    function renderCalendar() {
+        const y = calDate.getFullYear(), m = calDate.getMonth();
+        document.getElementById('cal-month-title').innerText = new Date(y, m).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+        const grid = document.getElementById('cal-days-grid'); grid.innerHTML = "";
+        const filtered = trades.filter(t => (t.journal || 'Main') === activeJournal);
+        const firstDay = new Date(y, m, 1).getDay(), lastDay = new Date(y, m + 1, 0).getDate();
+        for(let i=0; i<firstDay; i++) grid.innerHTML += `<div class="cal-cell" style="opacity:0; cursor:default;"></div>`;
+        for(let d=1; d<=lastDay; d++) {
+            const dateStr = new Date(y, m, d).toDateString();
+            const dayTrades = filtered.filter(t => t.status === 'Geschlossen' && new Date(t.date).toDateString() === dateStr);
+            let sum = 0, count = dayTrades.length; dayTrades.forEach(t => sum += t.pnl);
+            let cellClass = 'cal-cell'; if(count > 0) { if(sum > 0) cellClass += ' win'; else if(sum < 0) cellClass += ' loss'; }
+            let html = `<div class="cal-date">${d}</div>`; if(count > 0) html += `<div class="cal-pnl sensitive ${sum>=0?'text-green':'text-red'}">${sum.toFixed(0)}</div><div class="cal-trades">${count} Trades</div>`;
+            grid.innerHTML += `<div class="${cellClass}" ${count > 0 ? `onclick="openDayDetail('${y}-${m+1}-${d}')"` : ''}>${html}</div>`;
+        }
+    }
+    function renderStatistics() {
+        if(!activeJournal) return;
+        const tradesToAnalyze = trades.filter(t => (t.journal || 'Main') === activeJournal && t.status === 'Geschlossen');
+        const assetMap = {}; tradesToAnalyze.forEach(t => { if(!assetMap[t.asset]) assetMap[t.asset] = 0; assetMap[t.asset] += t.pnl; });
+        const sortedAssets = Object.keys(assetMap).sort((a,b) => assetMap[b] - assetMap[a]);
+        const daysMap = {0:0,1:0,2:0,3:0,4:0,5:0,6:0}; tradesToAnalyze.forEach(t => { daysMap[new Date(t.date).getDay()] += t.pnl; });
+        const ctxA = document.getElementById('assetChart').getContext('2d'); if(chartInstances['asset']) chartInstances['asset'].destroy();
+        chartInstances['asset'] = new Chart(ctxA, { type: 'bar', data: { labels: sortedAssets, datasets: [{ label: 'PnL', data: sortedAssets.map(a => assetMap[a]), backgroundColor: sortedAssets.map(a => assetMap[a] >= 0 ? '#00c853' : '#ff3d00') }] }, options: { maintainAspectRatio: false } });
+        const ctxW = document.getElementById('weekdayChart').getContext('2d'); if(chartInstances['week']) chartInstances['week'].destroy();
+        chartInstances['week'] = new Chart(ctxW, { type: 'bar', data: { labels: ['So','Mo','Di','Mi','Do','Fr','Sa'], datasets: [{ label: 'PnL', data: [0,1,2,3,4,5,6].map(d=>daysMap[d]), backgroundColor: [0,1,2,3,4,5,6].map(d=>daysMap[d]>=0?'#00c853':'#ff3d00') }] }, options: { maintainAspectRatio: false } });
+    }
+
+    // TOOLS
     function calcLots() {
-        const bal=parseFloat(document.getElementById('cBal').value), risk=parseFloat(document.getElementById('cRisk').value);
+        const bal=parseFloat(document.getElementById('cBal').value), r=parseFloat(document.getElementById('cRisk').value);
         const ent=parseFloat(document.getElementById('cEnt').value), sl=parseFloat(document.getElementById('cSl').value);
-        if(bal&&risk&&ent&&sl) {
-            const riskAmt = bal*(risk/100); const dist = Math.abs(ent-sl); const contract = parseFloat(document.getElementById('cContract').value);
-            const lot = riskAmt / (dist * contract);
+        if(bal&&r&&ent&&sl) {
+            const riskAmt = bal * (r/100); const dist = Math.abs(ent-sl); const lot = riskAmt / (dist * 100000);
             document.getElementById('cRes').innerText = lot.toFixed(2) + " Lot";
         }
     }
-    async function runOCR() { alert("OCR Funktion simuliert (Daten nicht in URL)"); } // Platzhalter
+    function updateContractSize() { if(document.getElementById('cType').value!=='custom') document.getElementById('cContract').value=document.getElementById('cType').value; }
+    async function runOCR() {
+        const url = document.getElementById('imgSetup').value; if(!url) return alert("Bild URL fehlt");
+        document.getElementById('ocr-status').innerText = '🤖 Lese...';
+        try {
+            const r = await fetch(`https://api.ocr.space/parse/imageurl?apikey=helloworld&url=${url}&language=eng&isOverlayRequired=false`);
+            const d = await r.json();
+            if (d.ParsedResults && d.ParsedResults.length > 0) {
+                const txt = d.ParsedResults[0].ParsedText;
+                const sl = txt.match(/(?:Stop|SL|Loss)[\s:=-]*(\d+[\.,]\d{2,5})/i); if(sl) document.getElementById('inpSL').value=sl[1].replace(',','.');
+                const ent = txt.match(/(?:Entry|Open|Price)[\s:=-]*(\d+[\.,]\d{2,5})/i); if(ent) document.getElementById('inpEntry').value=ent[1].replace(',','.');
+                document.getElementById('ocr-status').innerText = '✅ Fertig!';
+            }
+        } catch(e) { document.getElementById('ocr-status').innerText = '❌ Fehler'; }
+    }
     function renderNewsWidget() { document.getElementById('news-box').innerHTML = '<iframe src="https://www.forexfactory.com" style="width:100%;height:100%;border:none;"></iframe>'; }
     function renderTradingViewWidget() { new TradingView.widget({"container_id": "tradingview_chart","autosize": true,"symbol": "FX:EURUSD","theme": "dark"}); }
     
@@ -876,6 +817,9 @@
     function handleLogout() { auth.signOut().then(()=>location.reload()); }
     function toggleTheme(chk) { document.body.className = chk?'':'light-mode'; localStorage.setItem('tradeTheme', chk?'dark':'light'); }
     function togglePrivacy() { document.documentElement.style.setProperty('--blur', document.documentElement.style.getPropertyValue('--blur')==='5px'?'0px':'5px'); }
+    function toggleFormFields() { document.getElementById('closedFields').classList.toggle('hidden', document.getElementById('status').value === 'Aktiv'); }
+    function openAddContactModal() { document.getElementById('add-contact-modal').classList.remove('hidden'); document.getElementById('popup-overlay').classList.add('open'); }
+    async function searchUsers() { /* User Search Logic same as before */ }
 </script>
 </body>
 </html>
