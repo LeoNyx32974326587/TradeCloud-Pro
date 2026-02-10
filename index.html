@@ -8,12 +8,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 
     <style>
-        /* --- DEIN ORIGINAL DESIGN --- */
+        /* --- ORIGINAL STYLES --- */
         :root { 
             --bg-dark: #050505; --card-bg: #121212; --cell-bg: #1e1e1e;
             --text-main: #e0e0e0; --text-sub: #888;
@@ -39,31 +38,34 @@
         header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-dark); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
         .menu-btn { cursor: pointer; font-size: 2rem; color: var(--text-main); background: none; border: none; padding: 0; margin-right: 15px; }
         #view-title { font-weight: 700; font-size: 1.2rem; }
+        .sensitive { filter: blur(var(--blur)); transition: filter 0.3s; }
 
+        .nav-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card-bg); border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 10px; padding-bottom: 50px; box-shadow: 2px 0 10px rgba(0,0,0,0.5); overflow-y: auto; display: flex; flex-direction: column; }
+        .nav-drawer.open { left: 0; }
+        .nav-drawer button { display: block; width: 100%; padding: 15px 25px; text-align: left; background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 1.1rem; transition: 0.2s; border-bottom:1px solid rgba(255,255,255,0.03); }
+        .nav-active { border-left: 4px solid var(--accent); background: rgba(187, 134, 252, 0.1) !important; color:var(--accent) !important; font-weight:bold; }
         #menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; display: none; backdrop-filter: blur(2px); }
         #menu-overlay.open { display: block; }
-        .nav-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card-bg); border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 10px; padding-bottom: 50px; display: flex; flex-direction: column; }
-        .nav-drawer.open { left: 0; }
-        .nav-drawer button { display: block; width: 100%; padding: 15px 25px; text-align: left; background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 1.1rem; border-bottom:1px solid rgba(255,255,255,0.03); }
-        .nav-active { border-left: 4px solid var(--accent); background: rgba(187, 134, 252, 0.1) !important; color:var(--accent) !important; font-weight:bold; }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
         .card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
         .btn-primary { background: var(--accent); color: black; padding: 15px; border: none; font-weight: 800; border-radius: 8px; width: 100%; cursor: pointer; }
-        .btn-small { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; border: 1px solid var(--border); background: var(--cell-bg); color: var(--text-main); cursor: pointer; }
+        .btn-icon, .btn-small { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; border: 1px solid var(--border); background: var(--cell-bg); color: var(--text-main); cursor: pointer; }
         
-        .modal-base { width: 95%; max-width: 500px; background: var(--popup-bg); color: var(--text-main); border-radius: 16px; border: 1px solid var(--border); padding: 20px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; }
-        #popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 999; display: none; justify-content: center; align-items: center; }
-        #popup-overlay.open { display: flex; }
+        /* Drag & Drop Adm Area */
+        .adm-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--cell-bg); border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+        
+        /* Original Table & Chat Styles included here... */
+        .hist-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .hist-table th, .hist-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+        
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 160px); background: var(--wa-bg); border-radius: 12px; overflow: hidden; }
+        .chat-messages { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .msg-bubble { padding: 8px 12px; border-radius: 8px; max-width: 80%; word-wrap: break-word; }
+        .msg-me { align-self: flex-end; background: var(--wa-bubble-out); color: white; }
+        .msg-other { align-self: flex-start; background: var(--wa-bubble-in); color: white; }
 
-        input, select, textarea { background: var(--bg-dark); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; }
-        
-        /* Sperr-UI */
-        .lock-notice { text-align: center; padding: 40px 20px; }
-        .lock-icon { font-size: 3rem; margin-bottom: 10px; display: block; }
-        
-        /* Admin User Cards */
-        .adm-user-card { background: var(--cell-bg); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        input, select, textarea { background: var(--bg-dark); color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -80,7 +82,10 @@
         <button class="menu-btn" onclick="toggleMenu()">&#9776;</button>
         <div id="view-title">DASHBOARD</div>
     </div>
-    <div id="status-badge" style="font-size: 0.7rem; font-weight: bold; background: #333; padding: 4px 8px; border-radius: 4px;"></div>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <span id="status-tag" style="font-size:0.7rem; padding:4px 8px; border-radius:4px; font-weight:bold;"></span>
+        <button class="btn-icon" onclick="togglePrivacy()">👁️</button>
+    </div>
 </header>
 
 <div id="menu-overlay" onclick="toggleMenu()"></div>
@@ -89,16 +94,16 @@
     <div style="text-align:right; padding:10px 20px;"><button onclick="toggleMenu()" style="border:none;background:none;font-size:1.5rem;color:var(--text-sub);">✕</button></div>
     <button onclick="showView('Übersicht')" id="btn-Übersicht">🏠 Dashboard</button>
     <button onclick="prepareCreateView()" style="color:var(--accent);">➕ Neuer Trade</button>
-    <button onclick="showView('Chat')" id="btn-Chat">💬 Chat <span class="lock-tag">🔒</span></button>
-    <div class="nav-separator" style="height:1px; background:rgba(255,255,255,0.1); margin:10px 20px;"></div>
+    <button onclick="showView('Chat')" id="btn-Chat">💬 Chat <span class="lock">🔒</span></button>
+    <div style="height:1px; background:rgba(255,255,255,0.1); margin:10px 20px;"></div>
     <button onclick="showView('Kalender')" id="btn-Kalender">📅 Kalender</button>
     <button onclick="showView('Statistik')" id="btn-Statistik">📈 Statistik</button>
     <button onclick="showView('Historie')" id="btn-Historie">📜 Journal</button>
-    <div class="nav-separator" style="height:1px; background:rgba(255,255,255,0.1); margin:10px 20px;"></div>
-    <button onclick="showView('TradingView')" id="btn-TradingView">📈 Chart <span class="lock-tag">🔒</span></button>
-    <button onclick="showView('Lot Rechner')" id="btn-Lot-Rechner">📊 Lot Rechner <span class="lock-tag">🔒</span></button>
-    <button onclick="showView('News')" id="btn-News">📰 News <span class="lock-tag">🔒</span></button>
-    <div class="nav-separator" style="height:1px; background:rgba(255,255,255,0.1); margin:10px 20px;"></div>
+    <div style="height:1px; background:rgba(255,255,255,0.1); margin:10px 20px;"></div>
+    <button onclick="showView('TradingView')" id="btn-TradingView">📈 Chart <span class="lock">🔒</span></button>
+    <button onclick="showView('Lot Rechner')" id="btn-Lot-Rechner">📊 Lot Rechner <span class="lock">🔒</span></button>
+    <button onclick="showView('News')" id="btn-News">📰 News <span class="lock">🔒</span></button>
+    <div style="height:1px; background:rgba(255,255,255,0.1); margin:10px 20px;"></div>
     <button onclick="showView('Einstellungen')" id="btn-Einstellungen">⚙️ Einstellungen</button>
     <button onclick="handleLogout()" style="color: var(--danger);">🚪 Logout</button>
 </nav>
@@ -106,23 +111,73 @@
 <div id="app-content" class="container hidden">
     
     <section id="view-Übersicht" class="view-section active">
-        <div class="greet-container">
-            <h2>Hallo <span id="user-greeting-name">Trader</span> 👋</h2>
+        <div class="greet-container" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0;">Hallo <span id="user-greeting-name">Trader</span> 👋</h2>
+            <button onclick="prepareCreateView()" class="btn-primary" style="width:auto; padding: 10px 20px;">+ NEUER TRADE</button>
         </div>
         <div id="dashboard-journals-list"></div>
     </section>
 
+    <section id="view-Chat" class="view-section">
+        <div class="chat-container">
+            <div id="chat-messages" class="chat-messages"></div>
+            <div style="display:flex; gap:10px; padding:15px; background:var(--wa-header);">
+                <input type="text" id="chat-input" placeholder="Nachricht..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()" class="btn-primary" style="width:50px;">➤</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="view-TradingView" class="view-section" style="height:70vh;">
+        <div id="tradingview_chart" style="height:100%; width:100%; border-radius:12px; overflow:hidden;"></div>
+    </section>
+
+    <section id="view-Lot-Rechner" class="view-section">
+        <div class="card">
+            <h3>Lot Rechner</h3>
+            <input type="number" id="cBal" placeholder="Konto Balance (€)">
+            <input type="number" id="cRisk" placeholder="Risiko (%)">
+            <input type="number" id="cEnt" placeholder="Entry">
+            <input type="number" id="cSl" placeholder="Stop Loss">
+            <button onclick="calcLots()" class="btn-primary">Berechnen</button>
+            <div id="cRes" style="text-align:center; font-size:1.5rem; margin-top:15px; color:var(--success);">0.00 Lot</div>
+        </div>
+    </section>
+
+    <section id="view-News" class="view-section">
+        <div class="card" style="height:600px; padding:0;"><div id="news-box" style="height:100%;"></div></div>
+    </section>
+
+    <section id="view-Kalender" class="view-section">
+        <div class="card">
+            <div id="cal-days-grid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:5px;"></div>
+        </div>
+    </section>
+
+    <section id="view-Statistik" class="view-section">
+        <div class="card"><canvas id="assetChart" style="max-height:300px;"></canvas></div>
+    </section>
+
+    <section id="view-Historie" class="view-section">
+        <div class="card" style="overflow-x:auto;">
+            <table class="hist-table">
+                <thead><tr><th>Datum</th><th>Asset</th><th>PnL</th><th>Aktion</th></tr></thead>
+                <tbody id="tradeBody"></tbody>
+            </table>
+        </div>
+    </section>
+
     <section id="view-Einstellungen" class="view-section">
         <div class="card">
-            <h3>Einstellungen</h3>
-            <div id="journal-creation-box">
-                <input id="newJName" placeholder="Journal Name">
-                <button onclick="saveJournalInput()" class="btn-primary">Journal erstellen</button>
+            <h3>Journal Verwaltung</h3>
+            <div id="j-create-area">
+                <input id="newJName" placeholder="Name">
+                <button onclick="saveJournalInput()" class="btn-primary">Erstellen</button>
             </div>
             <div id="settings-journal-list" style="margin-top:20px;"></div>
 
             <div id="admin-panel" class="hidden" style="margin-top:40px; border-top:2px solid var(--accent); padding-top:20px;">
-                <h3 style="color:var(--accent);">🛡️ Mitgliederverwaltung</h3>
+                <h3 style="color:var(--accent);">🛡️ Admin - Mitglieder Phasen</h3>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                     <div>
                         <h4 style="color:#ff9800;">⏳ Test-Phase</h4>
@@ -138,27 +193,19 @@
     </section>
 
     <section id="view-Locked" class="view-section">
-        <div class="card lock-notice">
-            <span class="lock-icon">🔒</span>
-            <h2 id="lock-title">Sektion gesperrt</h2>
-            <p id="lock-msg">Diese Funktion ist nur für Cloud Trade Pro Mitglieder verfügbar.</p>
+        <div class="card" style="text-align:center; padding:50px;">
+            <span style="font-size:4rem;">🔒</span>
+            <h2>Sektion gesperrt</h2>
+            <p>Upgrade auf <b>Cloud Trade Pro</b> nötig.</p>
         </div>
     </section>
-
-    <section id="view-Chat" class="view-section"></section>
-    <section id="view-TradingView" class="view-section"></section>
-    <section id="view-Lot-Rechner" class="view-section"></section>
-    <section id="view-News" class="view-section"></section>
-    <section id="view-Kalender" class="view-section"></section>
-    <section id="view-Statistik" class="view-section"></section>
-    <section id="view-Historie" class="view-section"></section>
 </div>
 
 <div id="popup-overlay" onclick="if(event.target === this) closePopup()">
     <div id="trade-form-modal" class="modal-base hidden">
         <h3 id="form-title">Neuer Trade</h3>
-        <div id="trade-limit-msg" class="hidden" style="color:var(--danger); margin-bottom:10px;">⚠️ Limit von 5 Trades erreicht!</div>
-        <div id="form-body">
+        <div id="limit-info" style="color:red; font-size:0.8rem;" class="hidden">Limit erreicht!</div>
+        <div id="form-content">
             <input type="hidden" id="editId">
             <label>Journal</label><select id="inpJournalSelect"></select>
             <label>Asset</label><input type="text" id="assetInput" placeholder="EURUSD">
@@ -173,47 +220,35 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth(), db = firebase.firestore();
 
-    let trades = [], journals = [], isPro = false, isAdmin = false;
+    let trades = [], journals = [], isPro = false, isAdmin = false, currentUserName = "Trader";
     const adminEmail = "leon.luca.lauterbach@gmail.com";
 
     auth.onAuthStateChanged(async (user) => {
         if(user) {
-            const email = user.email.toLowerCase();
             let userDoc = await db.collection('users').doc(user.uid).get();
-            
             if(!userDoc.exists) {
-                // Alle neuen (und bisher unbekannten) User starten in Test-Phase
-                await db.collection('users').doc(user.uid).set({
-                    email: email,
-                    displayName: user.displayName || 'Trader',
-                    status: 'test'
-                });
+                await db.collection('users').doc(user.uid).set({ email: user.email.toLowerCase(), displayName: user.displayName || 'Trader', status: 'test' });
                 userDoc = await db.collection('users').doc(user.uid).get();
             }
-
             const data = userDoc.data();
-            if(data.status === 'banned') {
-                alert("Account gesperrt.");
-                auth.signOut();
-                return;
-            }
+            if(data.status === 'banned') { auth.signOut(); return; }
 
-            isPro = (data.status === 'pro' || email === adminEmail);
-            isAdmin = (email === adminEmail);
+            isPro = (data.status === 'pro' || user.email === adminEmail);
+            isAdmin = (user.email === adminEmail);
+            currentUserName = data.displayName;
 
-            // UI Schlösser
-            document.querySelectorAll('.lock-tag').forEach(el => el.style.display = isPro ? 'none' : 'inline');
-            document.getElementById('status-badge').innerText = isPro ? "PRO" : "TEST";
-            document.getElementById('status-badge').style.color = isPro ? "#00c853" : "#ff9800";
-            
+            document.getElementById('status-tag').innerText = isPro ? "PRO" : "TEST";
+            document.getElementById('status-tag').style.background = isPro ? "var(--success)" : "#ff9800";
+            document.querySelectorAll('.lock').forEach(el => el.style.display = isPro ? 'none' : 'inline');
             if(isAdmin) document.getElementById('admin-panel').classList.remove('hidden');
 
-            document.getElementById('user-greeting-name').innerText = user.displayName || 'Trader';
             document.getElementById('auth-overlay').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
             document.getElementById('main-header').classList.remove('hidden');
-            
+            document.getElementById('user-greeting-name').innerText = currentUserName;
+
             loadData();
+            if(isPro) subscribeChat();
         }
     });
 
@@ -222,107 +257,118 @@
         journals = jSnap.docs.map(d => ({id: d.id, ...d.data()}));
         const tSnap = await db.collection('trades').where('userId', '==', auth.currentUser.uid).get();
         trades = tSnap.docs.map(d => ({id: d.id, ...d.data()}));
-        
+
         renderDashboard();
         renderSettingsList();
+        renderHistory();
         if(isAdmin) loadAdminList();
     }
 
+    function renderDashboard() {
+        document.getElementById('dashboard-journals-list').innerHTML = journals.map(j => `
+            <div class="card">
+                <h3>${j.name}</h3>
+                <p>${trades.filter(t => t.journal === j.name).length} Trades</p>
+            </div>`).join('');
+    }
+
     function showView(v) {
-        const restricted = ['Chat', 'TradingView', 'Lot Rechner', 'News'];
-        
+        const restricted = ['Chat', 'TradingView', 'Lot-Rechner', 'News'];
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         
         if(!isPro && restricted.includes(v)) {
             document.getElementById('view-Locked').classList.add('active');
-            document.getElementById('view-title').innerText = "GESPERRT";
         } else {
-            const target = document.getElementById('view-' + v.replace(/\s+/g, '-'));
+            const targetId = 'view-' + v.replace(/\s+/g, '-');
+            const target = document.getElementById(targetId);
             if(target) target.classList.add('active');
-            document.getElementById('view-title').innerText = v.toUpperCase();
+            if(v === 'TradingView') renderTradingView();
+            if(v === 'News') renderNews();
         }
+        document.getElementById('view-title').innerText = v.toUpperCase();
         toggleMenu();
     }
 
-    function prepareCreateView() {
-        if(!isPro && trades.length >= 5) {
-            document.getElementById('trade-limit-msg').classList.remove('hidden');
-            document.getElementById('form-body').classList.add('hidden');
-        } else {
-            document.getElementById('trade-limit-msg').classList.add('hidden');
-            document.getElementById('form-body').classList.remove('hidden');
+    /* --- ORIGINAL FUNCTIONS --- */
+    function renderTradingView() {
+        new TradingView.widget({ "container_id": "tradingview_chart", "autosize": true, "symbol": "FX:EURUSD", "theme": "dark", "style": "1", "locale": "de" });
+    }
+
+    function renderNews() {
+        const b = document.getElementById('news-box'); b.innerHTML = '';
+        const s = document.createElement('script'); s.src = "https://s3.tradingview.com/external-embedding/embed-widget-events.js";
+        s.async = true; s.innerHTML = JSON.stringify({"colorTheme":"dark","width":"100%","height":"100%","locale":"de"});
+        b.appendChild(s);
+    }
+
+    function calcLots() {
+        const bal = parseFloat(document.getElementById('cBal').value), r = parseFloat(document.getElementById('cRisk').value);
+        const ent = parseFloat(document.getElementById('cEnt').value), sl = parseFloat(document.getElementById('cSl').value);
+        if(bal && r && ent && sl) {
+            const lot = (bal * (r/100)) / (Math.abs(ent-sl) * 100000);
+            document.getElementById('cRes').innerText = lot.toFixed(2) + " Lot";
         }
-        const sel = document.getElementById('inpJournalSelect');
-        sel.innerHTML = journals.map(j => `<option value="${j.name}">${j.name}</option>`).join('');
-        document.getElementById('popup-overlay').classList.add('open');
-        document.getElementById('trade-form-modal').classList.remove('hidden');
     }
 
-    async function saveTrade() {
-        const asset = document.getElementById('assetInput').value;
-        if(!asset) return;
-        await db.collection('trades').add({
-            userId: auth.currentUser.uid,
-            asset: asset.toUpperCase(),
-            journal: document.getElementById('inpJournalSelect').value,
-            date: document.getElementById('datetime').value,
-            pnl: 0,
-            status: 'Aktiv'
+    function subscribeChat() {
+        db.collection('chat').orderBy('timestamp', 'desc').limit(50).onSnapshot(snap => {
+            const msgs = snap.docs.map(d => d.data()).reverse();
+            document.getElementById('chat-messages').innerHTML = msgs.map(m => `
+                <div class="msg-bubble ${m.senderId === auth.currentUser.uid ? 'msg-me' : 'msg-other'}">
+                    <small style="color:var(--accent)">${m.senderName}</small><br>${m.text}
+                </div>`).join('');
+            const c = document.getElementById('chat-messages'); c.scrollTop = c.scrollHeight;
         });
-        closePopup();
-        loadData();
     }
 
-    async function saveJournalInput() {
-        if(!isPro && journals.length >= 1) return alert("Limit erreicht!");
-        const name = document.getElementById('newJName').value;
-        if(!name) return;
-        await db.collection('journals').add({ userId: auth.currentUser.uid, name: name });
-        loadData();
+    async function sendChatMessage() {
+        const txt = document.getElementById('chat-input').value;
+        if(!txt) return;
+        await db.collection('chat').add({ text: txt, senderName: currentUserName, senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        document.getElementById('chat-input').value = '';
     }
 
     async function loadAdminList() {
         const snap = await db.collection('users').get();
-        const testList = document.getElementById('adm-test-list');
-        const proList = document.getElementById('adm-pro-list');
+        const testList = document.getElementById('adm-test-list'), proList = document.getElementById('adm-pro-list');
         testList.innerHTML = ''; proList.innerHTML = '';
-
         snap.forEach(doc => {
-            const u = doc.data();
-            if(u.email === adminEmail) return;
-            const html = `
-                <div class="adm-user-card">
-                    <div style="font-size:0.8rem;"><b>${u.displayName}</b><br>${u.email}</div>
-                    <div style="display:flex; gap:5px;">
-                        ${u.status === 'test' ? `<button onclick="setUserStatus('${doc.id}', 'pro')">🚀</button>` : `<button onclick="setUserStatus('${doc.id}', 'test')">⏳</button>`}
-                        <button onclick="setUserStatus('${doc.id}', 'banned')" style="color:red;">🚫</button>
-                        <button onclick="deleteUser('${doc.id}')">🗑️</button>
-                    </div>
-                </div>`;
-            if(u.status === 'pro') proList.innerHTML += html;
-            else testList.innerHTML += html;
+            const u = doc.data(); if(u.email === adminEmail) return;
+            const html = `<div class="adm-row"><span>${u.displayName}</span><div>
+                <button onclick="setStatus('${doc.id}', '${u.status === 'test' ? 'pro' : 'test'}')">${u.status === 'test' ? '🚀' : '⏳'}</button>
+                <button onclick="setStatus('${doc.id}', 'banned')">🚫</button>
+            </div></div>`;
+            if(u.status === 'pro') proList.innerHTML += html; else testList.innerHTML += html;
         });
     }
 
-    async function setUserStatus(uid, status) {
-        await db.collection('users').doc(uid).update({status: status});
-        loadAdminList();
+    async function setStatus(id, s) { await db.collection('users').doc(id).update({status: s}); loadAdminList(); }
+    function prepareCreateView() {
+        if(!isPro && trades.length >= 5) { document.getElementById('limit-info').classList.remove('hidden'); document.getElementById('form-content').classList.add('hidden'); }
+        else { document.getElementById('limit-info').classList.add('hidden'); document.getElementById('form-content').classList.remove('hidden'); }
+        document.getElementById('inpJournalSelect').innerHTML = journals.map(j => `<option value="${j.name}">${j.name}</option>`).join('');
+        document.getElementById('popup-overlay').classList.add('open');
+        document.getElementById('trade-form-modal').classList.remove('hidden');
     }
-
-    async function deleteUser(uid) {
-        if(confirm("Löschen?")) { await db.collection('users').doc(uid).delete(); loadAdminList(); }
+    async function saveTrade() {
+        await db.collection('trades').add({ userId: auth.currentUser.uid, asset: document.getElementById('assetInput').value.toUpperCase(), journal: document.getElementById('inpJournalSelect').value, date: document.getElementById('datetime').value, pnl: 0 });
+        closePopup(); loadData();
     }
-
-    function renderDashboard() {
-        document.getElementById('dashboard-journals-list').innerHTML = journals.map(j => `<div class="card"><h3>${j.name}</h3></div>`).join('');
+    async function saveJournalInput() {
+        if(!isPro && journals.length >= 1) return alert("Limit erreicht!");
+        await db.collection('journals').add({ userId: auth.currentUser.uid, name: document.getElementById('newJName').value });
+        loadData();
     }
-    function renderSettingsList() {
-        document.getElementById('settings-journal-list').innerHTML = journals.map(j => `<div class="card">${j.name}</div>`).join('');
+    function renderHistory() {
+        document.getElementById('tradeBody').innerHTML = trades.map(t => `<tr><td>${t.date}</td><td>${t.asset}</td><td>${t.pnl}</td><td><button onclick="deleteTrade('${t.id}')">🗑️</button></td></tr>`).join('');
     }
+    async function deleteTrade(id) { if(confirm("Löschen?")) { await db.collection('trades').doc(id).delete(); loadData(); } }
+    function renderSettingsList() { document.getElementById('settings-journal-list').innerHTML = journals.map(j => `<div class="card">${j.name}</div>`).join(''); }
     function toggleMenu() { document.getElementById('navDrawer').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('open'); }
     function closePopup() { document.getElementById('popup-overlay').classList.remove('open'); }
-    function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function handleLogout() { auth.signOut().then(() => location.reload()); }
+    function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    function togglePrivacy() { var b = document.documentElement.style.getPropertyValue('--blur'); document.documentElement.style.setProperty('--blur', b === '5px' ? '0px' : '5px'); }
 </script>
 </body>
 </html>
