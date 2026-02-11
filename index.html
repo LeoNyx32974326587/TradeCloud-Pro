@@ -662,7 +662,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   <div style="text-align:right;padding:10px 20px"><button onclick="toggleMenu()" style="border:none;background:none;font-size:1.5rem;color:var(--text-sub)">&#x2715;</button></div>
   <button onclick="showView('Uebersicht')" id="btn-Uebersicht">&#x1F3E0; Dashboard</button>
   <button onclick="prepareCreateView()" style="color:var(--accent)">&#x2795; Neuer Trade</button>
-  <button onclick="navGuard('Chat')" id="btn-Chat">&#x1F4AC; Chat <span id="lock-Chat" class="nav-lock hidden">&#x1F512;</span></button>
+  <button onclick="navGuard('Chat')" id="btn-Chat">&#x1F4AC; Chat <span id="chat-unread-badge" style="display:none;background:var(--danger);color:#fff;font-size:.7rem;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:6px;min-width:18px;text-align:center"></span><span id="lock-Chat" class="nav-lock hidden">&#x1F512;</span></button>
   <div class="nav-separator"></div>
   <div class="nav-selector-container">
     <label class="nav-selector-label">AKTUELLES JOURNAL</label>
@@ -960,9 +960,16 @@ function renderDashboard(){
 async function renderNotificationsArea(){
   const area=document.getElementById("dashboard-notification-area");area.innerHTML="";updateNotifDot();
 }
+function updateChatBadge(){
+  const badge=document.getElementById("chat-unread-badge");if(!badge)return;
+  const sc=parseInt(localStorage.getItem("chatCount")||"0");
+  const unread=lastMsgCount-sc;
+  if(unread>0&&!isChatActive){badge.style.display="inline-block";badge.innerText=unread>99?"99+":unread;}
+  else{badge.style.display="none";}
+}
 function setupGlobalNotifications(){
   db.collection("chat").orderBy("timestamp","desc").limit(1).onSnapshot(snap=>{
-    if(!snap.empty){const lid=snap.docs[0].id;const lk=localStorage.getItem("lastMsgId");if(lid!==lk&&!isChatActive){lastMsgCount++;if(document.getElementById("view-Uebersicht").classList.contains("active"))renderNotificationsArea();}localStorage.setItem("lastMsgId",lid);}
+    if(!snap.empty){const lid=snap.docs[0].id;const lk=localStorage.getItem("lastMsgId");if(lid!==lk&&!isChatActive){lastMsgCount++;if(document.getElementById("view-Uebersicht").classList.contains("active"))renderNotificationsArea();}localStorage.setItem("lastMsgId",lid);updateChatBadge();}
   });
 }
 function setJournalFilter(jid,tf){if(tf==="ZEITRAUM"){configJId=jid;document.getElementById("popup-overlay").classList.add("open");document.getElementById("date-range-modal").classList.remove("hidden");}else{jFilters[jid]=tf;renderDashboard();}}
@@ -1375,7 +1382,7 @@ function showView(v){
   document.querySelectorAll(".view-section").forEach(s=>s.classList.remove("active"));const el=document.getElementById("view-"+v.replace(/\s+/g,"-"));if(!el)return;el.classList.add("active");const titleMap={"Uebersicht":"DASHBOARD","Kalender":"KALENDER","Statistik":"STATISTIK","Historie":"JOURNAL","Chat":"CHAT","Einstellungen":"EINSTELLUNGEN","Feedback":"FEEDBACK","TradingView":"CHART","Lot-Rechner":"LOT RECHNER","News":"NEWS","Kurse":"KURS"};document.getElementById("view-title").innerText=titleMap[v]||v.toUpperCase();
   document.getElementById("navDrawer").classList.remove("open");document.getElementById("menu-overlay").classList.remove("open");
   document.querySelectorAll(".nav-drawer button").forEach(b=>b.classList.remove("nav-active"));const btn=document.getElementById("btn-"+v.replace(/\s+/g,"-"));if(btn)btn.classList.add("nav-active");
-  isChatActive=(v==="Chat");if(isChatActive){if(lastMsgCount>0)localStorage.setItem("chatCount",lastMsgCount);if(!curChatChannel){document.getElementById("chat-lobby").classList.remove("hidden");document.getElementById("chat-room").classList.add("hidden");}renderChatLobby();}
+  isChatActive=(v==="Chat");if(isChatActive){if(lastMsgCount>0)localStorage.setItem("chatCount",lastMsgCount);updateChatBadge();if(!curChatChannel){document.getElementById("chat-lobby").classList.remove("hidden");document.getElementById("chat-room").classList.add("hidden");}renderChatLobby();}
   if(v==="Einstellungen"&&isAdmin&&!isCoach){loadAdminFeedback();loadAdminZentrale();loadUpgradeRequests();}
   if(v==="Einstellungen"&&isAdmin&&isCoach){loadAdminFeedback();}
   if(v==="Uebersicht")renderDashboard();if(v==="Kalender")renderCalendar();if(v==="Historie")renderHistory();if(v==="Statistik")renderStatistics();if(v==="Einstellungen")renderSettingsList();if(v==="Kurse")loadCourses();
