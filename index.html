@@ -1925,23 +1925,32 @@ function quizNext(){
   document.getElementById("qp-result-text").innerText=qs.correct+"/"+qs.questions.length+" richtig ("+pct+"%)."+(passed?"":" Mindestens 80% noetig.");
   const resultBtn=document.getElementById("qp-result-btn");
   resultBtn.removeAttribute("onclick");
+  const savedCourseId=qs.courseId;const savedModId=qs.modId;
   if(passed){
     resultBtn.innerText="Weiter >";
     resultBtn.onclick=async function(){
-      resultBtn.disabled=true;resultBtn.innerText="Lade...";
-      await completeModule(qs.courseId,qs.modId);
-      const mods=await db.collection("courses").doc(qs.courseId).collection("modules").orderBy("order","asc").get();
-      const prog=await getUserCourseProgress(qs.courseId);
-      let nextModId=null;
-      for(const d of mods.docs){if(!prog.completedModules.includes(d.id)){nextModId=d.id;break;}}
-      closeQuizPopup();closeModuleDetail();
-      await loadModules(qs.courseId);
-      if(nextModId){setTimeout(()=>openModuleDetail(qs.courseId,nextModId),200);}
-      resultBtn.disabled=false;
+      try{
+        resultBtn.disabled=true;resultBtn.innerText="Lade...";
+        await completeModule(savedCourseId,savedModId);
+        const mods=await db.collection("courses").doc(savedCourseId).collection("modules").orderBy("order","asc").get();
+        const prog=await getUserCourseProgress(savedCourseId);
+        let nextModId=null;
+        for(const d of mods.docs){if(!prog.completedModules.includes(d.id)){nextModId=d.id;break;}}
+        /* close all popups cleanly */
+        document.getElementById("quiz-play-modal").classList.add("hidden");
+        document.getElementById("quiz-play-modal").classList.remove("modal-layer2");
+        document.getElementById("popup-overlay-2").classList.remove("open");
+        quizOnLayer2=false;
+        const mdPlayer=document.getElementById("md-player");if(mdPlayer){mdPlayer.pause();mdPlayer.src="";}
+        document.getElementById("module-detail-modal").classList.add("hidden");
+        document.getElementById("popup-overlay").classList.remove("open");
+        await loadModules(savedCourseId);
+        if(nextModId){setTimeout(()=>openModuleDetail(savedCourseId,nextModId),250);}
+      }catch(e){console.error("Weiter-Button Fehler:",e);resultBtn.innerText="Weiter >";resultBtn.disabled=false;}
     };
   }else{
     resultBtn.innerText="Erneut versuchen";
-    resultBtn.onclick=function(){closeQuizPopup();startQuiz(qs.courseId,qs.modId);};
+    resultBtn.onclick=function(){closeQuizPopup();startQuiz(savedCourseId,savedModId);};
   }
 }
 const ASSET_LIST=[
