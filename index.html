@@ -65,7 +65,7 @@ input:checked+.slider:before{transform:translateX(26px)}
 #popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);z-index:999;display:none;justify-content:center;align-items:center;opacity:0;transition:opacity .3s}
 #popup-overlay.open{display:flex;opacity:1}
 .modal-base{width:95%;max-width:500px;background:var(--popup-bg);color:var(--text-main);border-radius:16px;border:1px solid var(--border);box-shadow:0 10px 40px rgba(0,0,0,.8);padding:20px;box-sizing:border-box;max-height:90vh;overflow-y:auto;position:relative}
-#day-detail-view,#trade-detail-view,#trade-form-modal,#add-contact-modal,#admin-member-modal,#journal-form-modal,#navguard-modal,#notif-modal,#profile-modal,#upgrade-req-modal,#course-modal,#module-modal,#quiz-edit-modal{background:#000!important;color:#fff!important;border:1px solid #333;z-index:1000}
+#day-detail-view,#trade-detail-view,#trade-form-modal,#add-contact-modal,#admin-member-modal,#journal-form-modal,#navguard-modal,#notif-modal,#profile-modal,#upgrade-req-modal,#course-modal,#module-modal,#quiz-edit-modal,#quiz-play-modal{background:#000!important;color:#fff!important;border:1px solid #333;z-index:1000}
 .upload-area{border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:12px}
 .upload-area:hover{border-color:var(--accent);background:rgba(187,134,252,.05)}
 .upload-area.uploading{opacity:.6;pointer-events:none}
@@ -236,6 +236,11 @@ input,select,textarea{background:var(--bg-dark);color:var(--text-main);border:1p
 .profile-section{margin-top:20px;border-top:1px solid var(--border);padding-top:20px}
 .profile-field{margin-bottom:15px}
 .profile-field label{display:block;color:var(--text-sub);font-size:.8rem;font-weight:700;margin-bottom:5px}
+.qp-answer-btn{display:block;width:100%;text-align:left;padding:14px 16px;background:#151517;border:2px solid #333;border-radius:10px;color:var(--text-main);font-size:.95rem;cursor:pointer;transition:.2s}
+.qp-answer-btn:hover{border-color:var(--accent);background:rgba(187,134,252,.08)}
+.qp-answer-btn.selected{border-color:var(--accent);background:rgba(187,134,252,.15)}
+.qp-answer-btn.correct{border-color:var(--success);background:rgba(0,200,83,.15);color:var(--success)}
+.qp-answer-btn.wrong{border-color:var(--danger);background:rgba(255,61,0,.15);color:var(--danger)}
 @media(max-width:768px){
   body{padding-bottom:20px}
   .container{padding:10px}
@@ -438,15 +443,16 @@ input,select,textarea{background:var(--bg-dark);color:var(--text-main);border:1p
     <button id="btn-cm-save" onclick="saveCourseModal()" class="btn-primary" style="margin-top:15px">Erstellen</button>
   </div>
 </div>
-<div id="module-modal" class="modal-base hidden">
+<div id="module-modal" class="modal-base hidden" style="max-height:90vh;overflow-y:auto">
   <div class="dv-header"><span id="module-modal-title" style="font-weight:700;font-size:1.1rem">Neues Modul</span><button onclick="closePopup()" style="background:none;border:none;color:#8e8e93;cursor:pointer;font-size:1.2rem">&#x2715;</button></div>
   <div style="padding:15px">
     <label>Titel</label><input id="mm-title" placeholder="Modul Titel">
     <label>Beschreibung</label><textarea id="mm-desc" rows="2" placeholder="Beschreibung (optional)"></textarea>
-    <label>Video (MP4)</label>
-    <div id="mm-upload-area" class="upload-area" onclick="document.getElementById('mm-video-file').click()">
-      <div style="font-size:2rem;margin-bottom:8px">&#x1F4F9;</div>
-      <div style="color:var(--text-sub);font-size:.85rem">MP4-Datei klicken zum Hochladen</div>
+    <label>Video</label>
+    <input type="url" id="mm-video-url-input" placeholder="Video-URL (YouTube, Google Drive, MP4-Link...)" style="margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span style="color:var(--text-sub);font-size:.8rem">oder</span>
+      <label for="mm-video-file" style="cursor:pointer;color:var(--accent);font-size:.85rem;font-weight:700;margin:0">MP4-Datei hochladen</label>
       <input type="file" id="mm-video-file" accept="video/mp4,.mp4" style="display:none" onchange="handleVideoSelect(this)">
     </div>
     <div id="mm-upload-progress" class="hidden" style="margin-bottom:12px">
@@ -454,32 +460,31 @@ input,select,textarea{background:var(--bg-dark);color:var(--text-main);border:1p
       <small id="mm-upload-status" style="color:var(--text-sub);display:block;margin-top:4px">Hochladen...</small>
     </div>
     <div id="mm-upload-error" class="hidden" style="margin-bottom:12px;background:rgba(255,61,0,.15);border:1px solid var(--danger);border-radius:8px;padding:10px;font-size:.8rem;color:var(--danger)"></div>
-    <div style="margin-bottom:12px"><small style="color:var(--text-sub)">Oder Video-URL einfuegen:</small><input type="url" id="mm-video-url-input" placeholder="https://..." onchange="if(this.value){document.getElementById('mm-video-url').value=this.value;document.getElementById('mm-video-preview').classList.remove('hidden');document.getElementById('mm-video-player').src=this.value;document.getElementById('mm-upload-area').classList.add('hidden');}"></div>
     <div id="mm-video-preview" class="hidden" style="margin-bottom:12px;background:#151517;padding:10px;border-radius:8px;border:1px solid #333">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="color:var(--success);font-size:.85rem;font-weight:700">&#x2705; Video vorhanden</span>
+        <span style="color:var(--success);font-size:.85rem;font-weight:700">&#x2705; Video</span>
         <button class="btn-small" onclick="removeModuleVideo()" style="font-size:.75rem">Entfernen</button>
       </div>
-      <video id="mm-video-player" controls style="width:100%;max-height:200px;margin-top:8px;border-radius:6px"></video>
+      <video id="mm-video-player" controls style="width:100%;max-height:180px;margin-top:8px;border-radius:6px"></video>
     </div>
-    <input type="hidden" id="mm-video-url">
-    <label>Dokument (PDF, optional)</label>
-    <div id="mm-doc-upload-area" class="upload-area" onclick="document.getElementById('mm-doc-file').click()" style="padding:12px">
-      <div style="font-size:1.5rem;margin-bottom:4px">&#x1F4C4;</div>
-      <div style="color:var(--text-sub);font-size:.8rem">PDF klicken zum Hochladen</div>
+    <label>Dokument (optional)</label>
+    <input type="url" id="mm-doc-url-input" placeholder="Dokument-URL (PDF-Link, Google Drive...)" style="margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span style="color:var(--text-sub);font-size:.8rem">oder</span>
+      <label for="mm-doc-file" style="cursor:pointer;color:var(--accent);font-size:.85rem;font-weight:700;margin:0">PDF hochladen</label>
       <input type="file" id="mm-doc-file" accept=".pdf,application/pdf" style="display:none" onchange="handleDocSelect(this)">
     </div>
     <div id="mm-doc-progress" class="hidden" style="margin-bottom:12px">
       <div class="upload-progress"><div id="mm-doc-bar" class="upload-progress-bar"></div></div>
       <small id="mm-doc-status" style="color:var(--text-sub);display:block;margin-top:4px">Hochladen...</small>
     </div>
-    <div style="margin-bottom:12px"><small style="color:var(--text-sub)">Oder Dokument-URL:</small><input type="url" id="mm-doc-url-input" placeholder="https://..." onchange="if(this.value){document.getElementById('mm-doc-url').value=this.value;document.getElementById('mm-doc-preview').classList.remove('hidden');document.getElementById('mm-doc-upload-area').classList.add('hidden');}"></div>
     <div id="mm-doc-preview" class="hidden" style="margin-bottom:12px;background:#151517;padding:10px;border-radius:8px;border:1px solid #333">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="color:var(--success);font-size:.85rem;font-weight:700">&#x2705; Dokument vorhanden</span>
+        <span style="color:var(--success);font-size:.85rem;font-weight:700">&#x2705; Dokument</span>
         <button class="btn-small" onclick="removeModuleDoc()" style="font-size:.75rem">Entfernen</button>
       </div>
     </div>
+    <input type="hidden" id="mm-video-url">
     <input type="hidden" id="mm-doc-url">
     <div style="display:flex;gap:10px;margin-top:15px">
       <button id="btn-mm-save" onclick="saveModuleModal()" class="btn-primary" style="flex:1">Erstellen</button>
@@ -494,6 +499,26 @@ input,select,textarea{background:var(--bg-dark);color:var(--text-main);border:1p
     <div id="qe-questions"></div>
     <button onclick="addQuizQuestion()" class="btn-small" style="width:100%;margin-top:10px">&#x2795; Frage hinzufuegen</button>
     <button onclick="saveQuizToModule()" class="btn-primary" style="margin-top:15px">Quiz uebernehmen</button>
+  </div>
+</div>
+<div id="quiz-play-modal" class="modal-base hidden" style="max-height:90vh">
+  <div class="dv-header">
+    <span id="qp-header" style="font-weight:700;font-size:1.1rem">Quiz</span>
+    <span id="qp-progress" style="color:var(--text-sub);font-size:.85rem"></span>
+  </div>
+  <div style="padding:20px">
+    <div id="qp-question" style="font-size:1.1rem;font-weight:700;margin-bottom:20px;line-height:1.4"></div>
+    <div id="qp-answers" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div id="qp-feedback" class="hidden" style="margin-top:15px;padding:12px;border-radius:8px;font-weight:700;text-align:center"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button id="qp-btn-next" onclick="quizNext()" class="btn-primary" style="flex:1" disabled>Weiter</button>
+    </div>
+  </div>
+  <div id="qp-result" class="hidden" style="padding:20px;text-align:center">
+    <div id="qp-result-icon" style="font-size:4rem;margin-bottom:15px"></div>
+    <h3 id="qp-result-title" style="margin:0 0 10px"></h3>
+    <p id="qp-result-text" style="color:var(--text-sub);margin-bottom:20px"></p>
+    <button id="qp-result-btn" onclick="closePopup()" class="btn-primary">OK</button>
   </div>
 </div>
 </div>
@@ -1332,8 +1357,6 @@ function resetModuleModal(){
   document.getElementById("mm-doc-progress").classList.add("hidden");
   document.getElementById("mm-video-preview").classList.add("hidden");
   document.getElementById("mm-doc-preview").classList.add("hidden");
-  document.getElementById("mm-upload-area").classList.remove("hidden","uploading");
-  document.getElementById("mm-doc-upload-area").classList.remove("hidden","uploading");
 }
 function openAddModule(courseId){
   editingModuleId=null;editingModuleCourseId=courseId;tempQuizQuestions=[];
@@ -1368,84 +1391,76 @@ async function openEditModule(courseId,modId){
 function handleVideoSelect(input){
   const file=input.files[0];if(!file)return;
   if(!file.type.startsWith("video/")){alert("Bitte eine MP4-Videodatei waehlen.");return;}
-  if(file.size>500*1024*1024){alert("Datei zu gross (max. 500MB).");return;}
+  if(file.size>500*1024*1024){alert("Datei zu gross (max 500MB).");return;}
   document.getElementById("mm-upload-error").classList.add("hidden");
-  const area=document.getElementById("mm-upload-area");area.classList.add("uploading");
   document.getElementById("mm-upload-progress").classList.remove("hidden");
   document.getElementById("mm-upload-status").innerText="Hochladen... 0%";
-  try{
-    const fileName=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"");
-    const ref=storage.ref("courses/videos/"+fileName);
-    const task=ref.put(file);
-    task.on("state_changed",
-      snap=>{const pct=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
-        document.getElementById("mm-progress-bar").style.width=pct+"%";
-        document.getElementById("mm-upload-status").innerText="Hochladen... "+pct+"%";},
-      err=>{
-        area.classList.remove("uploading");document.getElementById("mm-upload-progress").classList.add("hidden");
-        const errEl=document.getElementById("mm-upload-error");errEl.classList.remove("hidden");
-        errEl.innerHTML="Upload fehlgeschlagen: "+err.message+"<br><br><b>Tipp:</b> Nutze stattdessen das URL-Feld unten um einen Video-Link einzufuegen. Stelle sicher dass Firebase Storage aktiviert und die Regeln korrekt sind.";
-      },
-      ()=>{task.snapshot.ref.getDownloadURL().then(url=>{
-        document.getElementById("mm-video-url").value=url;
-        document.getElementById("mm-video-url-input").value=url;
-        document.getElementById("mm-upload-progress").classList.add("hidden");
-        area.classList.remove("uploading");area.classList.add("hidden");
-        document.getElementById("mm-video-preview").classList.remove("hidden");
-        document.getElementById("mm-video-player").src=url;
-      });}
-    );
-  }catch(e){
-    area.classList.remove("uploading");document.getElementById("mm-upload-progress").classList.add("hidden");
-    const errEl=document.getElementById("mm-upload-error");errEl.classList.remove("hidden");
-    errEl.innerHTML="Upload nicht moeglich: "+e.message+"<br><br><b>Tipp:</b> Nutze das URL-Feld unten um einen Video-Link einzufuegen.";
-  }
+  const fileName=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"");
+  const ref=storage.ref("courses/videos/"+fileName);
+  const md={contentType:file.type,customMetadata:{uploadedBy:auth.currentUser.uid}};
+  const task=ref.put(file,md);
+  task.on("state_changed",
+    snap=>{const pct=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
+      document.getElementById("mm-progress-bar").style.width=pct+"%";
+      document.getElementById("mm-upload-status").innerText="Hochladen... "+pct+"%";},
+    err=>{document.getElementById("mm-upload-progress").classList.add("hidden");
+      const errEl=document.getElementById("mm-upload-error");errEl.classList.remove("hidden");
+      if(err.code==="storage/unauthorized"||err.code==="storage/retry-limit-exceeded"){
+        errEl.innerHTML="<b>Firebase Storage nicht konfiguriert.</b><br><br>Gehe zu <b>Firebase Console</b> > Storage > Rules und setze:<br><code style='background:#222;padding:4px 8px;border-radius:4px;display:block;margin-top:8px'>allow read, write: if request.auth != null;</code><br>Alternativ: Video auf <b>Google Drive</b> oder <b>YouTube</b> hochladen und den Link oben einfuegen.";
+      }else{errEl.innerHTML="Upload fehlgeschlagen: "+err.message+"<br>Nutze stattdessen das URL-Feld oben.";}},
+    ()=>{task.snapshot.ref.getDownloadURL().then(url=>{
+      setVideoUrl(url);
+      document.getElementById("mm-upload-progress").classList.add("hidden");
+    });}
+  );
 }
 function handleDocSelect(input){
   const file=input.files[0];if(!file)return;
-  if(!file.type.includes("pdf")){alert("Bitte eine PDF-Datei waehlen.");return;}
-  if(file.size>50*1024*1024){alert("Datei zu gross (max. 50MB).");return;}
-  const area=document.getElementById("mm-doc-upload-area");area.classList.add("uploading");
+  if(file.size>50*1024*1024){alert("Datei zu gross (max 50MB).");return;}
   document.getElementById("mm-doc-progress").classList.remove("hidden");
-  try{
-    const fileName=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"");
-    const ref=storage.ref("courses/docs/"+fileName);
-    const task=ref.put(file);
-    task.on("state_changed",
-      snap=>{const pct=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
-        document.getElementById("mm-doc-bar").style.width=pct+"%";
-        document.getElementById("mm-doc-status").innerText="Hochladen... "+pct+"%";},
-      err=>{area.classList.remove("uploading");document.getElementById("mm-doc-progress").classList.add("hidden");
-        alert("Dokument-Upload fehlgeschlagen: "+err.message+"\nNutze stattdessen das URL-Feld.");},
-      ()=>{task.snapshot.ref.getDownloadURL().then(url=>{
-        document.getElementById("mm-doc-url").value=url;
-        document.getElementById("mm-doc-url-input").value=url;
-        document.getElementById("mm-doc-progress").classList.add("hidden");
-        area.classList.remove("uploading");area.classList.add("hidden");
-        document.getElementById("mm-doc-preview").classList.remove("hidden");
-      });}
-    );
-  }catch(e){area.classList.remove("uploading");document.getElementById("mm-doc-progress").classList.add("hidden");alert("Upload nicht moeglich: "+e.message);}
+  const fileName=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"");
+  const ref=storage.ref("courses/docs/"+fileName);
+  const task=ref.put(file,{contentType:file.type});
+  task.on("state_changed",
+    snap=>{const pct=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
+      document.getElementById("mm-doc-bar").style.width=pct+"%";
+      document.getElementById("mm-doc-status").innerText="Hochladen... "+pct+"%";},
+    err=>{document.getElementById("mm-doc-progress").classList.add("hidden");
+      alert("Dokument-Upload fehlgeschlagen.\nFirebase Storage Regeln pruefen oder URL-Feld nutzen.");},
+    ()=>{task.snapshot.ref.getDownloadURL().then(url=>{
+      setDocUrl(url);
+      document.getElementById("mm-doc-progress").classList.add("hidden");
+    });}
+  );
+}
+function setVideoUrl(url){
+  document.getElementById("mm-video-url").value=url;
+  document.getElementById("mm-video-url-input").value=url;
+  document.getElementById("mm-video-preview").classList.remove("hidden");
+  document.getElementById("mm-video-player").src=url;
+}
+function setDocUrl(url){
+  document.getElementById("mm-doc-url").value=url;
+  document.getElementById("mm-doc-url-input").value=url;
+  document.getElementById("mm-doc-preview").classList.remove("hidden");
 }
 function removeModuleVideo(){
   document.getElementById("mm-video-url").value="";document.getElementById("mm-video-url-input").value="";
   document.getElementById("mm-video-preview").classList.add("hidden");
   document.getElementById("mm-video-player").src="";
-  document.getElementById("mm-upload-area").classList.remove("hidden","uploading");
   document.getElementById("mm-video-file").value="";
 }
 function removeModuleDoc(){
   document.getElementById("mm-doc-url").value="";document.getElementById("mm-doc-url-input").value="";
   document.getElementById("mm-doc-preview").classList.add("hidden");
-  document.getElementById("mm-doc-upload-area").classList.remove("hidden","uploading");
   document.getElementById("mm-doc-file").value="";
 }
 async function saveModuleModal(){
   const title=document.getElementById("mm-title").value.trim();
   if(!title){alert("Titel fehlt!");return;}
   const desc=document.getElementById("mm-desc").value.trim();
-  const videoUrl=document.getElementById("mm-video-url").value;
-  const docUrl=document.getElementById("mm-doc-url").value;
+  const videoUrl=document.getElementById("mm-video-url-input").value.trim()||document.getElementById("mm-video-url").value;
+  const docUrl=document.getElementById("mm-doc-url-input").value.trim()||document.getElementById("mm-doc-url").value;
   if(editingModuleId){
     await db.collection("courses").doc(editingModuleCourseId).collection("modules").doc(editingModuleId).update({title,description:desc,videoUrl,docUrl,quizQuestions:tempQuizQuestions});
   }else{
@@ -1506,20 +1521,65 @@ async function completeModule(courseId,modId){
   if(!completed.includes(modId)){completed.push(modId);await db.collection("course_progress").doc(progId).set({completedModules:completed},{merge:true});}
 }
 async function deleteModule(courseId,modId){if(!confirm("Modul loeschen?"))return;await db.collection("courses").doc(courseId).collection("modules").doc(modId).delete();loadModules(courseId);}
+let quizState={questions:[],current:0,correct:0,selected:-1,answered:false,courseId:"",modId:""};
 async function startQuiz(courseId,modId){
   const doc=await db.collection("courses").doc(courseId).collection("modules").doc(modId).get();if(!doc.exists)return;
   const m=doc.data();const questions=m.quizQuestions;if(!questions||!questions.length){alert("Kein Quiz vorhanden.");return;}
-  let correct=0;const total=questions.length;
-  for(let i=0;i<total;i++){
-    const q=questions[i];const opts=q.a.map((a,idx)=>"\n"+(idx+1)+". "+a).join("");
-    const ans=prompt("Frage "+(i+1)+"/"+total+":\n\n"+q.q+opts+"\n\nDeine Antwort (Nummer):");
-    if(ans===null)return;
-    if(parseInt(ans)-1===q.correct)correct++;
+  quizState={questions,current:0,correct:0,selected:-1,answered:false,courseId,modId};
+  document.getElementById("qp-result").classList.add("hidden");
+  document.getElementById("qp-question").parentElement.style.display="";
+  document.getElementById("popup-overlay").classList.add("open");
+  document.getElementById("quiz-play-modal").classList.remove("hidden");
+  renderQuizQuestion();
+}
+function renderQuizQuestion(){
+  const qs=quizState;const q=qs.questions[qs.current];
+  document.getElementById("qp-header").innerText="Quiz";
+  document.getElementById("qp-progress").innerText="Frage "+(qs.current+1)+" / "+qs.questions.length;
+  document.getElementById("qp-question").innerText=q.q;
+  document.getElementById("qp-feedback").classList.add("hidden");
+  document.getElementById("qp-btn-next").disabled=true;
+  qs.selected=-1;qs.answered=false;
+  document.getElementById("qp-answers").innerHTML=q.a.map((a,i)=>`<button class="qp-answer-btn" onclick="selectQuizAnswer(${i})">${a}</button>`).join("");
+}
+function selectQuizAnswer(idx){
+  const qs=quizState;if(qs.answered)return;
+  qs.selected=idx;qs.answered=true;
+  const q=qs.questions[qs.current];const isCorrect=idx===q.correct;
+  if(isCorrect)qs.correct++;
+  const btns=document.getElementById("qp-answers").querySelectorAll(".qp-answer-btn");
+  btns.forEach((btn,i)=>{
+    btn.style.pointerEvents="none";
+    if(i===q.correct)btn.classList.add("correct");
+    if(i===idx&&!isCorrect)btn.classList.add("wrong");
+    if(i===idx)btn.classList.add("selected");
+  });
+  const fb=document.getElementById("qp-feedback");fb.classList.remove("hidden");
+  fb.style.background=isCorrect?"rgba(0,200,83,.15)":"rgba(255,61,0,.15)";
+  fb.style.color=isCorrect?"var(--success)":"var(--danger)";
+  fb.innerText=isCorrect?"Richtig!":"Falsch! Richtige Antwort: "+q.a[q.correct];
+  const btn=document.getElementById("qp-btn-next");btn.disabled=false;
+  btn.innerText=qs.current<qs.questions.length-1?"Naechste Frage":"Ergebnis anzeigen";
+}
+function quizNext(){
+  const qs=quizState;
+  if(qs.current<qs.questions.length-1){qs.current++;renderQuizQuestion();return;}
+  const pct=Math.round((qs.correct/qs.questions.length)*100);
+  const passed=pct>=80;
+  document.getElementById("qp-question").parentElement.style.display="none";
+  const res=document.getElementById("qp-result");res.classList.remove("hidden");
+  document.getElementById("qp-result-icon").innerText=passed?"&#x1F389;":"&#x274C;";
+  document.getElementById("qp-result-title").innerText=passed?"Bestanden!":"Nicht bestanden";
+  document.getElementById("qp-result-title").style.color=passed?"var(--success)":"var(--danger)";
+  document.getElementById("qp-result-text").innerText=qs.correct+"/"+qs.questions.length+" richtig ("+pct+"%)."+(passed?"":" Mindestens 80% noetig.");
+  if(passed){
+    document.getElementById("qp-result-btn").innerText="Weiter";
+    document.getElementById("qp-result-btn").onclick=async function(){
+      await completeModule(qs.courseId,qs.modId);closePopup();loadModules(qs.courseId);
+    };
+  }else{
+    document.getElementById("qp-result-btn").innerText="Erneut versuchen";
+    document.getElementById("qp-result-btn").onclick=function(){startQuiz(qs.courseId,qs.modId);};
   }
-  const pct=Math.round((correct/total)*100);
-  if(pct>=80){
-    await completeModule(courseId,modId);
-    alert("Bestanden! "+pct+"% richtig ("+correct+"/"+total+")");loadModules(courseId);
-  }else{alert("Nicht bestanden: "+pct+"% (mind. 80% noetig).\n"+correct+"/"+total+" richtig. Versuche es erneut!");}
 }
 </script></body></html>
