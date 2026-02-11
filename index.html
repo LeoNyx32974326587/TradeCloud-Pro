@@ -65,7 +65,14 @@ input:checked+.slider:before{transform:translateX(26px)}
 #popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);z-index:999;display:none;justify-content:center;align-items:center;opacity:0;transition:opacity .3s}
 #popup-overlay.open{display:flex;opacity:1}
 .modal-base{width:95%;max-width:500px;background:var(--popup-bg);color:var(--text-main);border-radius:16px;border:1px solid var(--border);box-shadow:0 10px 40px rgba(0,0,0,.8);padding:20px;box-sizing:border-box;max-height:90vh;overflow-y:auto;position:relative}
-#day-detail-view,#trade-detail-view,#trade-form-modal,#add-contact-modal,#admin-member-modal,#journal-form-modal,#navguard-modal,#notif-modal,#profile-modal,#upgrade-req-modal,#course-modal,#module-modal,#quiz-edit-modal,#quiz-play-modal,#video-player-modal,#create-group-modal{background:#000!important;color:#fff!important;border:1px solid #333;z-index:1000}
+#day-detail-view,#trade-detail-view,#trade-form-modal,#add-contact-modal,#admin-member-modal,#journal-form-modal,#navguard-modal,#notif-modal,#profile-modal,#upgrade-req-modal,#course-modal,#module-modal,#quiz-edit-modal,#quiz-play-modal,#video-player-modal,#create-group-modal,#module-detail-modal,#invite-group-modal{background:#000!important;color:#fff!important;border:1px solid #333;z-index:1000}
+.profile-card{background:linear-gradient(135deg,rgba(187,134,252,.15),rgba(187,134,252,.02));border:1px solid rgba(187,134,252,.3);border-radius:16px;padding:25px;text-align:center;margin-bottom:20px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;margin:0 auto 15px}
+.profile-field-row{display:flex;flex-direction:column;gap:4px;margin-bottom:15px;text-align:left}
+.profile-field-row label{font-size:.75rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+.profile-field-row input{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 15px;color:#fff;font-size:.95rem}
+.mute-btn{background:none;border:none;cursor:pointer;font-size:1rem;color:var(--text-sub);padding:5px;margin-left:auto}
+.mute-btn.muted{color:var(--danger)}
 .upload-area{border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:12px}
 .upload-area:hover{border-color:var(--accent);background:rgba(187,134,252,.05)}
 .upload-area.uploading{opacity:.6;pointer-events:none}
@@ -419,14 +426,20 @@ input,select,textarea{background:var(--bg-dark);color:var(--text-main);border:1p
   <div class="dv-header"><span style="font-weight:700;font-size:1.1rem">Benachrichtigungen</span><button onclick="closePopup()" style="background:none;border:none;color:#8e8e93;cursor:pointer;font-size:1.2rem">&#x2715;</button></div>
   <div id="notif-list" style="max-height:60vh;overflow-y:auto"><div class="notif-empty">Keine Benachrichtigungen</div></div>
 </div>
-<div id="profile-modal" class="modal-base hidden">
-  <div class="dv-header"><span style="font-weight:700;font-size:1.1rem">Profil Einstellungen</span><button onclick="closePopup()" style="background:none;border:none;color:#8e8e93;cursor:pointer;font-size:1.2rem">&#x2715;</button></div>
-  <div style="padding:15px">
-    <div class="profile-field"><label>NAME</label><input id="prof-name" placeholder="Dein Name"></div>
-    <div id="prof-email-section" class="profile-field hidden"><label>E-MAIL</label><input id="prof-email" type="email" placeholder="E-Mail"></div>
-    <div id="prof-pw-section" class="hidden" style="margin-bottom:15px"><button onclick="sendPasswordChange()" class="btn-small" style="width:100%">&#x1F511; Passwort aendern (Link per E-Mail)</button></div>
-    <div class="profile-field"><label>TELEFON (optional, fuer SMS-Verifizierung)</label><input id="prof-phone" type="tel" placeholder="+49 123 456789"></div>
-    <button onclick="saveProfile()" class="btn-primary" style="margin-top:10px">Speichern</button>
+<div id="profile-modal" class="modal-base hidden" style="max-width:420px">
+  <div class="dv-header"><span style="font-weight:700;font-size:1.1rem">Profil</span><button onclick="closePopup()" style="background:none;border:none;color:#8e8e93;cursor:pointer;font-size:1.2rem">&#x2715;</button></div>
+  <div style="padding:20px">
+    <div class="profile-card">
+      <div class="profile-avatar" id="prof-avatar">U</div>
+      <div id="prof-display-name" style="font-weight:700;font-size:1.1rem;margin-bottom:4px"></div>
+      <div id="prof-display-email" style="color:var(--text-sub);font-size:.85rem"></div>
+      <div id="prof-status-badge" style="display:inline-block;margin-top:8px;padding:3px 12px;border-radius:20px;font-size:.75rem;font-weight:700"></div>
+    </div>
+    <div class="profile-field-row"><label>Name</label><input id="prof-name" placeholder="Dein Name"></div>
+    <div id="prof-email-section" class="profile-field-row hidden"><label>E-Mail</label><input id="prof-email" type="email" placeholder="E-Mail"></div>
+    <div id="prof-pw-section" class="hidden" style="margin-bottom:15px"><button onclick="sendPasswordChange()" class="btn-small" style="width:100%;padding:10px;border-radius:10px">&#x1F511; Passwort aendern (Link per E-Mail)</button></div>
+    <div class="profile-field-row"><label>Telefon (optional)</label><input id="prof-phone" type="tel" placeholder="+49 123 456789"></div>
+    <button onclick="saveProfile()" class="btn-primary" style="margin-top:10px;border-radius:12px">Speichern</button>
   </div>
 </div>
 <div id="upgrade-req-modal" class="modal-base hidden" style="text-align:center;padding:30px">
@@ -505,8 +518,53 @@ input,select,textarea{background:var(--bg-dark);color:var(--text-main);border:1p
   <div class="dv-header"><span style="font-weight:700;font-size:1.1rem">Gruppe erstellen</span><button onclick="closePopup()" style="background:none;border:none;color:#8e8e93;cursor:pointer;font-size:1.2rem">&#x2715;</button></div>
   <div style="padding:15px">
     <label>Gruppenname</label>
-    <input type="text" id="cg-name" placeholder="z.B. Scalping Team" maxlength="50" style="margin-bottom:15px">
+    <input type="text" id="cg-name" placeholder="z.B. Scalping Team" maxlength="50" style="margin-bottom:12px">
+    <label>Mitglieder einladen</label>
+    <input type="text" id="cg-member-search" placeholder="Name oder Email suchen..." oninput="searchGroupMembers()" style="margin-bottom:8px">
+    <div id="cg-search-results" style="max-height:120px;overflow-y:auto;margin-bottom:12px"></div>
+    <div style="font-size:.8rem;color:var(--text-sub);margin-bottom:4px">Eingeladen:</div>
+    <div id="cg-invited-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px;min-height:30px"></div>
     <button onclick="saveCreateGroupChat()" class="btn-primary" style="width:100%">Gruppe erstellen</button>
+  </div>
+</div>
+<div id="invite-group-modal" class="modal-base hidden" style="max-width:400px">
+  <div class="dv-header"><span style="font-weight:700;font-size:1.1rem">Mitglieder einladen</span><button onclick="closePopup()" style="background:none;border:none;color:#8e8e93;cursor:pointer;font-size:1.2rem">&#x2715;</button></div>
+  <div style="padding:15px">
+    <input type="text" id="ig-member-search" placeholder="Name oder Email suchen..." oninput="searchInviteMembers()" style="margin-bottom:8px">
+    <div id="ig-search-results" style="max-height:200px;overflow-y:auto"></div>
+  </div>
+</div>
+<div id="module-detail-modal" class="modal-base hidden" style="max-width:700px;max-height:95vh;overflow-y:auto;padding:0">
+  <div class="dv-header" style="padding:15px 20px;border-bottom:1px solid #333;position:sticky;top:0;background:#000;z-index:1">
+    <span id="md-title" style="font-weight:700;font-size:1.1rem">Modul</span>
+    <button onclick="closeModuleDetail()" style="background:none;border:none;color:#8e8e93;cursor:pointer;font-size:1.2rem">&#x2715;</button>
+  </div>
+  <div style="padding:20px">
+    <div id="md-video-area" class="hidden" style="margin-bottom:20px">
+      <video id="md-player" controls style="width:100%;max-height:400px;display:block;border-radius:8px;background:#000"></video>
+    </div>
+    <div id="md-desc-area" class="hidden" style="margin-bottom:20px;background:#151517;padding:15px;border-radius:10px;border:1px solid #333">
+      <div style="font-size:.8rem;color:var(--accent);font-weight:700;margin-bottom:8px;text-transform:uppercase">Beschreibung</div>
+      <p id="md-desc-text" style="color:var(--text-sub);font-size:.9rem;line-height:1.6;margin:0"></p>
+    </div>
+    <div id="md-doc-area" class="hidden" style="margin-bottom:20px">
+      <a id="md-doc-link" href="#" target="_blank" class="btn-small" style="display:inline-flex;gap:8px;padding:12px 20px;font-size:.9rem;width:100%;justify-content:center">&#x1F4C4; Dokument herunterladen</a>
+    </div>
+    <div id="md-video-hint" class="hidden" style="background:rgba(187,134,252,.1);border:1px solid var(--accent);border-radius:10px;padding:15px;text-align:center;margin-bottom:20px">
+      <span style="font-size:1.5rem">&#x1F3AC;</span>
+      <p style="color:var(--accent);font-weight:700;margin:8px 0 0">Schaue das Video komplett an um das Quiz freizuschalten.</p>
+    </div>
+    <div id="md-quiz-area" class="hidden" style="text-align:center">
+      <button id="md-quiz-btn" class="btn-primary" style="padding:15px;font-size:1rem">&#x1F9E0; Quiz starten</button>
+      <p style="color:var(--text-sub);font-size:.8rem;margin-top:8px">Bestehe das Quiz um das Modul abzuschliessen.</p>
+    </div>
+    <div id="md-completed-area" class="hidden" style="text-align:center;padding:20px">
+      <div style="font-size:3rem">&#x2705;</div>
+      <p style="color:var(--success);font-weight:700;font-size:1.1rem;margin-top:10px">Modul abgeschlossen!</p>
+    </div>
+    <div id="md-no-quiz-hint" class="hidden" style="background:rgba(48,209,88,.1);border:1px solid var(--success);border-radius:10px;padding:15px;text-align:center;margin-bottom:20px">
+      <p style="color:var(--success);font-weight:700;margin:0">Schaue das Video komplett an um das Modul abzuschliessen.</p>
+    </div>
   </div>
 </div>
 <div id="video-player-modal" class="modal-base hidden" style="padding:0;max-width:900px">
@@ -619,7 +677,7 @@ input,select,textarea{background:var(--bg-dark);color:var(--text-main);border:1p
       </div>
     </div>
     <div id="chat-room" class="chat-room hidden">
-      <div class="cr-header"><button class="cr-back-btn" onclick="leaveChat()">&#x276E;</button><div class="cr-title" id="chat-room-title">Chat</div></div>
+      <div class="cr-header"><button class="cr-back-btn" onclick="leaveChat()">&#x276E;</button><div class="cr-title" id="chat-room-title">Chat</div><button id="chat-mute-btn" class="mute-btn" onclick="toggleMuteChat()" title="Chat stumm schalten">&#x1F514;</button></div>
       <div id="chat-messages" class="chat-messages"></div>
       <div id="chat-input-area" class="chat-input-area"><input type="text" id="chat-input" class="chat-input-field" placeholder="Nachricht schreiben..." onkeypress="if(event.key==='Enter')sendChatMessage()"><button onclick="sendChatMessage()" class="chat-send-btn">&#x27A4;</button></div>
       <div id="chat-read-only-msg" class="hidden" style="padding:15px;text-align:center;color:var(--text-sub);font-size:.9rem;font-style:italic;background:var(--wa-header)">Nur Lesezugriff.</div>
@@ -699,14 +757,19 @@ input,select,textarea{background:var(--bg-dark);color:var(--text-main);border:1p
     <h3>App Einstellungen</h3>
     <div class="settings-list-item"><span>Dark Mode</span><label class="switch"><input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)"><span class="slider round"></span></label></div>
     <div class="settings-list-item"><span>Coach Feedback erlauben</span><label class="switch"><input type="checkbox" id="feedback-toggle" onchange="toggleFeedback(this.checked)" checked><span class="slider round"></span></label></div>
+    <div class="settings-list-item"><span>Statistik sichtbar fuer andere</span><label class="switch"><input type="checkbox" id="stats-visible-toggle" onchange="toggleStatsVisible(this.checked)" checked><span class="slider round"></span></label></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:30px;border-top:1px solid var(--border);padding-top:20px">
       <h3 style="margin:0">Journal Verwaltung</h3>
       <button class="btn-icon" style="padding:8px 12px;font-size:1.3rem;background:var(--accent);color:#000;border:none" onclick="openCreateJournal()" title="Neues Journal">&#x2795;</button>
     </div>
     <div id="settings-journal-list" style="margin-top:15px"></div>
-    <div class="profile-section">
-      <h3>Profil</h3>
-      <button onclick="openProfileModal()" class="btn-small" style="width:100%">&#x1F464; Profil bearbeiten</button>
+    <div style="margin-top:30px;border-top:1px solid var(--border);padding-top:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px"><h3 style="margin:0">Profil</h3></div>
+      <div id="settings-profile-preview" style="display:flex;align-items:center;gap:15px;background:var(--cell-bg);border:1px solid var(--border);border-radius:12px;padding:15px;cursor:pointer" onclick="openProfileModal()">
+        <div id="settings-prof-avatar" style="width:50px;height:50px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;flex-shrink:0">U</div>
+        <div style="flex-grow:1"><div id="settings-prof-name" style="font-weight:700">User</div><div id="settings-prof-email" style="color:var(--text-sub);font-size:.85rem"></div></div>
+        <span style="color:var(--text-sub);font-size:1.2rem">&#x276F;</span>
+      </div>
     </div>
     <div id="admin-panel" class="hidden" style="margin-top:40px;border-top:1px solid var(--border);padding-top:20px">
       <h3 style="color:var(--accent)">Feedback Inbox</h3>
@@ -768,7 +831,7 @@ async function registerEmail(){
   try{
     const uc=await auth.createUserWithEmailAndPassword(email,pass);
     await uc.user.updateProfile({displayName:name});
-    await db.collection("users").doc(uc.user.uid).set({email:email.toLowerCase(),displayName:name,photoURL:"",status:"test",allowCoachFeedback:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection("users").doc(uc.user.uid).set({email:email.toLowerCase(),displayName:name,photoURL:"",status:"test",allowCoachFeedback:true,statsVisible:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   }catch(e){if(e.code==="auth/email-already-in-use")showAuthErr("Diese E-Mail ist bereits registriert.");else showAuthErr("Registrierung fehlgeschlagen: "+e.message);}
 }
 async function loginGoogle(){try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());}catch(e){showAuthErr("Google Login fehlgeschlagen: "+e.message);}}
@@ -776,8 +839,8 @@ auth.onAuthStateChanged(async(user)=>{
   if(user){
     const email=user.email.toLowerCase().trim();
     const uRef=db.collection("users").doc(user.uid);const uDoc=await uRef.get();
-    if(!uDoc.exists){await uRef.set({email,displayName:user.displayName||"Trader",photoURL:user.photoURL||"",status:"test",allowCoachFeedback:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});userStatus="test";}
-    else{const ud=uDoc.data();userStatus=ud.status||"test";if(userStatus==="banned"){alert("Dein Account wurde gesperrt.");await auth.signOut();location.reload();return;}document.getElementById("feedback-toggle").checked=ud.allowCoachFeedback!==false;}
+    if(!uDoc.exists){await uRef.set({email,displayName:user.displayName||"Trader",photoURL:user.photoURL||"",status:"test",allowCoachFeedback:true,statsVisible:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});userStatus="test";}
+    else{const ud=uDoc.data();userStatus=ud.status||"test";if(userStatus==="banned"){alert("Dein Account wurde gesperrt.");await auth.signOut();location.reload();return;}document.getElementById("feedback-toggle").checked=ud.allowCoachFeedback!==false;document.getElementById("stats-visible-toggle").checked=ud.statsVisible!==false;}
     const cs=await db.collection("coaches").where("email","==",email).get();isCoach=!cs.empty;
     if(email===ADMIN_EMAIL){isAdmin=true;userStatus="pro";document.getElementById("admin-panel").classList.remove("hidden");document.getElementById("btn-Feedback").style.display="none";admLoad();loadAdminZentrale();finishLogin(user);}
     else if(isCoach){isAdmin=true;userStatus="pro";document.getElementById("btn-Feedback").style.display="none";finishLogin(user);}
@@ -791,6 +854,9 @@ async function finishLogin(user){
   document.getElementById("auth-overlay").classList.add("hidden");
   document.getElementById("app-content").classList.remove("hidden");
   document.getElementById("main-header").classList.remove("hidden");
+  const spn=document.getElementById("settings-prof-name");if(spn)spn.innerText=user.displayName||"User";
+  const spe=document.getElementById("settings-prof-email");if(spe)spe.innerText=user.email||"";
+  const spa=document.getElementById("settings-prof-avatar");if(spa)spa.innerText=(user.displayName||"U").charAt(0).toUpperCase();
   applyRestrictions();await loadData();renderChatLobby();loadContactsAndRequests();setupGlobalNotifications();updateNotifDot();
 }
 function applyRestrictions(){
@@ -849,7 +915,7 @@ function renderDashboard(){
     const tp=ca.filter(t=>new Date(t.date).toDateString()===ts).reduce((a,t)=>a+t.pnl,0);
     if(journal.maxDD&&parseFloat(journal.maxDD)>0){const lim=parseFloat(journal.maxDD);let thr=lim;if(journal.ddType==="percent"){const tb2=sc+ca.reduce((a,b)=>a+b.pnl,0);thr=Math.max(tb2,0)*(lim/100);}if(tp<-thr)wh=`<div class="loss-warning"><span>Tagesverlust ueberschritten!</span></div>`;}
     let oth=`<p style="color:var(--text-sub);font-style:italic;font-size:.8rem;text-align:center;padding-top:20px">Keine offenen Trades.</p>`;
-    if(open.length)oth=open.map(t=>`<div class="ot-list-item"><span style="font-weight:700;color:var(--accent)">${t.asset}</span><button class="btn-icon" onclick="editTrade('${t.id}',true)" title="Schliessen">&#x2716;</button></div>`).join("");
+    if(open.length)oth=open.map(t=>{const ts=encodeURIComponent(JSON.stringify(t));const is=encodeURIComponent(t.imgSetup||"");return`<div class="ot-list-item"><span style="font-weight:700;color:var(--accent)">${t.asset}</span><div style="display:flex;gap:4px"><button class="btn-icon" onclick="openSignalDetail('${ts}','${is}')" title="Details">&#x1F50D;</button><button class="btn-icon" onclick="editTrade('${t.id}',true)" title="Schliessen">&#x2716;</button></div></div>`;}).join("");
     const filters=["HEUTE","GESTERN","WOCHE","MONAT","JAHR","GESAMT","ZEITRAUM"];
     const fh=filters.map(f=>`<button class="filter-pill ${tf===f?"active":""}" onclick="setJournalFilter('${journal.id}','${f}')">${f}</button>`).join("");
     container.innerHTML+=`<div class="journal-full-card"><div class="jfc-header"><div class="jfc-title">${journal.name}</div></div><div class="card-filters">${fh}</div>${wh}<div class="jfc-body-grid"><div class="jfc-chart-area"><canvas id="${cid}"></canvas></div><div class="jfc-sidebar"><div class="jfc-stats-row"><div class="stat-box"><span class="stat-label">PnL (${tf})</span><span class="stat-value sensitive" style="color:${pc}">${pnl.toFixed(2)} €</span></div><div class="stat-box"><span class="stat-label">Winrate</span><span class="stat-value">${wr}%</span></div></div><div class="open-trades-box"><div style="font-size:.8rem;font-weight:700;color:var(--text-sub);margin-bottom:8px">OFFENE TRADES</div><div style="flex-grow:1">${oth}</div></div></div></div></div>`;
@@ -858,9 +924,6 @@ function renderDashboard(){
 }
 async function renderNotificationsArea(){
   const area=document.getElementById("dashboard-notification-area");area.innerHTML="";updateNotifDot();
-  const sc=parseInt(localStorage.getItem("chatCount")||"0");
-  if(lastMsgCount>sc&&!isChatActive)area.innerHTML+=`<div class="chat-notification"><div onclick="navGuard('Chat')" style="flex-grow:1">Neue Nachricht im Community Chat!</div><button onclick="this.parentElement.remove()" title="Schliessen" style="background:none;border:none;color:#fff;font-size:1rem;cursor:pointer">&#x2716;</button></div>`;
-  if(!isAdmin){const uf=trades.filter(t=>t.adminFeedback&&!t.feedbackRead);uf.forEach(t=>{const ts=encodeURIComponent(JSON.stringify(t));const is=encodeURIComponent(t.imgSetup||t.imgResult||"");area.innerHTML+=`<div class="feedback-notification"><div style="font-weight:700;color:var(--accent);margin-bottom:5px">Coach Feedback zu ${t.asset}</div><div style="margin-bottom:10px">${t.adminFeedback.substring(0,80)}</div><button class="btn-primary" style="padding:10px 20px;width:auto" onclick="openSignalDetail('${ts}','${is}')">Ansehen</button></div>`;});}
 }
 function setupGlobalNotifications(){
   db.collection("chat").orderBy("timestamp","desc").limit(1).onSnapshot(snap=>{
@@ -917,7 +980,7 @@ function enterChat(ch,title){
   curChatChannel=ch;document.getElementById("chat-lobby").classList.add("hidden");document.getElementById("chat-room").classList.remove("hidden");document.getElementById("chat-room-title").innerText=title;
   const ia=document.getElementById("chat-input-area"),ro=document.getElementById("chat-read-only-msg");ia.classList.remove("hidden");ro.classList.add("hidden");
   if(ch==="signals"){ia.classList.add("hidden");ro.classList.remove("hidden");}else if(ch==="pro_signal"&&!isAdmin){ia.classList.add("hidden");ro.classList.remove("hidden");}
-  loadChat();
+  updateMuteBtn();loadChat();
 }
 function leaveChat(){curChatChannel=null;if(unsubChat)unsubChat();document.getElementById("chat-room").classList.add("hidden");document.getElementById("chat-lobby").classList.remove("hidden");}
 function getPinnedChats(){try{return JSON.parse(localStorage.getItem("pinnedChats")||"[]");}catch(e){return[];}}
@@ -943,14 +1006,29 @@ async function loadCustomGroups(){
     }).join("");
   }catch(e){}
 }
+let cgInvitedMembers=[];
 function openCreateGroupChat(){
+  cgInvitedMembers=[];
   document.getElementById("popup-overlay").classList.add("open");document.getElementById("create-group-modal").classList.remove("hidden");
-  document.getElementById("cg-name").value="";document.getElementById("cg-name").focus();
+  document.getElementById("cg-name").value="";document.getElementById("cg-member-search").value="";
+  document.getElementById("cg-search-results").innerHTML="";renderCgInvited();
+  document.getElementById("cg-name").focus();
 }
+async function searchGroupMembers(){
+  const term=document.getElementById("cg-member-search").value.trim().toLowerCase();const rd=document.getElementById("cg-search-results");
+  if(term.length<2){rd.innerHTML="";return;}
+  try{const s=await db.collection("users").get();const results=s.docs.filter(d=>{const u=d.data();return d.id!==auth.currentUser.uid&&!cgInvitedMembers.some(m=>m.uid===d.id)&&((u.displayName||"").toLowerCase().includes(term)||(u.email||"").toLowerCase().includes(term));}).slice(0,5);
+    rd.innerHTML=results.map(d=>{const u=d.data();return`<div class="search-result-item" style="margin-bottom:4px"><div><strong>${u.displayName||"User"}</strong><div style="font-size:.75rem;color:var(--text-sub)">${u.email}</div></div><button class="btn-small" onclick="addCgMember('${d.id}','${(u.displayName||"User").replace(/'/g,"")}')">Einladen</button></div>`;}).join("")||"<div style='color:var(--text-sub);font-size:.8rem;padding:5px'>Keine Ergebnisse</div>";
+  }catch(e){rd.innerHTML="";}
+}
+function addCgMember(uid,name){cgInvitedMembers.push({uid,name});renderCgInvited();document.getElementById("cg-member-search").value="";document.getElementById("cg-search-results").innerHTML="";}
+function removeCgMember(uid){cgInvitedMembers=cgInvitedMembers.filter(m=>m.uid!==uid);renderCgInvited();}
+function renderCgInvited(){document.getElementById("cg-invited-list").innerHTML=cgInvitedMembers.map(m=>`<span style="background:var(--accent);color:#000;padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:700;display:inline-flex;align-items:center;gap:4px">${m.name}<button onclick="removeCgMember('${m.uid}')" style="background:none;border:none;cursor:pointer;font-size:.8rem;color:#000;padding:0;line-height:1">&#x2716;</button></span>`).join("");}
 async function saveCreateGroupChat(){
   const name=document.getElementById("cg-name").value.trim();if(!name){alert("Bitte Gruppenname eingeben.");return;}
-  await db.collection("chat_groups").add({name,avatar:"&#x1F465;",creatorId:auth.currentUser.uid,members:[auth.currentUser.uid],createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  closePopup();renderChatLobby();
+  const members=[auth.currentUser.uid,...cgInvitedMembers.map(m=>m.uid)];
+  await db.collection("chat_groups").add({name,avatar:"&#x1F465;",creatorId:auth.currentUser.uid,members,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  cgInvitedMembers=[];closePopup();renderChatLobby();
 }
 async function deleteGroup(id){
   if(!confirm("Gruppe wirklich loeschen?"))return;
@@ -990,10 +1068,17 @@ function renderReactions(msgId,reactions){
   return'<div class="msg-reactions">'+Object.entries(counts).map(([emoji,count])=>`<span class="msg-reaction${myReaction===emoji?" reacted":""}" onclick="toggleEmojiReact('${msgId}','${emoji}')">${emoji} ${count}</span>`).join("")+"</div>";
 }
 async function toggleEmojiReact(msgId,emoji){
-  if(!emoji){const emojis=["&#x1F44D;","&#x2764;","&#x1F602;","&#x1F622;","&#x1F525;","&#x1F680;"];const picked=prompt("Emoji waehlen: 👍 ❤️ 😂 😢 🔥 🚀");if(!picked)return;emoji=picked;}
-  const uid=auth.currentUser.uid;const ref=db.collection("chat").doc(msgId);const doc=await ref.get();if(!doc.exists)return;
-  const reactions=doc.data().reactions||{};if(reactions[uid]===emoji)delete reactions[uid];else reactions[uid]=emoji;
+  if(!emoji){const picked=prompt("Emoji waehlen: \ud83d\udc4d \u2764\ufe0f \ud83d\ude02 \ud83d\ude22 \ud83d\udd25 \ud83d\ude80");if(!picked)return;emoji=picked;}
+  const uid=auth.currentUser.uid;const ref=db.collection("chat").doc(msgId);const msgDoc=await ref.get();if(!msgDoc.exists)return;
+  const msgData=msgDoc.data();const reactions=msgData.reactions||{};
+  const isRemoving=reactions[uid]===emoji;
+  if(isRemoving)delete reactions[uid];else reactions[uid]=emoji;
   await ref.update({reactions});
+  if(!isRemoving&&msgData.senderId&&msgData.senderId!==uid){
+    const channelNames={"public":"Public Chat","signals":"Signale","pro_signal":"Pro Signal"};
+    const notif={emoji,senderName:currentUserName,channel:msgData.channel,channelName:channelNames[msgData.channel]||msgData.channel,timestamp:Date.now()};
+    try{await db.collection("users").doc(msgData.senderId).collection("emoji_notifs").add(notif);}catch(e){}
+  }
 }
 async function sendChatMessage(){
   const inp=document.getElementById("chat-input");const text=inp.value.trim();if(!text||!curChatChannel)return;if(curChatChannel==="pro_signal"&&!isAdmin)return;
@@ -1033,7 +1118,8 @@ async function confirmShare(){
 function openSignalDetail(tde,iue){
   const t=JSON.parse(decodeURIComponent(tde));curDetailId=t.id;
   document.getElementById("popup-overlay").classList.add("open");document.getElementById("trade-detail-view").classList.remove("hidden");
-  const showAdm=isAdmin&&t.userId!==auth.currentUser.uid&&t.senderId!==auth.currentUser.uid&&iuFeedbackAllowed;const aia=document.getElementById("adm-feedback-input-area");
+  const isOwnTrade=t.userId===auth.currentUser.uid||t.senderId===auth.currentUser.uid;
+  const showAdm=isAdmin&&!isOwnTrade&&iuFeedbackAllowed;const aia=document.getElementById("adm-feedback-input-area");
   if(aia){if(showAdm){aia.classList.remove("hidden");document.getElementById("adm-feedback-text").value=t.adminFeedback||"";}else aia.classList.add("hidden");}
   let html="";
   if(t.adminFeedback&&(!t.feedbackRead||isAdmin))html+=`<div style="background:rgba(187,134,252,.15);border:1px solid var(--accent);border-radius:8px;padding:15px;margin-bottom:15px"><div style="color:var(--accent);font-weight:700;margin-bottom:5px">Coach Feedback</div><div>${t.adminFeedback}</div></div>`;
@@ -1187,6 +1273,10 @@ async function openMemberDetailByUid(uid,email){
 async function coachAdd(){const e=document.getElementById("coachEmail").value.toLowerCase().trim();if(e){await db.collection("coaches").add({email:e});document.getElementById("coachEmail").value="";admLoad();}}
 async function coachDel(id){if(confirm("Coach loeschen?")){await db.collection("coaches").doc(id).delete();admLoad();}}
 async function toggleFeedback(val){if(auth.currentUser)await db.collection("users").doc(auth.currentUser.uid).set({allowCoachFeedback:val},{merge:true});}
+async function toggleStatsVisible(val){if(auth.currentUser)await db.collection("users").doc(auth.currentUser.uid).set({statsVisible:val},{merge:true});}
+function getMutedChats(){try{return JSON.parse(localStorage.getItem("mutedChats")||"[]");}catch(e){return[];}}
+function toggleMuteChat(){if(!curChatChannel)return;let muted=getMutedChats();if(muted.includes(curChatChannel))muted=muted.filter(c=>c!==curChatChannel);else muted.push(curChatChannel);localStorage.setItem("mutedChats",JSON.stringify(muted));updateMuteBtn();}
+function updateMuteBtn(){const btn=document.getElementById("chat-mute-btn");if(!btn||!curChatChannel)return;const muted=getMutedChats().includes(curChatChannel);btn.innerHTML=muted?"&#x1F515;":"&#x1F514;";btn.classList.toggle("muted",muted);btn.title=muted?"Stumm geschaltet":"Stumm schalten";}
 function togglePrivacy(){privacyMode=!privacyMode;document.documentElement.style.setProperty("--blur",privacyMode?"5px":"0px");}
 function handleLogout(){auth.signOut().then(()=>location.reload());}
 function toggleTheme(isDark){if(isDark){document.body.classList.remove("light-mode");localStorage.setItem("tradeTheme","dark");}else{document.body.classList.add("light-mode");localStorage.setItem("tradeTheme","light");}if(document.getElementById("view-Statistik").classList.contains("active"))renderStatistics();}
@@ -1253,31 +1343,43 @@ function toggleNotifPopup(){
 function closeNotifPopup(){document.getElementById("notif-popup").classList.remove("open");document.getElementById("notif-popup-overlay").style.display="none";}
 async function renderNotifPopup(){
   const p=document.getElementById("notif-popup");let html="<div style='padding:12px 15px;font-weight:700;border-bottom:1px solid var(--border)'>Benachrichtigungen</div>";
-  const items=[];
+  const items=[];const muted=getMutedChats();
   const uf=trades.filter(t=>t.adminFeedback&&!t.feedbackRead);
   uf.forEach(t=>{items.push({type:"feedback",text:"Coach Feedback zu "+t.asset,data:t});});
   const sc=parseInt(localStorage.getItem("chatCount")||"0");
-  if(lastMsgCount>sc)items.push({type:"chat",text:"Neue Nachrichten im Chat"});
-  if(isAdmin&&!isCoach){try{const ur=await db.collection("upgrade_requests").get();const pend=ur.docs.filter(d=>d.data().status==="pending");pend.forEach(d=>{items.push({type:"upgrade",text:"Upgrade-Anfrage von "+( d.data().userName||d.data().userEmail||"User")});});}catch(e){}}
+  if(lastMsgCount>sc&&!muted.includes("public"))items.push({type:"chat",text:"Neue Nachrichten im Chat",channel:"public",channelName:"Public Chat"});
+  if(isAdmin&&!isCoach){try{const ur=await db.collection("upgrade_requests").get();const pend=ur.docs.filter(d=>d.data().status==="pending");pend.forEach(d=>{items.push({type:"upgrade",text:"Upgrade-Anfrage von "+(d.data().userName||d.data().userEmail||"User")});});}catch(e){}}
+  try{const uid=auth.currentUser.uid;
+    const ens=await db.collection("users").doc(uid).collection("emoji_notifs").orderBy("timestamp","desc").limit(10).get();
+    ens.docs.forEach(d=>{const r=d.data();if(!muted.includes(r.channel))items.push({type:"emoji",text:r.senderName+" hat mit "+r.emoji+" reagiert",channel:r.channel,channelName:r.channelName||"Chat",docId:d.id});});
+  }catch(e){}
   if(!items.length)html+="<div class='notif-empty'>Keine neuen Benachrichtigungen</div>";
   else items.forEach(it=>{
-    if(it.type==="feedback"){const ts=encodeURIComponent(JSON.stringify(it.data));const is=encodeURIComponent(it.data.imgSetup||it.data.imgResult||"");html+=`<div class="notif-item" onclick="closeNotifPopup();openSignalDetail('${ts}','${is}')"><span style="color:var(--accent);font-weight:700">&#x1F4AC;</span> ${it.text}</div>`;}
-    else if(it.type==="upgrade")html+=`<div class="notif-item" onclick="closeNotifPopup();showView('Einstellungen')"><span style="color:var(--success);font-weight:700">&#x1F680;</span> ${it.text}</div>`;
-    else html+=`<div class="notif-item" onclick="closeNotifPopup();navGuard('Chat')"><span style="color:#0a84ff;font-weight:700">&#x1F4E9;</span> ${it.text}</div>`;
+    if(it.type==="feedback"){const ts=encodeURIComponent(JSON.stringify(it.data));const is=encodeURIComponent(it.data.imgSetup||it.data.imgResult||"");html+=`<div class="notif-item" onclick="closeNotifPopup();openSignalDetail('${ts}','${is}')" style="cursor:pointer"><span style="color:var(--accent);font-weight:700">&#x1F4AC;</span> ${it.text}</div>`;}
+    else if(it.type==="upgrade")html+=`<div class="notif-item" onclick="closeNotifPopup();showView('Einstellungen')" style="cursor:pointer"><span style="color:var(--success);font-weight:700">&#x1F680;</span> ${it.text}</div>`;
+    else if(it.type==="emoji")html+=`<div class="notif-item" onclick="closeNotifPopup();navGuard('Chat');setTimeout(()=>enterChat('${it.channel}','${(it.channelName||"Chat").replace(/'/g,"")}'),300)" style="cursor:pointer"><span style="font-weight:700">&#x1F600;</span> ${it.text}</div>`;
+    else html+=`<div class="notif-item" onclick="closeNotifPopup();navGuard('Chat');setTimeout(()=>enterChat('${it.channel}','${(it.channelName||"Chat").replace(/'/g,"")}'),300)" style="cursor:pointer"><span style="color:#0a84ff;font-weight:700">&#x1F4E9;</span> ${it.text}</div>`;
   });
   p.innerHTML=html;
   document.getElementById("notif-dot").classList.toggle("active",items.length>0);
 }
 async function updateNotifDot(){
   const uf=trades.filter(t=>t.adminFeedback&&!t.feedbackRead);
-  const sc=parseInt(localStorage.getItem("chatCount")||"0");
-  let hasNotifs=uf.length>0||(lastMsgCount>sc);
+  const sc=parseInt(localStorage.getItem("chatCount")||"0");const muted=getMutedChats();
+  let hasNotifs=uf.length>0||(lastMsgCount>sc&&!muted.includes("public"));
+  try{const ens=await db.collection("users").doc(auth.currentUser.uid).collection("emoji_notifs").limit(1).get();if(!ens.empty)hasNotifs=true;}catch(e){}
   if(isAdmin&&!isCoach){try{const ur=await db.collection("upgrade_requests").get();const pend=ur.docs.filter(d=>d.data().status==="pending");if(pend.length)hasNotifs=true;}catch(e){}}
   document.getElementById("notif-dot").classList.toggle("active",hasNotifs);
 }
 function openProfileModal(){
   const u=auth.currentUser;if(!u)return;
   document.getElementById("prof-name").value=u.displayName||"";
+  const initial=(u.displayName||"U").charAt(0).toUpperCase();
+  document.getElementById("prof-avatar").innerText=initial;
+  document.getElementById("prof-display-name").innerText=u.displayName||"User";
+  document.getElementById("prof-display-email").innerText=u.email||"";
+  const statusColors={pro:{bg:"rgba(48,209,88,.2)",color:"#30d158",text:"PRO"},test:{bg:"rgba(255,159,10,.2)",color:"#ff9f0a",text:"TEST"},banned:{bg:"rgba(255,61,0,.2)",color:"#ff3d00",text:"GESPERRT"}};
+  const sc=statusColors[userStatus]||statusColors.test;const sb=document.getElementById("prof-status-badge");sb.style.background=sc.bg;sb.style.color=sc.color;sb.innerText=sc.text;
   const isEmailPw=u.providerData.some(p=>p.providerId==="password");
   if(isEmailPw){document.getElementById("prof-email-section").classList.remove("hidden");document.getElementById("prof-pw-section").classList.remove("hidden");document.getElementById("prof-email").value=u.email||"";}
   else{document.getElementById("prof-email-section").classList.add("hidden");document.getElementById("prof-pw-section").classList.add("hidden");}
@@ -1325,7 +1427,25 @@ async function loadCourses(){
   try{
   const s=await db.collection("courses").orderBy("order","asc").get();
   if(s.empty){list.innerHTML="<div style='color:var(--text-sub);text-align:center;padding:30px'>Noch keine Kurse verfuegbar.</div>";return;}
-  list.innerHTML=s.docs.map(doc=>{const d=doc.data();if(d.disabled&&!isAdmin)return"";const dis=d.disabled?'<span style="color:var(--danger);font-size:.7rem"> (Deaktiviert)</span>':"";return`<div class="settings-list-item" style="cursor:pointer" onclick="openCourse('${doc.id}')"><div><strong>${d.title}</strong>${dis}<div style="color:var(--text-sub);font-size:.8rem;margin-top:4px">${d.description||""}</div></div><div style="display:flex;gap:4px">${isAdmin&&!isCoach?`<button class="btn-icon" onclick="event.stopPropagation();openEditCourse('${doc.id}')" title="Bearbeiten">&#x270F;&#xFE0E;</button><button class="btn-icon" onclick="event.stopPropagation();toggleCourseDisabled('${doc.id}',${!!d.disabled})" title="${d.disabled?"Aktivieren":"Deaktivieren"}">&#x1F441;</button><button class="btn-icon" onclick="event.stopPropagation();deleteCourse('${doc.id}')" title="Loeschen">&#x1F5D1;&#xFE0E;</button>`:""}<span style="color:var(--text-sub);font-size:1.2rem">&#x276F;</span></div></div>`;}).join("");
+  const courseCompletion=[];
+  for(const doc of s.docs){
+    const cid=doc.id;const mods=await db.collection("courses").doc(cid).collection("modules").get();
+    const prog=await getUserCourseProgress(cid);
+    const allDone=!mods.empty&&mods.docs.every(m=>prog.completedModules.includes(m.id));
+    courseCompletion.push({docId:cid,data:doc.data(),allDone,moduleCount:mods.size,completedCount:prog.completedModules.length});
+  }
+  let html="";let courseIndex=0;
+  for(const c of courseCompletion){
+    const d=c.data;if(d.disabled&&!isAdmin){courseIndex++;continue;}
+    const isUnlocked=isAdmin||courseIndex===0||(courseIndex>0&&courseCompletion[courseIndex-1].allDone);
+    const dis=d.disabled?'<span style="color:var(--danger);font-size:.7rem"> (Deaktiviert)</span>':"";
+    const progress=c.moduleCount>0?Math.round(c.completedCount/c.moduleCount*100):0;
+    const statusText=c.allDone?"&#x2705; Abgeschlossen":(isUnlocked?`${progress}% abgeschlossen`:"&#x1F512; Gesperrt");
+    const statusColor=c.allDone?"var(--success)":(isUnlocked?"var(--accent)":"var(--text-sub)");
+    html+=`<div class="settings-list-item" style="cursor:${isUnlocked?"pointer":"default"};opacity:${isUnlocked?1:.5}" ${isUnlocked?`onclick="openCourse('${c.docId}')"`:""}><div style="flex-grow:1"><strong>${d.title}</strong>${dis}<div style="color:var(--text-sub);font-size:.8rem;margin-top:4px">${d.description||""}</div><div style="color:${statusColor};font-size:.75rem;font-weight:600;margin-top:6px">${statusText}</div>${isUnlocked&&c.moduleCount>0&&!c.allDone?`<div style="height:3px;background:#333;border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;background:var(--accent);width:${progress}%;border-radius:2px"></div></div>`:""}</div><div style="display:flex;gap:4px;align-items:center">${isAdmin&&!isCoach?`<button class="btn-icon" onclick="event.stopPropagation();openEditCourse('${c.docId}')" title="Bearbeiten">&#x270F;&#xFE0E;</button><button class="btn-icon" onclick="event.stopPropagation();toggleCourseDisabled('${c.docId}',${!!d.disabled})" title="${d.disabled?"Aktivieren":"Deaktivieren"}">&#x1F441;</button><button class="btn-icon" onclick="event.stopPropagation();deleteCourse('${c.docId}')" title="Loeschen">&#x1F5D1;&#xFE0E;</button>`:""}<span style="color:var(--text-sub);font-size:1.2rem">&#x276F;</span></div></div>`;
+    courseIndex++;
+  }
+  list.innerHTML=html;
   }catch(e){list.innerHTML="<div style='color:var(--text-sub);text-align:center;padding:30px'>Noch keine Kurse verfuegbar.</div>";}
 }
 function openCreateCourse(){
@@ -1370,20 +1490,48 @@ async function loadModules(courseId){
     const lockIcon=isUnlocked?"":"&#x1F512; ";const statusIcon=isCompleted?"&#x2705; ":"";
     const hasQuiz=m.quizQuestions&&m.quizQuestions.length>0;
     const videoWatched=progress.watchedVideos&&progress.watchedVideos.includes(doc.id);
-    html+=`<div class="card" style="opacity:${isUnlocked?1:.4};${!isUnlocked?"pointer-events:none":""}"><div style="display:flex;justify-content:space-between;align-items:center"><h4 style="margin:0">${statusIcon}${lockIcon}Modul ${moduleIndex+1}: ${m.title}</h4>${isAdmin&&!isCoach?`<div style="display:flex;gap:4px;pointer-events:all"><button class="btn-icon" onclick="openEditModule('${courseId}','${doc.id}')" title="Bearbeiten">&#x270F;&#xFE0E;</button><button class="btn-icon" onclick="deleteModule('${courseId}','${doc.id}')" title="Loeschen">&#x1F5D1;&#xFE0E;</button></div>`:""}</div>`;
+    const statusText=isCompleted?"Abgeschlossen":(isUnlocked?(m.videoUrl&&!videoWatched?"Video ansehen":(hasQuiz?"Quiz verfuegbar":"Bereit")):"Gesperrt");
+    const statusColor=isCompleted?"var(--success)":(isUnlocked?"var(--accent)":"var(--text-sub)");
+    html+=`<div class="card" style="opacity:${isUnlocked?1:.4};${!isUnlocked?"pointer-events:none":""};cursor:${isUnlocked?"pointer":"default"}" ${isUnlocked?`onclick="openModuleDetail('${courseId}','${doc.id}')"`:""}><div style="display:flex;justify-content:space-between;align-items:center"><h4 style="margin:0">${statusIcon}${lockIcon}Modul ${moduleIndex+1}: ${m.title}</h4>${isAdmin&&!isCoach?`<div style="display:flex;gap:4px;pointer-events:all"><button class="btn-icon" onclick="event.stopPropagation();openEditModule('${courseId}','${doc.id}')" title="Bearbeiten">&#x270F;&#xFE0E;</button><button class="btn-icon" onclick="event.stopPropagation();deleteModule('${courseId}','${doc.id}')" title="Loeschen">&#x1F5D1;&#xFE0E;</button></div>`:""}</div>`;
     if(!isUnlocked)html+=`<p style="color:var(--text-sub);font-size:.8rem;margin-top:8px;font-style:italic">Schliesse zuerst das vorherige Modul ab.</p>`;
-    if(m.videoUrl&&isUnlocked)html+=`<div style="margin-top:10px"><button class="btn-small" style="display:inline-flex;gap:5px" onclick="openVideoPopup('${encodeURIComponent(m.videoUrl)}','${courseId}','${doc.id}',${hasQuiz})">&#x25B6; Video ansehen</button>${videoWatched?'<span style="color:var(--success);font-size:.8rem;margin-left:8px">&#x2713; Angesehen</span>':''}</div>`;
-    if(m.docUrl&&isUnlocked)html+=`<div style="margin-top:10px"><a href="${m.docUrl}" target="_blank" class="btn-small" style="display:inline-flex;gap:5px">&#x1F4C4; Dokument oeffnen</a></div>`;
-    if(m.description)html+=`<p style="color:var(--text-sub);font-size:.85rem;margin-top:8px">${m.description}</p>`;
-    if(hasQuiz&&isUnlocked&&!isCompleted){
-      if(!m.videoUrl||videoWatched)html+=`<button class="btn-primary" style="margin-top:10px;padding:10px" onclick="startQuiz('${courseId}','${doc.id}')">Quiz starten (${m.quizQuestions.length} Fragen)</button>`;
-      else html+=`<div style="color:var(--text-sub);font-size:.8rem;margin-top:8px;font-style:italic">&#x1F3AC; Schaue zuerst das Video an um das Quiz freizuschalten.</div>`;
-    }
-    if(isCompleted)html+=`<div style="color:var(--success);font-size:.85rem;margin-top:10px;font-weight:700">&#x2705; Abgeschlossen</div>`;
-    else if(isUnlocked&&!hasQuiz&&m.videoUrl&&!videoWatched)html+=`<div style="color:var(--text-sub);font-size:.8rem;margin-top:8px;font-style:italic">Schaue das Video komplett an um das Modul abzuschliessen.</div>`;
+    else html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><span style="color:${statusColor};font-size:.8rem;font-weight:600">${statusText}</span><span style="color:var(--text-sub);font-size:1rem">&#x276F;</span></div>`;
     html+=`</div>`;moduleIndex++;
   }
   area.innerHTML=html+addBtn;
+}
+async function openModuleDetail(courseId,modId){
+  const doc=await db.collection("courses").doc(courseId).collection("modules").doc(modId).get();
+  if(!doc.exists)return;const m=doc.data();
+  const progress=await getUserCourseProgress(courseId);
+  const isCompleted=progress.completedModules.includes(modId);
+  const videoWatched=progress.watchedVideos&&progress.watchedVideos.includes(modId);
+  const hasQuiz=m.quizQuestions&&m.quizQuestions.length>0;
+  document.getElementById("md-title").innerText=m.title||"Modul";
+  const va=document.getElementById("md-video-area");const da=document.getElementById("md-desc-area");
+  const doa=document.getElementById("md-doc-area");const qa=document.getElementById("md-quiz-area");
+  const vh=document.getElementById("md-video-hint");const ca=document.getElementById("md-completed-area");
+  const nqh=document.getElementById("md-no-quiz-hint");
+  va.classList.add("hidden");da.classList.add("hidden");doa.classList.add("hidden");qa.classList.add("hidden");vh.classList.add("hidden");ca.classList.add("hidden");nqh.classList.add("hidden");
+  if(m.videoUrl){
+    va.classList.remove("hidden");const player=document.getElementById("md-player");player.src=m.videoUrl;
+    player.onended=async function(){
+      await markVideoWatched(courseId,modId);
+      if(!hasQuiz){await completeModule(courseId,modId);closeModuleDetail();loadModules(courseId);}
+      else{openModuleDetail(courseId,modId);}
+    };
+  }
+  if(m.description){da.classList.remove("hidden");document.getElementById("md-desc-text").innerText=m.description;}
+  if(m.docUrl){doa.classList.remove("hidden");document.getElementById("md-doc-link").href=m.docUrl;}
+  if(isCompleted){ca.classList.remove("hidden");}
+  else if(hasQuiz){
+    if(!m.videoUrl||videoWatched){qa.classList.remove("hidden");document.getElementById("md-quiz-btn").onclick=function(){startQuiz(courseId,modId);};}
+    else{vh.classList.remove("hidden");}
+  }else if(m.videoUrl&&!videoWatched){nqh.classList.remove("hidden");}
+  document.getElementById("popup-overlay").classList.add("open");document.getElementById("module-detail-modal").classList.remove("hidden");
+}
+function closeModuleDetail(){
+  const player=document.getElementById("md-player");if(player){player.pause();player.src="";}
+  document.getElementById("module-detail-modal").classList.add("hidden");document.getElementById("popup-overlay").classList.remove("open");
 }
 async function getUserCourseProgress(courseId){
   if(!auth.currentUser)return{completedModules:[],watchedVideos:[]};
@@ -1427,6 +1575,7 @@ async function openEditModule(courseId,modId){
     document.getElementById("mm-doc-url-input").value=m.docUrl;
   }
   document.getElementById("btn-mm-save").innerText="Speichern";
+  updateQuizBtnLabel();
   document.getElementById("popup-overlay").classList.add("open");document.getElementById("module-modal").classList.remove("hidden");
 }
 function handleVideoSelect(input){
@@ -1515,6 +1664,7 @@ function openQuizEditor(){
   document.getElementById("quiz-edit-modal").classList.remove("hidden");
   renderQuizEditor();
 }
+function updateQuizBtnLabel(){const btn=document.getElementById("btn-mm-quiz");if(btn)btn.innerHTML=tempQuizQuestions.length?`&#x1F9E0; Quiz (${tempQuizQuestions.length} Fragen)`:"&#x1F9E0; Quiz";}
 function closeQuizEditor(){
   document.getElementById("quiz-edit-modal").classList.add("hidden");
   document.getElementById("module-modal").classList.remove("hidden");
@@ -1548,7 +1698,7 @@ function addQuizAnswer(qi){
 function saveQuizToModule(){
   const valid=tempQuizQuestions.filter(q=>q.q&&q.a.some(a=>a));
   tempQuizQuestions=valid;
-  closeQuizEditor();
+  closeQuizEditor();updateQuizBtnLabel();
 }
 let vpmCourseId=null,vpmModId=null,vpmHasQuiz=false;
 function openVideoPopup(encodedUrl,courseId,modId,hasQuiz){
