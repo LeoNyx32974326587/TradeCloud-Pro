@@ -1860,7 +1860,8 @@ async function onVideoEnded(courseId,modId,hasQuiz){
 async function completeModule(courseId,modId){
   const progId=auth.currentUser.uid+"_"+courseId;
   const progDoc=await db.collection("course_progress").doc(progId).get();
-  const completed=progDoc.exists?progDoc.data().completedModules:[];
+  const d=progDoc.exists?progDoc.data():{};
+  const completed=d.completedModules||[];
   if(!completed.includes(modId)){completed.push(modId);await db.collection("course_progress").doc(progId).set({completedModules:completed},{merge:true});}
 }
 async function deleteModule(courseId,modId){if(!confirm("Modul loeschen?"))return;await db.collection("courses").doc(courseId).collection("modules").doc(modId).delete();loadModules(courseId);}
