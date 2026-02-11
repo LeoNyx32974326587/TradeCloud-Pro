@@ -552,36 +552,44 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <div id="ig-search-results" style="max-height:200px;overflow-y:auto"></div>
   </div>
 </div>
-<div id="module-detail-modal" class="modal-base hidden" style="max-width:700px;max-height:95vh;overflow-y:auto;padding:0">
-  <div class="dv-header" style="padding:15px 20px;border-bottom:1px solid #333;position:sticky;top:0;background:#000;z-index:1">
-    <span id="md-title" style="font-weight:700;font-size:1.1rem">Modul</span>
-    <button onclick="closeModuleDetail()" style="background:none;border:none;color:#8e8e93;cursor:pointer;font-size:1.2rem">&#x2715;</button>
+<div id="module-detail-modal" class="modal-base hidden" style="max-width:800px;max-height:95vh;overflow-y:auto;padding:0;border-radius:20px">
+  <div style="position:sticky;top:0;z-index:2;background:var(--popup-bg);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;justify-content:space-between;align-items:center">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:1.1rem">&#x1F3AC;</div>
+      <div><div id="md-title" style="font-weight:800;font-size:1.1rem">Modul</div><div id="md-subtitle" style="font-size:.75rem;color:var(--text-sub);margin-top:2px">Video &amp; Lernmaterial</div></div>
+    </div>
+    <button onclick="closeModuleDetail()" style="background:rgba(255,255,255,.08);border:none;color:var(--text-sub);cursor:pointer;font-size:1rem;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:.2s" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">&#x2715;</button>
   </div>
-  <div style="padding:20px">
-    <div id="md-video-area" class="hidden" style="margin-bottom:20px">
-      <video id="md-player" controls style="width:100%;max-height:400px;display:block;border-radius:8px;background:#000"></video>
+  <div style="padding:0">
+    <div id="md-video-area" class="hidden">
+      <div style="position:relative;background:#000;border-bottom:1px solid var(--border)">
+        <video id="md-player" controls style="width:100%;max-height:420px;display:block"></video>
+      </div>
     </div>
-    <div id="md-desc-area" class="hidden" style="margin-bottom:20px;background:#151517;padding:15px;border-radius:10px;border:1px solid #333">
-      <div style="font-size:.8rem;color:var(--accent);font-weight:700;margin-bottom:8px;text-transform:uppercase">Beschreibung</div>
-      <p id="md-desc-text" style="color:var(--text-sub);font-size:.9rem;line-height:1.6;margin:0"></p>
-    </div>
-    <div id="md-doc-area" class="hidden" style="margin-bottom:20px">
-      <a id="md-doc-link" href="#" target="_blank" class="btn-small" style="display:inline-flex;gap:8px;padding:12px 20px;font-size:.9rem;width:100%;justify-content:center">&#x1F4C4; Dokument herunterladen</a>
-    </div>
-    <div id="md-video-hint" class="hidden" style="background:rgba(187,134,252,.1);border:1px solid var(--accent);border-radius:10px;padding:15px;text-align:center;margin-bottom:20px">
-      <span style="font-size:1.5rem">&#x1F3AC;</span>
-      <p style="color:var(--accent);font-weight:700;margin:8px 0 0">Schaue das Video komplett an um das Quiz freizuschalten.</p>
-    </div>
-    <div id="md-quiz-area" class="hidden" style="text-align:center">
-      <button id="md-quiz-btn" class="btn-primary" style="padding:15px;font-size:1rem">&#x1F9E0; Quiz starten</button>
-      <p style="color:var(--text-sub);font-size:.8rem;margin-top:8px">Bestehe das Quiz um das Modul abzuschliessen.</p>
-    </div>
-    <div id="md-completed-area" class="hidden" style="text-align:center;padding:20px">
-      <div style="font-size:3rem">&#x2705;</div>
-      <p style="color:var(--success);font-weight:700;font-size:1.1rem;margin-top:10px">Modul abgeschlossen!</p>
-    </div>
-    <div id="md-no-quiz-hint" class="hidden" style="background:rgba(48,209,88,.1);border:1px solid var(--success);border-radius:10px;padding:15px;text-align:center;margin-bottom:20px">
-      <p style="color:var(--success);font-weight:700;margin:0">Schaue das Video komplett an um das Modul abzuschliessen.</p>
+    <div style="padding:24px;display:flex;flex-direction:column;gap:16px">
+      <div id="md-desc-area" class="hidden" style="background:var(--cell-bg);border:1px solid var(--border);border-radius:14px;padding:20px;backdrop-filter:blur(5px)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:1rem">&#x1F4DD;</span><span style="font-size:.8rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:1px">Beschreibung</span></div>
+        <p id="md-desc-text" style="color:var(--text-sub);font-size:.92rem;line-height:1.7;margin:0;white-space:pre-line"></p>
+      </div>
+      <div id="md-doc-area" class="hidden">
+        <a id="md-doc-link" href="#" target="_blank" style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--cell-bg);border:1px solid var(--border);border-radius:14px;color:var(--text-main);text-decoration:none;font-weight:600;font-size:.92rem;transition:.2s;backdrop-filter:blur(5px)" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"><span style="font-size:1.3rem">&#x1F4C4;</span><span style="flex:1">Dokument herunterladen</span><span style="color:var(--accent);font-size:1.1rem">&#x2913;</span></a>
+      </div>
+      <div id="md-video-hint" class="hidden" style="background:linear-gradient(135deg,rgba(187,134,252,.08),rgba(108,99,255,.08));border:1px solid rgba(187,134,252,.25);border-radius:14px;padding:20px;text-align:center">
+        <span style="font-size:2rem;display:block;margin-bottom:8px">&#x1F3AC;</span>
+        <p style="color:var(--accent);font-weight:700;margin:0;font-size:.95rem">Schaue das Video komplett an um das Quiz freizuschalten.</p>
+      </div>
+      <div id="md-quiz-area" class="hidden" style="text-align:center;padding:10px 0">
+        <button id="md-quiz-btn" class="btn-primary" style="padding:16px 40px;font-size:1rem;border-radius:14px;background:var(--gradient);border:none;font-weight:700">&#x1F9E0; Quiz starten</button>
+        <p style="color:var(--text-sub);font-size:.8rem;margin-top:10px">Bestehe das Quiz um das Modul abzuschliessen.</p>
+      </div>
+      <div id="md-completed-area" class="hidden" style="text-align:center;padding:25px 20px;background:linear-gradient(135deg,rgba(0,230,118,.08),rgba(0,230,118,.02));border:1px solid rgba(0,230,118,.2);border-radius:14px">
+        <div style="font-size:3rem;margin-bottom:10px">&#x2705;</div>
+        <p style="color:var(--success);font-weight:800;font-size:1.1rem;margin:0">Modul abgeschlossen!</p>
+        <button id="md-next-btn" class="btn-primary hidden" style="margin-top:15px;padding:12px 30px;border-radius:12px;font-size:.95rem" onclick="openNextModule()">Weiter zum naechsten Modul &#x276F;</button>
+      </div>
+      <div id="md-no-quiz-hint" class="hidden" style="background:linear-gradient(135deg,rgba(48,209,88,.08),rgba(48,209,88,.02));border:1px solid rgba(48,209,88,.2);border-radius:14px;padding:20px;text-align:center">
+        <p style="color:var(--success);font-weight:700;margin:0;font-size:.95rem">Schaue das Video komplett an um das Modul abzuschliessen.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -747,7 +755,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 <section id="view-Lot-Rechner" class="view-section">
   <div class="card"><h3>Lot Rechner</h3>
     <label>Asset</label><div class="asset-dropdown-wrap"><input type="text" id="cAsset" placeholder="z.B. EURUSD, XAUUSD, US30" style="text-transform:uppercase" autocomplete="off" oninput="showAssetDropdown(this,'asset-dd-2')" onfocus="showAssetDropdown(this,'asset-dd-2')"><div id="asset-dd-2" class="asset-dropdown"></div></div>
-    <div class="input-row-2"><div><label>Konto (USD)</label><input type="number" id="cBal" placeholder="10000"></div><div><label>Risiko %</label><input type="number" id="cRisk" placeholder="1" step="0.1"></div></div>
+    <div class="input-row-2"><div><label>Konto (EUR)</label><input type="number" id="cBal" placeholder="10000"></div><div><label>Risiko %</label><input type="number" id="cRisk" placeholder="1" step="0.1"></div></div>
     <div class="input-row-2"><div><label>Entry</label><input type="number" id="cEnt" placeholder="1.08500" step="any"></div><div><label>Stop Loss</label><input type="number" id="cSl" placeholder="1.08000" step="any"></div></div>
     <button onclick="calcLots()" class="btn-primary">Berechnen</button>
     <div id="cRes" style="text-align:center;margin-top:20px">
@@ -758,18 +766,24 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 </section>
 <section id="view-News" class="view-section"><div class="card" style="height:600px;padding:0"><div id="news-box" style="height:100%"></div></div></section>
 <section id="view-Kurse" class="view-section">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
-      <h3 style="margin:0">Kurs</h3>
-      <button id="btn-add-course" class="btn-icon hidden" style="padding:8px 12px;font-size:1.3rem;background:var(--accent);color:#000;border:none" onclick="openCreateCourse()" title="Neuer Kurs">&#x2795;</button>
+  <div class="card" style="border-radius:18px;overflow:hidden;padding:0">
+    <div style="padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:12px"><span style="font-size:1.5rem">&#x1F393;</span><h3 style="margin:0;font-weight:800">Kurse</h3></div>
+      <button id="btn-add-course" class="btn-icon hidden" style="padding:8px 16px;font-size:1rem;background:var(--gradient);color:#fff;border:none;border-radius:10px;font-weight:700;display:flex;align-items:center;gap:6px" onclick="openCreateCourse()" title="Neuer Kurs">&#x2795; Kurs</button>
     </div>
-    <div id="course-list"><div style="color:var(--text-sub);text-align:center;padding:30px">Lade Kurse...</div></div>
+    <div id="course-list" style="padding:16px"><div style="color:var(--text-sub);text-align:center;padding:30px">Lade Kurse...</div></div>
   </div>
   <div id="course-detail-area" class="hidden">
-    <div class="card"><button class="btn-small" onclick="backToCourseList()" style="margin-bottom:15px">&#x276E; Zurueck</button>
-    <h3 id="course-detail-title">Kurs</h3>
-    <p id="course-detail-desc" style="color:var(--text-sub);font-size:.9rem"></p>
-    <div id="course-modules-list" style="margin-top:20px"></div></div>
+    <div class="card" style="border-radius:18px;overflow:hidden;padding:0">
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
+        <button onclick="backToCourseList()" style="background:rgba(255,255,255,.08);border:none;color:var(--text-main);cursor:pointer;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:.2s" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">&#x276E;</button>
+        <div style="flex:1"><h3 id="course-detail-title" style="margin:0;font-weight:800">Kurs</h3><p id="course-detail-desc" style="color:var(--text-sub);font-size:.85rem;margin:4px 0 0"></p></div>
+      </div>
+      <div id="course-modules-list" style="padding:16px"></div>
+      <div id="course-reset-area" style="padding:0 16px 16px;text-align:center">
+        <button onclick="resetCourseProgress()" style="background:none;border:1px solid var(--danger);color:var(--danger);border-radius:10px;padding:10px 20px;cursor:pointer;font-size:.85rem;font-weight:600;transition:.2s;width:100%" onmouseover="this.style.background='rgba(255,82,82,.1)'" onmouseout="this.style.background='none'">&#x1F504; Kurs zuruecksetzen</button>
+      </div>
+    </div>
   </div>
 </section>
 <section id="view-Einstellungen" class="view-section">
@@ -1319,16 +1333,24 @@ function setTheme(t){document.body.classList.remove("light-mode","neon-mode");if
 function renderTradingViewWidget(){const c=document.getElementById("tradingview_chart");if(!c)return;c.innerHTML="";if(typeof TradingView!=="undefined")new TradingView.widget({autosize:true,symbol:"FX:EURUSD",interval:"D",timezone:"Etc/UTC",theme:document.body.classList.contains("light-mode")?"light":"dark",style:"1",locale:"de_DE",enable_publishing:false,allow_symbol_change:true,hide_side_toolbar:false,container_id:"tradingview_chart"});}
 function detectAssetType(asset){
   const a=asset.toUpperCase().replace(/[^A-Z0-9]/g,"");
-  if(["XAUUSD","GOLD"].some(x=>a.includes(x)))return{type:"gold",pipSize:0.01,pipValue:1,contractSize:100,label:"Gold"};
-  if(["XAGUSD","SILVER"].some(x=>a.includes(x)))return{type:"silver",pipSize:0.001,pipValue:5,contractSize:5000,label:"Silber"};
-  if(["US30","DJ30","DOW"].some(x=>a.includes(x)))return{type:"index",pipSize:1,pipValue:1,contractSize:1,label:"US30 Index"};
-  if(["NAS100","USTEC","NDX"].some(x=>a.includes(x)))return{type:"index",pipSize:1,pipValue:1,contractSize:1,label:"NAS100 Index"};
-  if(["SPX500","US500","SP500"].some(x=>a.includes(x)))return{type:"index",pipSize:0.1,pipValue:1,contractSize:1,label:"S&P500 Index"};
+  if(["XAUUSD","GOLD"].some(x=>a.includes(x)))return{type:"gold",pipSize:0.1,pipValue:0.92,contractSize:100,label:"Gold"};
+  if(["XAGUSD","SILVER"].some(x=>a.includes(x)))return{type:"silver",pipSize:0.01,pipValue:4.60,contractSize:5000,label:"Silber"};
+  if(["US30","DJ30","DOW"].some(x=>a.includes(x)))return{type:"index",pipSize:1,pipValue:0.92,contractSize:1,label:"US30 Index"};
+  if(["NAS100","USTEC","NDX"].some(x=>a.includes(x)))return{type:"index",pipSize:1,pipValue:0.92,contractSize:1,label:"NAS100 Index"};
+  if(["SPX500","US500","SP500"].some(x=>a.includes(x)))return{type:"index",pipSize:0.1,pipValue:0.92,contractSize:1,label:"S&P500 Index"};
   if(["GER40","DAX","DE30"].some(x=>a.includes(x)))return{type:"index",pipSize:1,pipValue:1,contractSize:1,label:"DAX Index"};
-  if(["BTCUSD","BITCOIN"].some(x=>a.includes(x)))return{type:"crypto",pipSize:1,pipValue:1,contractSize:1,label:"Bitcoin"};
-  const jpyPairs=["JPY"];const isJpy=jpyPairs.some(x=>a.includes(x));
-  if(isJpy)return{type:"forex_jpy",pipSize:0.01,pipValue:1000/100,contractSize:100000,label:"Forex (JPY)"};
-  return{type:"forex",pipSize:0.0001,pipValue:10,contractSize:100000,label:"Forex"};
+  if(["UK100","FTSE"].some(x=>a.includes(x)))return{type:"index",pipSize:1,pipValue:1.16,contractSize:1,label:"UK100 Index"};
+  if(["JPN225","JP225","NIKKEI"].some(x=>a.includes(x)))return{type:"index",pipSize:1,pipValue:0.0061,contractSize:1,label:"JPN225 Index"};
+  if(["BTCUSD","BITCOIN"].some(x=>a.includes(x)))return{type:"crypto",pipSize:1,pipValue:0.92,contractSize:1,label:"Bitcoin"};
+  if(["ETHUSD","ETHEREUM"].some(x=>a.includes(x)))return{type:"crypto",pipSize:0.1,pipValue:0.92,contractSize:1,label:"Ethereum"};
+  if(["XRPUSD"].some(x=>a.includes(x)))return{type:"crypto",pipSize:0.0001,pipValue:92,contractSize:1,label:"XRP"};
+  if(["SOLUSD"].some(x=>a.includes(x)))return{type:"crypto",pipSize:0.01,pipValue:0.92,contractSize:1,label:"Solana"};
+  if(["USOIL","WTI","CRUDEOIL"].some(x=>a.includes(x)))return{type:"commodity",pipSize:0.01,pipValue:0.92,contractSize:1000,label:"US Oil"};
+  if(["UKOIL","BRENT"].some(x=>a.includes(x)))return{type:"commodity",pipSize:0.01,pipValue:0.92,contractSize:1000,label:"UK Oil"};
+  if(["NATGAS","NGAS"].some(x=>a.includes(x)))return{type:"commodity",pipSize:0.001,pipValue:0.92,contractSize:10000,label:"Natural Gas"};
+  const isJpy=a.includes("JPY");
+  if(isJpy)return{type:"forex_jpy",pipSize:0.01,pipValue:6.14,contractSize:100000,label:"Forex (JPY)"};
+  return{type:"forex",pipSize:0.0001,pipValue:9.20,contractSize:100000,label:"Forex"};
 }
 function calcLots(){
   const asset=(document.getElementById("cAsset").value||"").toUpperCase().trim();
@@ -1346,7 +1368,7 @@ function calcLots(){
   lot=Math.max(lot,0.01);
   lot=Math.round(lot*100)/100;
   document.getElementById("cResLot").innerText=lot.toFixed(2)+" Lot";
-  document.getElementById("cResInfo").innerHTML=`Typ: ${info.label} | Risiko: ${riskAmount.toFixed(2)} USD | Pips: ${pipDist.toFixed(1)} | Pip-Wert: ${pipValuePerLot.toFixed(2)} USD/Lot`;
+  document.getElementById("cResInfo").innerHTML=`Typ: ${info.label} | Risiko: ${riskAmount.toFixed(2)} EUR | Pips: ${pipDist.toFixed(1)} | Pip-Wert: ${pipValuePerLot.toFixed(2)} EUR/Lot`;
 }
 async function runOCR(){const url=document.getElementById("imgSetup").value;const se=document.getElementById("ocr-status");if(!url){alert("Bitte Bild-URL eingeben!");return;}se.innerText="Lese Bild...";try{const res=await fetch(`https://api.ocr.space/parse/imageurl?apikey=helloworld&url=${url}&language=eng&isOverlayRequired=false`);const data=await res.json();if(data.IsErroredOnProcessing){se.innerText="Fehler";return;}if(data.ParsedResults&&data.ParsedResults.length>0){const text=data.ParsedResults[0].ParsedText.replace(/(\r\n|\n|\r)/gm," ");const slm=text.match(/(?:Stop|SL|Loss)[\s:=-]*(\d+[\.,]\d{2,5})/i);if(slm)document.getElementById("inpSL").value=slm[1].replace(",",".");const em=text.match(/(?:Entry|Open|Price)[\s:=-]*(\d+[\.,]\d{2,5})/i);if(em)document.getElementById("inpEntry").value=em[1].replace(",",".");const tm=text.match(/(?:Target|TP|Profit)[\s:=-]*(\d+[\.,]\d{2,5})/i);if(tm)document.getElementById("inpTP1").value=tm[1].replace(",",".");se.innerText="Daten gefunden!";setTimeout(()=>se.innerText="",3000);}else se.innerText="Kein Text erkannt";}catch(e){se.innerText="Netzwerkfehler";}}
 function showView(v){
@@ -1470,15 +1492,17 @@ async function loadCourses(){
     const allDone=!mods.empty&&mods.docs.every(m=>prog.completedModules.includes(m.id));
     courseCompletion.push({docId:cid,data:doc.data(),allDone,moduleCount:mods.size,completedCount:prog.completedModules.length});
   }
-  let html="";let courseIndex=0;
+  let html="";let courseIndex=0;const totalCourses=courseCompletion.length;
   for(const c of courseCompletion){
     const d=c.data;if(d.disabled&&!isAdmin){courseIndex++;continue;}
     const isUnlocked=isAdmin||courseIndex===0||(courseIndex>0&&courseCompletion[courseIndex-1].allDone);
-    const dis=d.disabled?'<span style="color:var(--danger);font-size:.7rem"> (Deaktiviert)</span>':"";
+    const dis=d.disabled?'<span style="color:var(--danger);font-size:.7rem;margin-left:6px">(Deaktiviert)</span>':"";
     const progress=c.moduleCount>0?Math.round(c.completedCount/c.moduleCount*100):0;
-    const statusText=c.allDone?"&#x2705; Abgeschlossen":(isUnlocked?`${progress}% abgeschlossen`:"&#x1F512; Gesperrt");
+    const statusIcon=c.allDone?"&#x2705;":(isUnlocked?"&#x1F4DA;":"&#x1F512;");
+    const statusText=c.allDone?"Abgeschlossen":(isUnlocked?`${progress}% abgeschlossen`:"Gesperrt");
     const statusColor=c.allDone?"var(--success)":(isUnlocked?"var(--accent)":"var(--text-sub)");
-    html+=`<div class="settings-list-item" style="cursor:${isUnlocked?"pointer":"default"};opacity:${isUnlocked?1:.5}" ${isUnlocked?`onclick="openCourse('${c.docId}')"`:""}><div style="flex-grow:1"><strong>${d.title}</strong>${dis}<div style="color:var(--text-sub);font-size:.8rem;margin-top:4px">${d.description||""}</div><div style="color:${statusColor};font-size:.75rem;font-weight:600;margin-top:6px">${statusText}</div>${isUnlocked&&c.moduleCount>0&&!c.allDone?`<div style="height:3px;background:#333;border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;background:var(--accent);width:${progress}%;border-radius:2px"></div></div>`:""}</div><div style="display:flex;gap:4px;align-items:center">${isAdmin&&!isCoach?`<button class="btn-icon" onclick="event.stopPropagation();openEditCourse('${c.docId}')" title="Bearbeiten">&#x270F;&#xFE0E;</button><button class="btn-icon" onclick="event.stopPropagation();toggleCourseDisabled('${c.docId}',${!!d.disabled})" title="${d.disabled?"Aktivieren":"Deaktivieren"}">&#x1F441;</button><button class="btn-icon" onclick="event.stopPropagation();deleteCourse('${c.docId}')" title="Loeschen">&#x1F5D1;&#xFE0E;</button>`:""}<span style="color:var(--text-sub);font-size:1.2rem">&#x276F;</span></div></div>`;
+    const borderLeft=c.allDone?"3px solid var(--success)":(isUnlocked?"3px solid var(--accent)":"3px solid transparent");
+    html+=`<div style="background:var(--cell-bg);border:1px solid var(--border);border-left:${borderLeft};border-radius:14px;padding:18px 20px;margin-bottom:10px;cursor:${isUnlocked?"pointer":"default"};opacity:${isUnlocked?1:.45};transition:.2s;position:relative;backdrop-filter:blur(5px)" ${isUnlocked?`onclick="openCourse('${c.docId}')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"`:""}><div style="display:flex;align-items:flex-start;gap:15px"><div style="min-width:44px;height:44px;border-radius:12px;background:${c.allDone?"rgba(0,230,118,.12)":(isUnlocked?"linear-gradient(135deg,rgba(108,99,255,.2),rgba(187,134,252,.2))":"rgba(255,255,255,.05)")};display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">${statusIcon}</div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><strong style="font-size:1rem">${d.title}</strong>${dis}<span style="font-size:.7rem;color:var(--text-sub);background:rgba(255,255,255,.06);padding:2px 8px;border-radius:6px">${c.moduleCount} Module</span></div><div style="color:var(--text-sub);font-size:.82rem;margin-top:5px;line-height:1.4">${d.description||""}</div><div style="margin-top:10px;display:flex;align-items:center;gap:10px"><span style="color:${statusColor};font-size:.78rem;font-weight:700">${statusText}</span></div>${isUnlocked&&c.moduleCount>0?`<div style="height:4px;background:rgba(255,255,255,.06);border-radius:3px;margin-top:8px;overflow:hidden"><div style="height:100%;background:${c.allDone?"var(--success)":"var(--gradient)"};width:${progress}%;border-radius:3px;transition:width .4s"></div></div>`:""}</div><div style="display:flex;flex-direction:column;align-items:center;gap:4px">${isAdmin&&!isCoach?`<div style="display:flex;gap:3px">${courseIndex>0?`<button style="background:rgba(255,255,255,.08);border:none;color:var(--text-sub);cursor:pointer;width:26px;height:26px;border-radius:6px;font-size:.7rem;display:flex;align-items:center;justify-content:center" onclick="event.stopPropagation();swapCourseOrder('${c.docId}',${d.order||courseIndex},'up')" title="Nach oben">&#x25B2;</button>`:""}<button style="background:rgba(255,255,255,.08);border:none;color:var(--text-sub);cursor:pointer;width:26px;height:26px;border-radius:6px;font-size:.7rem;display:flex;align-items:center;justify-content:center" onclick="event.stopPropagation();swapCourseOrder('${c.docId}',${d.order||courseIndex},'down')" title="Nach unten">&#x25BC;</button></div><div style="display:flex;gap:3px;margin-top:2px"><button style="background:rgba(255,255,255,.08);border:none;color:var(--text-sub);cursor:pointer;width:26px;height:26px;border-radius:6px;font-size:.7rem" onclick="event.stopPropagation();openEditCourse('${c.docId}')" title="Bearbeiten">&#x270F;&#xFE0E;</button><button style="background:rgba(255,255,255,.08);border:none;color:var(--text-sub);cursor:pointer;width:26px;height:26px;border-radius:6px;font-size:.7rem" onclick="event.stopPropagation();toggleCourseDisabled('${c.docId}',${!!d.disabled})" title="${d.disabled?"Aktivieren":"Deaktivieren"}">&#x1F441;</button><button style="background:rgba(255,255,255,.08);border:none;color:var(--danger);cursor:pointer;width:26px;height:26px;border-radius:6px;font-size:.7rem" onclick="event.stopPropagation();deleteCourse('${c.docId}')" title="Loeschen">&#x1F5D1;&#xFE0E;</button></div>`:""}<span style="color:var(--text-sub);font-size:1.2rem;margin-top:4px">&#x276F;</span></div></div></div>`;
     courseIndex++;
   }
   list.innerHTML=html;
@@ -1506,6 +1530,44 @@ async function saveCourseModal(){
 }
 async function toggleCourseDisabled(id,isDisabled){await db.collection("courses").doc(id).update({disabled:!isDisabled});loadCourses();}
 async function deleteCourse(id){if(!confirm("Kurs wirklich loeschen?"))return;await db.collection("courses").doc(id).delete();loadCourses();}
+async function swapCourseOrder(courseId,currentOrder,direction){
+  const s=await db.collection("courses").orderBy("order","asc").get();
+  const docs=s.docs;let idx=docs.findIndex(d=>d.id===courseId);
+  const targetIdx=direction==="up"?idx-1:idx+1;
+  if(targetIdx<0||targetIdx>=docs.length)return;
+  const batch=db.batch();
+  batch.update(db.collection("courses").doc(docs[idx].id),{order:targetIdx});
+  batch.update(db.collection("courses").doc(docs[targetIdx].id),{order:idx});
+  await batch.commit();loadCourses();
+}
+async function swapModuleOrder(courseId,modId,currentOrder,direction){
+  const s=await db.collection("courses").doc(courseId).collection("modules").orderBy("order","asc").get();
+  const docs=s.docs;let idx=docs.findIndex(d=>d.id===modId);
+  const targetIdx=direction==="up"?idx-1:idx+1;
+  if(targetIdx<0||targetIdx>=docs.length)return;
+  const batch=db.batch();
+  batch.update(db.collection("courses").doc(courseId).collection("modules").doc(docs[idx].id),{order:targetIdx});
+  batch.update(db.collection("courses").doc(courseId).collection("modules").doc(docs[targetIdx].id),{order:idx});
+  await batch.commit();loadModules(courseId);
+}
+async function resetCourseProgress(){
+  if(!curCourseId||!auth.currentUser)return;
+  if(!confirm("Kurs wirklich zuruecksetzen? Dein gesamter Fortschritt wird geloescht."))return;
+  const progId=auth.currentUser.uid+"_"+curCourseId;
+  await db.collection("course_progress").doc(progId).set({completedModules:[],watchedVideos:[]});
+  loadModules(curCourseId);
+}
+let mdCurrentCourseId=null,mdCurrentModId=null;
+async function openNextModule(){
+  if(!mdCurrentCourseId)return;
+  const mods=await db.collection("courses").doc(mdCurrentCourseId).collection("modules").orderBy("order","asc").get();
+  const prog=await getUserCourseProgress(mdCurrentCourseId);
+  let nextModId=null;
+  for(const d of mods.docs){if(!prog.completedModules.includes(d.id)){nextModId=d.id;break;}}
+  closeModuleDetail();
+  if(nextModId){openModuleDetail(mdCurrentCourseId,nextModId);}
+  else{loadModules(mdCurrentCourseId);}
+}
 async function openCourse(id){
   curCourseId=id;document.getElementById("course-list").parentElement.classList.add("hidden");document.getElementById("course-detail-area").classList.remove("hidden");
   const doc=await db.collection("courses").doc(id).get();if(!doc.exists)return;const d=doc.data();
@@ -1516,26 +1578,26 @@ function backToCourseList(){document.getElementById("course-list").parentElement
 async function loadModules(courseId){
   const area=document.getElementById("course-modules-list");area.innerHTML="Lade...";
   const s=await db.collection("courses").doc(courseId).collection("modules").orderBy("order","asc").get();
-  const addBtn=isAdmin&&!isCoach?`<button class="btn-small" onclick="openAddModule('${courseId}')" style="margin-top:15px;width:100%">&#x2795; Modul hinzufuegen</button>`:"";
+  const addBtn=isAdmin&&!isCoach?`<button style="margin-top:12px;width:100%;padding:14px;background:var(--cell-bg);border:2px dashed var(--border);border-radius:12px;color:var(--accent);cursor:pointer;font-weight:700;font-size:.9rem;transition:.2s" onclick="openAddModule('${courseId}')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">&#x2795; Modul hinzufuegen</button>`:"";
   if(s.empty){area.innerHTML="<div style='color:var(--text-sub);padding:20px;text-align:center'>Keine Module vorhanden.</div>"+addBtn;return;}
   const progress=await getUserCourseProgress(courseId);
-  let html="";let moduleIndex=0;
+  let html="";let moduleIndex=0;const totalMods=s.docs.length;
   for(const doc of s.docs){
     const m=doc.data();const isUnlocked=moduleIndex===0||progress.completedModules.includes(s.docs[moduleIndex-1].id);
     const isCompleted=progress.completedModules.includes(doc.id);
-    const lockIcon=isUnlocked?"":"&#x1F512; ";const statusIcon=isCompleted?"&#x2705; ":"";
     const hasQuiz=m.quizQuestions&&m.quizQuestions.length>0;
     const videoWatched=progress.watchedVideos&&progress.watchedVideos.includes(doc.id);
+    const statusIcon=isCompleted?"&#x2705;":(isUnlocked?(m.videoUrl&&!videoWatched?"&#x25B6;&#xFE0F;":(hasQuiz?"&#x1F9E0;":"&#x1F4CB;")):"&#x1F512;");
     const statusText=isCompleted?"Abgeschlossen":(isUnlocked?(m.videoUrl&&!videoWatched?"Video ansehen":(hasQuiz?"Quiz verfuegbar":"Bereit")):"Gesperrt");
     const statusColor=isCompleted?"var(--success)":(isUnlocked?"var(--accent)":"var(--text-sub)");
-    html+=`<div class="card" style="opacity:${isUnlocked?1:.4};${!isUnlocked?"pointer-events:none":""};cursor:${isUnlocked?"pointer":"default"}" ${isUnlocked?`onclick="openModuleDetail('${courseId}','${doc.id}')"`:""}><div style="display:flex;justify-content:space-between;align-items:center"><h4 style="margin:0">${statusIcon}${lockIcon}Modul ${moduleIndex+1}: ${m.title}</h4>${isAdmin&&!isCoach?`<div style="display:flex;gap:4px;pointer-events:all"><button class="btn-icon" onclick="event.stopPropagation();openEditModule('${courseId}','${doc.id}')" title="Bearbeiten">&#x270F;&#xFE0E;</button><button class="btn-icon" onclick="event.stopPropagation();deleteModule('${courseId}','${doc.id}')" title="Loeschen">&#x1F5D1;&#xFE0E;</button></div>`:""}</div>`;
-    if(!isUnlocked)html+=`<p style="color:var(--text-sub);font-size:.8rem;margin-top:8px;font-style:italic">Schliesse zuerst das vorherige Modul ab.</p>`;
-    else html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><span style="color:${statusColor};font-size:.8rem;font-weight:600">${statusText}</span><span style="color:var(--text-sub);font-size:1rem">&#x276F;</span></div>`;
-    html+=`</div>`;moduleIndex++;
+    const borderL=isCompleted?"3px solid var(--success)":(isUnlocked?"3px solid var(--accent)":"3px solid transparent");
+    html+=`<div style="background:var(--cell-bg);border:1px solid var(--border);border-left:${borderL};border-radius:12px;padding:16px 18px;margin-bottom:8px;opacity:${isUnlocked?1:.4};cursor:${isUnlocked?"pointer":"default"};transition:.2s;backdrop-filter:blur(5px);${!isUnlocked?"pointer-events:none":""}" ${isUnlocked?`onclick="openModuleDetail('${courseId}','${doc.id}')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"`:""}><div style="display:flex;align-items:center;gap:14px"><div style="min-width:38px;height:38px;border-radius:10px;background:${isCompleted?"rgba(0,230,118,.12)":(isUnlocked?"linear-gradient(135deg,rgba(108,99,255,.15),rgba(187,134,252,.15))":"rgba(255,255,255,.04)")};display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">${statusIcon}</div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.95rem">Modul ${moduleIndex+1}: ${m.title}</div><div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="color:${statusColor};font-size:.78rem;font-weight:600">${statusText}</span>${hasQuiz?'<span style="font-size:.65rem;color:var(--text-sub);background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px">Quiz</span>':""}${m.videoUrl?'<span style="font-size:.65rem;color:var(--text-sub);background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px">Video</span>':""}</div></div><div style="display:flex;align-items:center;gap:4px;pointer-events:all">${isAdmin&&!isCoach?`${moduleIndex>0?`<button style="background:rgba(255,255,255,.08);border:none;color:var(--text-sub);cursor:pointer;width:24px;height:24px;border-radius:6px;font-size:.65rem;display:flex;align-items:center;justify-content:center" onclick="event.stopPropagation();swapModuleOrder('${courseId}','${doc.id}',${m.order!=null?m.order:moduleIndex},'up')" title="Nach oben">&#x25B2;</button>`:""}<button style="background:rgba(255,255,255,.08);border:none;color:var(--text-sub);cursor:pointer;width:24px;height:24px;border-radius:6px;font-size:.65rem;display:flex;align-items:center;justify-content:center" onclick="event.stopPropagation();swapModuleOrder('${courseId}','${doc.id}',${m.order!=null?m.order:moduleIndex},'down')" title="Nach unten">&#x25BC;</button><button style="background:rgba(255,255,255,.08);border:none;color:var(--text-sub);cursor:pointer;width:24px;height:24px;border-radius:6px;font-size:.65rem" onclick="event.stopPropagation();openEditModule('${courseId}','${doc.id}')" title="Bearbeiten">&#x270F;&#xFE0E;</button><button style="background:rgba(255,255,255,.08);border:none;color:var(--danger);cursor:pointer;width:24px;height:24px;border-radius:6px;font-size:.65rem" onclick="event.stopPropagation();deleteModule('${courseId}','${doc.id}')" title="Loeschen">&#x1F5D1;&#xFE0E;</button>`:""}<span style="color:var(--text-sub);font-size:1rem;margin-left:4px">&#x276F;</span></div></div></div>`;
+    moduleIndex++;
   }
   area.innerHTML=html+addBtn;
 }
 async function openModuleDetail(courseId,modId){
+  mdCurrentCourseId=courseId;mdCurrentModId=modId;
   const doc=await db.collection("courses").doc(courseId).collection("modules").doc(modId).get();
   if(!doc.exists)return;const m=doc.data();
   const progress=await getUserCourseProgress(courseId);
@@ -1543,17 +1605,22 @@ async function openModuleDetail(courseId,modId){
   const videoWatched=progress.watchedVideos&&progress.watchedVideos.includes(modId);
   const hasQuiz=m.quizQuestions&&m.quizQuestions.length>0;
   document.getElementById("md-title").innerText=m.title||"Modul";
+  document.getElementById("md-subtitle").innerText=hasQuiz?"Video & Quiz":(m.videoUrl?"Video & Lernmaterial":"Lernmaterial");
   const va=document.getElementById("md-video-area");const da=document.getElementById("md-desc-area");
   const doa=document.getElementById("md-doc-area");const qa=document.getElementById("md-quiz-area");
   const vh=document.getElementById("md-video-hint");const ca=document.getElementById("md-completed-area");
-  const nqh=document.getElementById("md-no-quiz-hint");
-  va.classList.add("hidden");da.classList.add("hidden");doa.classList.add("hidden");qa.classList.add("hidden");vh.classList.add("hidden");ca.classList.add("hidden");nqh.classList.add("hidden");
+  const nqh=document.getElementById("md-no-quiz-hint");const nb=document.getElementById("md-next-btn");
+  va.classList.add("hidden");da.classList.add("hidden");doa.classList.add("hidden");qa.classList.add("hidden");vh.classList.add("hidden");ca.classList.add("hidden");nqh.classList.add("hidden");nb.classList.add("hidden");
   if(m.videoUrl){
     va.classList.remove("hidden");const player=document.getElementById("md-player");player.src=m.videoUrl;
     player.onended=async function(){
       await markVideoWatched(courseId,modId);
-      if(!hasQuiz){await completeModule(courseId,modId);closeModuleDetail();loadModules(courseId);}
-      else{
+      if(!hasQuiz){
+        await completeModule(courseId,modId);
+        ca.classList.remove("hidden");nb.classList.remove("hidden");
+        va.classList.add("hidden");nqh.classList.add("hidden");
+        loadModules(courseId);
+      }else{
         const player2=document.getElementById("md-player");player2.pause();
         va.classList.add("hidden");nqh.classList.add("hidden");vh.classList.add("hidden");
         qa.classList.remove("hidden");
@@ -1562,14 +1629,14 @@ async function openModuleDetail(courseId,modId){
     };
     if(!videoWatched&&!isCompleted){
       const markBtn=document.createElement("div");
-      markBtn.style.cssText="text-align:center;margin-top:10px";
-      markBtn.innerHTML=`<button class="btn-small" style="font-size:.8rem;padding:8px 16px" onclick="manualMarkWatched('${courseId}','${modId}',${hasQuiz})">&#x2705; Video komplett angesehen</button>`;
+      markBtn.style.cssText="text-align:center;margin-top:10px;padding:0 20px 10px";
+      markBtn.innerHTML=`<button style="font-size:.8rem;padding:10px 20px;background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--text-main);border-radius:10px;cursor:pointer;font-weight:600;transition:.2s;width:100%" onclick="manualMarkWatched('${courseId}','${modId}',${hasQuiz})" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">&#x2705; Video komplett angesehen</button>`;
       va.appendChild(markBtn);
     }
   }
   if(m.description){da.classList.remove("hidden");document.getElementById("md-desc-text").innerText=m.description;}
   if(m.docUrl){doa.classList.remove("hidden");document.getElementById("md-doc-link").href=m.docUrl;}
-  if(isCompleted){ca.classList.remove("hidden");}
+  if(isCompleted){ca.classList.remove("hidden");nb.classList.remove("hidden");}
   else if(hasQuiz){
     if(!m.videoUrl||videoWatched){qa.classList.remove("hidden");document.getElementById("md-quiz-btn").onclick=function(){startQuiz(courseId,modId);};}
     else{vh.classList.remove("hidden");}
@@ -1765,8 +1832,14 @@ function closeVideoPopup(){
 }
 async function manualMarkWatched(courseId,modId,hasQuiz){
   await markVideoWatched(courseId,modId);
-  if(!hasQuiz){await completeModule(courseId,modId);closeModuleDetail();loadModules(courseId);}
-  else{
+  if(!hasQuiz){
+    await completeModule(courseId,modId);
+    document.getElementById("md-video-area").classList.add("hidden");
+    document.getElementById("md-no-quiz-hint").classList.add("hidden");
+    document.getElementById("md-completed-area").classList.remove("hidden");
+    document.getElementById("md-next-btn").classList.remove("hidden");
+    loadModules(courseId);
+  }else{
     const va=document.getElementById("md-video-area");const vh=document.getElementById("md-video-hint");const nqh=document.getElementById("md-no-quiz-hint");const qa=document.getElementById("md-quiz-area");
     const player=document.getElementById("md-player");player.pause();
     va.classList.add("hidden");vh.classList.add("hidden");nqh.classList.add("hidden");
