@@ -446,21 +446,41 @@ input,select,textarea{background:var(--bg-dark);color:var(--text-main);border:1p
     <label>Video (MP4)</label>
     <div id="mm-upload-area" class="upload-area" onclick="document.getElementById('mm-video-file').click()">
       <div style="font-size:2rem;margin-bottom:8px">&#x1F4F9;</div>
-      <div style="color:var(--text-sub);font-size:.85rem">MP4-Datei hier klicken zum Hochladen</div>
+      <div style="color:var(--text-sub);font-size:.85rem">MP4-Datei klicken zum Hochladen</div>
       <input type="file" id="mm-video-file" accept="video/mp4,.mp4" style="display:none" onchange="handleVideoSelect(this)">
     </div>
     <div id="mm-upload-progress" class="hidden" style="margin-bottom:12px">
       <div class="upload-progress"><div id="mm-progress-bar" class="upload-progress-bar"></div></div>
       <small id="mm-upload-status" style="color:var(--text-sub);display:block;margin-top:4px">Hochladen...</small>
     </div>
+    <div id="mm-upload-error" class="hidden" style="margin-bottom:12px;background:rgba(255,61,0,.15);border:1px solid var(--danger);border-radius:8px;padding:10px;font-size:.8rem;color:var(--danger)"></div>
+    <div style="margin-bottom:12px"><small style="color:var(--text-sub)">Oder Video-URL einfuegen:</small><input type="url" id="mm-video-url-input" placeholder="https://..." onchange="if(this.value){document.getElementById('mm-video-url').value=this.value;document.getElementById('mm-video-preview').classList.remove('hidden');document.getElementById('mm-video-player').src=this.value;document.getElementById('mm-upload-area').classList.add('hidden');}"></div>
     <div id="mm-video-preview" class="hidden" style="margin-bottom:12px;background:#151517;padding:10px;border-radius:8px;border:1px solid #333">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="color:var(--success);font-size:.85rem;font-weight:700">&#x2705; Video hochgeladen</span>
+        <span style="color:var(--success);font-size:.85rem;font-weight:700">&#x2705; Video vorhanden</span>
         <button class="btn-small" onclick="removeModuleVideo()" style="font-size:.75rem">Entfernen</button>
       </div>
       <video id="mm-video-player" controls style="width:100%;max-height:200px;margin-top:8px;border-radius:6px"></video>
     </div>
     <input type="hidden" id="mm-video-url">
+    <label>Dokument (PDF, optional)</label>
+    <div id="mm-doc-upload-area" class="upload-area" onclick="document.getElementById('mm-doc-file').click()" style="padding:12px">
+      <div style="font-size:1.5rem;margin-bottom:4px">&#x1F4C4;</div>
+      <div style="color:var(--text-sub);font-size:.8rem">PDF klicken zum Hochladen</div>
+      <input type="file" id="mm-doc-file" accept=".pdf,application/pdf" style="display:none" onchange="handleDocSelect(this)">
+    </div>
+    <div id="mm-doc-progress" class="hidden" style="margin-bottom:12px">
+      <div class="upload-progress"><div id="mm-doc-bar" class="upload-progress-bar"></div></div>
+      <small id="mm-doc-status" style="color:var(--text-sub);display:block;margin-top:4px">Hochladen...</small>
+    </div>
+    <div style="margin-bottom:12px"><small style="color:var(--text-sub)">Oder Dokument-URL:</small><input type="url" id="mm-doc-url-input" placeholder="https://..." onchange="if(this.value){document.getElementById('mm-doc-url').value=this.value;document.getElementById('mm-doc-preview').classList.remove('hidden');document.getElementById('mm-doc-upload-area').classList.add('hidden');}"></div>
+    <div id="mm-doc-preview" class="hidden" style="margin-bottom:12px;background:#151517;padding:10px;border-radius:8px;border:1px solid #333">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--success);font-size:.85rem;font-weight:700">&#x2705; Dokument vorhanden</span>
+        <button class="btn-small" onclick="removeModuleDoc()" style="font-size:.75rem">Entfernen</button>
+      </div>
+    </div>
+    <input type="hidden" id="mm-doc-url">
     <div style="display:flex;gap:10px;margin-top:15px">
       <button id="btn-mm-save" onclick="saveModuleModal()" class="btn-primary" style="flex:1">Erstellen</button>
       <button id="btn-mm-quiz" onclick="openQuizEditor()" class="btn-small" style="flex:1" title="Quiz Fragen hinzufuegen">&#x1F9E0; Quiz</button>
@@ -1167,25 +1187,28 @@ function toggleNotifPopup(){
   else{renderNotifPopup();p.classList.add("open");o.style.display="block";}
 }
 function closeNotifPopup(){document.getElementById("notif-popup").classList.remove("open");document.getElementById("notif-popup-overlay").style.display="none";}
-function renderNotifPopup(){
+async function renderNotifPopup(){
   const p=document.getElementById("notif-popup");let html="<div style='padding:12px 15px;font-weight:700;border-bottom:1px solid var(--border)'>Benachrichtigungen</div>";
   const items=[];
   const uf=trades.filter(t=>t.adminFeedback&&!t.feedbackRead);
   uf.forEach(t=>{items.push({type:"feedback",text:"Coach Feedback zu "+t.asset,data:t});});
   const sc=parseInt(localStorage.getItem("chatCount")||"0");
   if(lastMsgCount>sc)items.push({type:"chat",text:"Neue Nachrichten im Chat"});
+  if(isAdmin&&!isCoach){try{const ur=await db.collection("upgrade_requests").get();const pend=ur.docs.filter(d=>d.data().status==="pending");pend.forEach(d=>{items.push({type:"upgrade",text:"Upgrade-Anfrage von "+( d.data().userName||d.data().userEmail||"User")});});}catch(e){}}
   if(!items.length)html+="<div class='notif-empty'>Keine neuen Benachrichtigungen</div>";
   else items.forEach(it=>{
     if(it.type==="feedback"){const ts=encodeURIComponent(JSON.stringify(it.data));const is=encodeURIComponent(it.data.imgSetup||it.data.imgResult||"");html+=`<div class="notif-item" onclick="closeNotifPopup();openSignalDetail('${ts}','${is}')"><span style="color:var(--accent);font-weight:700">&#x1F4AC;</span> ${it.text}</div>`;}
+    else if(it.type==="upgrade")html+=`<div class="notif-item" onclick="closeNotifPopup();showView('Einstellungen')"><span style="color:var(--success);font-weight:700">&#x1F680;</span> ${it.text}</div>`;
     else html+=`<div class="notif-item" onclick="closeNotifPopup();navGuard('Chat')"><span style="color:#0a84ff;font-weight:700">&#x1F4E9;</span> ${it.text}</div>`;
   });
   p.innerHTML=html;
   document.getElementById("notif-dot").classList.toggle("active",items.length>0);
 }
-function updateNotifDot(){
+async function updateNotifDot(){
   const uf=trades.filter(t=>t.adminFeedback&&!t.feedbackRead);
   const sc=parseInt(localStorage.getItem("chatCount")||"0");
-  const hasNotifs=uf.length>0||(lastMsgCount>sc);
+  let hasNotifs=uf.length>0||(lastMsgCount>sc);
+  if(isAdmin&&!isCoach){try{const ur=await db.collection("upgrade_requests").get();const pend=ur.docs.filter(d=>d.data().status==="pending");if(pend.length)hasNotifs=true;}catch(e){}}
   document.getElementById("notif-dot").classList.toggle("active",hasNotifs);
 }
 function openProfileModal(){
@@ -1212,18 +1235,24 @@ async function sendPasswordChange(){
 }
 async function requestUpgrade(){
   if(!auth.currentUser)return;
-  await db.collection("upgrade_requests").add({userId:auth.currentUser.uid,userName:currentUserName,userEmail:auth.currentUser.email,status:"pending",timestamp:firebase.firestore.FieldValue.serverTimestamp()});
-  closePopup();
-  document.getElementById("popup-overlay").classList.add("open");document.getElementById("upgrade-req-modal").classList.remove("hidden");
+  try{
+    await db.collection("upgrade_requests").doc(auth.currentUser.uid).set({userId:auth.currentUser.uid,userName:currentUserName,userEmail:auth.currentUser.email,status:"pending",timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+    closePopup();
+    document.getElementById("popup-overlay").classList.add("open");document.getElementById("upgrade-req-modal").classList.remove("hidden");
+  }catch(e){alert("Fehler beim Senden: "+e.message);}
 }
 async function loadUpgradeRequests(){
   const area=document.getElementById("adm-upgrade-requests");if(!area)return;
-  const s=await db.collection("upgrade_requests").where("status","==","pending").orderBy("timestamp","desc").get();
-  if(s.empty){area.innerHTML="<div style='color:var(--text-sub);font-size:.85rem;padding:5px'>Keine Anfragen.</div>";return;}
-  area.innerHTML=s.docs.map(doc=>{const d=doc.data();const dt=d.timestamp?d.timestamp.toDate().toLocaleString():"";return`<div class="adm-row"><div class="adm-user-info"><div class="adm-text"><span class="adm-name">${d.userName}</span><span class="adm-email">${d.userEmail} (${dt})</span></div></div><div style="display:flex;gap:4px"><button class="ua-btn upgrade" onclick="approveUpgrade('${doc.id}','${d.userId}','${d.userEmail}')">Genehmigen</button><button class="ua-btn del" onclick="denyUpgrade('${doc.id}')">Ablehnen</button></div></div>`;}).join("");
+  try{
+    const s=await db.collection("upgrade_requests").get();
+    const pending=s.docs.filter(d=>d.data().status==="pending");
+    if(!pending.length){area.innerHTML="<div style='color:var(--text-sub);font-size:.85rem;padding:5px'>Keine Anfragen.</div>";return;}
+    pending.sort((a,b)=>{const at=a.data().timestamp,bt=b.data().timestamp;if(!at)return 1;if(!bt)return-1;return bt.toMillis()-at.toMillis();});
+    area.innerHTML=pending.map(doc=>{const d=doc.data();const dt=d.timestamp?d.timestamp.toDate().toLocaleString():"";return`<div class="adm-row"><div class="adm-user-info"><div class="adm-text"><span class="adm-name">${d.userName||"User"}</span><span class="adm-email">${d.userEmail||""} (${dt})</span></div></div><div style="display:flex;gap:4px"><button class="ua-btn upgrade" onclick="approveUpgrade('${doc.id}','${d.userId}','${d.userEmail||""}')">Genehmigen</button><button class="ua-btn del" onclick="denyUpgrade('${doc.id}')">Ablehnen</button></div></div>`;}).join("");
+  }catch(e){area.innerHTML="<div style='color:var(--text-sub);font-size:.85rem;padding:5px'>Keine Anfragen.</div>";}
 }
-async function approveUpgrade(reqId,uid,email){await db.collection("users").doc(uid).update({status:"pro"});await db.collection("upgrade_requests").doc(reqId).update({status:"approved"});alert(email+" auf Pro gesetzt!");loadUpgradeRequests();loadAdminZentrale();}
-async function denyUpgrade(reqId){await db.collection("upgrade_requests").doc(reqId).update({status:"denied"});loadUpgradeRequests();}
+async function approveUpgrade(reqId,uid,email){try{await db.collection("users").doc(uid).update({status:"pro"});await db.collection("upgrade_requests").doc(reqId).update({status:"approved"});alert(email+" auf Pro gesetzt!");loadUpgradeRequests();loadAdminZentrale();}catch(e){alert("Fehler: "+e.message);}}
+async function denyUpgrade(reqId){try{await db.collection("upgrade_requests").doc(reqId).update({status:"denied"});loadUpgradeRequests();}catch(e){alert("Fehler: "+e.message);}}
 let curCourseId=null,editingCourseId=null,editingModuleId=null,editingModuleCourseId=null,tempQuizQuestions=[];
 async function loadCourses(){
   const list=document.getElementById("course-list");if(!list)return;
@@ -1275,11 +1304,15 @@ async function loadModules(courseId){
     const m=doc.data();const isUnlocked=moduleIndex===0||progress.completedModules.includes(s.docs[moduleIndex-1].id);
     const isCompleted=progress.completedModules.includes(doc.id);
     const lockIcon=isUnlocked?"":"&#x1F512; ";const statusIcon=isCompleted?"&#x2705; ":"";
-    html+=`<div class="card" style="opacity:${isUnlocked?1:.5}"><div style="display:flex;justify-content:space-between;align-items:center"><h4 style="margin:0">${statusIcon}${lockIcon}${m.title}</h4>${isAdmin&&!isCoach?`<div style="display:flex;gap:4px"><button class="btn-icon" onclick="openEditModule('${courseId}','${doc.id}')" title="Bearbeiten">&#x270F;&#xFE0E;</button><button class="btn-icon" onclick="deleteModule('${courseId}','${doc.id}')" title="Loeschen">&#x1F5D1;&#xFE0E;</button></div>`:""}</div>`;
-    if(m.videoUrl&&isUnlocked)html+=`<div style="margin-top:10px"><video controls style="width:100%;max-height:300px;border-radius:8px;border:1px solid #333" src="${m.videoUrl}"></video></div>`;
+    const hasQuiz=m.quizQuestions&&m.quizQuestions.length>0;
+    html+=`<div class="card" style="opacity:${isUnlocked?1:.4};${!isUnlocked?"pointer-events:none":""}"><div style="display:flex;justify-content:space-between;align-items:center"><h4 style="margin:0">${statusIcon}${lockIcon}Modul ${moduleIndex+1}: ${m.title}</h4>${isAdmin&&!isCoach?`<div style="display:flex;gap:4px;pointer-events:all"><button class="btn-icon" onclick="openEditModule('${courseId}','${doc.id}')" title="Bearbeiten">&#x270F;&#xFE0E;</button><button class="btn-icon" onclick="deleteModule('${courseId}','${doc.id}')" title="Loeschen">&#x1F5D1;&#xFE0E;</button></div>`:""}</div>`;
+    if(!isUnlocked)html+=`<p style="color:var(--text-sub);font-size:.8rem;margin-top:8px;font-style:italic">Schliesse zuerst das vorherige Modul ab.</p>`;
+    if(m.videoUrl&&isUnlocked)html+=`<div style="margin-top:10px"><video controls style="width:100%;max-height:300px;border-radius:8px;border:1px solid #333" src="${m.videoUrl}" id="vid-${doc.id}" onended="onVideoEnded('${courseId}','${doc.id}',${hasQuiz})"></video></div>`;
+    if(m.docUrl&&isUnlocked)html+=`<div style="margin-top:10px"><a href="${m.docUrl}" target="_blank" class="btn-small" style="display:inline-flex;gap:5px">&#x1F4C4; Dokument oeffnen</a></div>`;
     if(m.description)html+=`<p style="color:var(--text-sub);font-size:.85rem;margin-top:8px">${m.description}</p>`;
-    if(m.quizQuestions&&m.quizQuestions.length>0&&isUnlocked&&!isCompleted)html+=`<button class="btn-primary" style="margin-top:10px;padding:10px" onclick="startQuiz('${courseId}','${doc.id}')">Quiz starten (${m.quizQuestions.length} Fragen)</button>`;
-    if(isCompleted)html+=`<div style="color:var(--success);font-size:.8rem;margin-top:8px;font-weight:700">Abgeschlossen</div>`;
+    if(hasQuiz&&isUnlocked&&!isCompleted)html+=`<button class="btn-primary" style="margin-top:10px;padding:10px" onclick="startQuiz('${courseId}','${doc.id}')">Quiz starten (${m.quizQuestions.length} Fragen)</button>`;
+    if(isCompleted)html+=`<div style="color:var(--success);font-size:.85rem;margin-top:10px;font-weight:700">&#x2705; Abgeschlossen</div>`;
+    else if(isUnlocked&&!hasQuiz&&m.videoUrl)html+=`<div style="color:var(--text-sub);font-size:.8rem;margin-top:8px;font-style:italic">Schaue das Video komplett an um das Modul abzuschliessen.</div>`;
     html+=`</div>`;moduleIndex++;
   }
   area.innerHTML=html+addBtn;
@@ -1289,14 +1322,23 @@ async function getUserCourseProgress(courseId){
   try{const doc=await db.collection("course_progress").doc(auth.currentUser.uid+"_"+courseId).get();
   return doc.exists?doc.data():{completedModules:[]};}catch(e){return{completedModules:[]};}
 }
+function resetModuleModal(){
+  document.getElementById("mm-title").value="";document.getElementById("mm-desc").value="";
+  document.getElementById("mm-video-url").value="";document.getElementById("mm-video-file").value="";
+  document.getElementById("mm-video-url-input").value="";document.getElementById("mm-doc-url").value="";
+  document.getElementById("mm-doc-file").value="";document.getElementById("mm-doc-url-input").value="";
+  document.getElementById("mm-upload-progress").classList.add("hidden");
+  document.getElementById("mm-upload-error").classList.add("hidden");
+  document.getElementById("mm-doc-progress").classList.add("hidden");
+  document.getElementById("mm-video-preview").classList.add("hidden");
+  document.getElementById("mm-doc-preview").classList.add("hidden");
+  document.getElementById("mm-upload-area").classList.remove("hidden","uploading");
+  document.getElementById("mm-doc-upload-area").classList.remove("hidden","uploading");
+}
 function openAddModule(courseId){
   editingModuleId=null;editingModuleCourseId=courseId;tempQuizQuestions=[];
   document.getElementById("module-modal-title").innerText="Neues Modul";
-  document.getElementById("mm-title").value="";document.getElementById("mm-desc").value="";
-  document.getElementById("mm-video-url").value="";document.getElementById("mm-video-file").value="";
-  document.getElementById("mm-upload-progress").classList.add("hidden");
-  document.getElementById("mm-video-preview").classList.remove("hidden");document.getElementById("mm-video-preview").classList.add("hidden");
-  document.getElementById("mm-upload-area").classList.remove("hidden");
+  resetModuleModal();
   document.getElementById("btn-mm-save").innerText="Erstellen";
   document.getElementById("popup-overlay").classList.add("open");document.getElementById("module-modal").classList.remove("hidden");
 }
@@ -1305,16 +1347,20 @@ async function openEditModule(courseId,modId){
   if(!doc.exists)return;const m=doc.data();
   editingModuleId=modId;editingModuleCourseId=courseId;tempQuizQuestions=m.quizQuestions||[];
   document.getElementById("module-modal-title").innerText="Modul bearbeiten";
+  resetModuleModal();
   document.getElementById("mm-title").value=m.title||"";document.getElementById("mm-desc").value=m.description||"";
-  document.getElementById("mm-video-url").value=m.videoUrl||"";document.getElementById("mm-video-file").value="";
-  document.getElementById("mm-upload-progress").classList.add("hidden");
+  document.getElementById("mm-video-url").value=m.videoUrl||"";
+  document.getElementById("mm-doc-url").value=m.docUrl||"";
   if(m.videoUrl){
     document.getElementById("mm-video-preview").classList.remove("hidden");
     document.getElementById("mm-video-player").src=m.videoUrl;
     document.getElementById("mm-upload-area").classList.add("hidden");
-  }else{
-    document.getElementById("mm-video-preview").classList.add("hidden");
-    document.getElementById("mm-upload-area").classList.remove("hidden");
+    document.getElementById("mm-video-url-input").value=m.videoUrl;
+  }
+  if(m.docUrl){
+    document.getElementById("mm-doc-preview").classList.remove("hidden");
+    document.getElementById("mm-doc-upload-area").classList.add("hidden");
+    document.getElementById("mm-doc-url-input").value=m.docUrl;
   }
   document.getElementById("btn-mm-save").innerText="Speichern";
   document.getElementById("popup-overlay").classList.add("open");document.getElementById("module-modal").classList.remove("hidden");
@@ -1323,42 +1369,88 @@ function handleVideoSelect(input){
   const file=input.files[0];if(!file)return;
   if(!file.type.startsWith("video/")){alert("Bitte eine MP4-Videodatei waehlen.");return;}
   if(file.size>500*1024*1024){alert("Datei zu gross (max. 500MB).");return;}
+  document.getElementById("mm-upload-error").classList.add("hidden");
   const area=document.getElementById("mm-upload-area");area.classList.add("uploading");
   document.getElementById("mm-upload-progress").classList.remove("hidden");
-  const fileName=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"");
-  const ref=storage.ref("courses/videos/"+fileName);
-  const task=ref.put(file);
-  task.on("state_changed",
-    snap=>{const pct=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
-      document.getElementById("mm-progress-bar").style.width=pct+"%";
-      document.getElementById("mm-upload-status").innerText="Hochladen... "+pct+"%";},
-    err=>{alert("Upload fehlgeschlagen: "+err.message);area.classList.remove("uploading");document.getElementById("mm-upload-progress").classList.add("hidden");},
-    ()=>{task.snapshot.ref.getDownloadURL().then(url=>{
-      document.getElementById("mm-video-url").value=url;
-      document.getElementById("mm-upload-progress").classList.add("hidden");
-      area.classList.remove("uploading");area.classList.add("hidden");
-      document.getElementById("mm-video-preview").classList.remove("hidden");
-      document.getElementById("mm-video-player").src=url;
-    });}
-  );
+  document.getElementById("mm-upload-status").innerText="Hochladen... 0%";
+  try{
+    const fileName=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"");
+    const ref=storage.ref("courses/videos/"+fileName);
+    const task=ref.put(file);
+    task.on("state_changed",
+      snap=>{const pct=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
+        document.getElementById("mm-progress-bar").style.width=pct+"%";
+        document.getElementById("mm-upload-status").innerText="Hochladen... "+pct+"%";},
+      err=>{
+        area.classList.remove("uploading");document.getElementById("mm-upload-progress").classList.add("hidden");
+        const errEl=document.getElementById("mm-upload-error");errEl.classList.remove("hidden");
+        errEl.innerHTML="Upload fehlgeschlagen: "+err.message+"<br><br><b>Tipp:</b> Nutze stattdessen das URL-Feld unten um einen Video-Link einzufuegen. Stelle sicher dass Firebase Storage aktiviert und die Regeln korrekt sind.";
+      },
+      ()=>{task.snapshot.ref.getDownloadURL().then(url=>{
+        document.getElementById("mm-video-url").value=url;
+        document.getElementById("mm-video-url-input").value=url;
+        document.getElementById("mm-upload-progress").classList.add("hidden");
+        area.classList.remove("uploading");area.classList.add("hidden");
+        document.getElementById("mm-video-preview").classList.remove("hidden");
+        document.getElementById("mm-video-player").src=url;
+      });}
+    );
+  }catch(e){
+    area.classList.remove("uploading");document.getElementById("mm-upload-progress").classList.add("hidden");
+    const errEl=document.getElementById("mm-upload-error");errEl.classList.remove("hidden");
+    errEl.innerHTML="Upload nicht moeglich: "+e.message+"<br><br><b>Tipp:</b> Nutze das URL-Feld unten um einen Video-Link einzufuegen.";
+  }
+}
+function handleDocSelect(input){
+  const file=input.files[0];if(!file)return;
+  if(!file.type.includes("pdf")){alert("Bitte eine PDF-Datei waehlen.");return;}
+  if(file.size>50*1024*1024){alert("Datei zu gross (max. 50MB).");return;}
+  const area=document.getElementById("mm-doc-upload-area");area.classList.add("uploading");
+  document.getElementById("mm-doc-progress").classList.remove("hidden");
+  try{
+    const fileName=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"");
+    const ref=storage.ref("courses/docs/"+fileName);
+    const task=ref.put(file);
+    task.on("state_changed",
+      snap=>{const pct=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
+        document.getElementById("mm-doc-bar").style.width=pct+"%";
+        document.getElementById("mm-doc-status").innerText="Hochladen... "+pct+"%";},
+      err=>{area.classList.remove("uploading");document.getElementById("mm-doc-progress").classList.add("hidden");
+        alert("Dokument-Upload fehlgeschlagen: "+err.message+"\nNutze stattdessen das URL-Feld.");},
+      ()=>{task.snapshot.ref.getDownloadURL().then(url=>{
+        document.getElementById("mm-doc-url").value=url;
+        document.getElementById("mm-doc-url-input").value=url;
+        document.getElementById("mm-doc-progress").classList.add("hidden");
+        area.classList.remove("uploading");area.classList.add("hidden");
+        document.getElementById("mm-doc-preview").classList.remove("hidden");
+      });}
+    );
+  }catch(e){area.classList.remove("uploading");document.getElementById("mm-doc-progress").classList.add("hidden");alert("Upload nicht moeglich: "+e.message);}
 }
 function removeModuleVideo(){
-  document.getElementById("mm-video-url").value="";
+  document.getElementById("mm-video-url").value="";document.getElementById("mm-video-url-input").value="";
   document.getElementById("mm-video-preview").classList.add("hidden");
   document.getElementById("mm-video-player").src="";
   document.getElementById("mm-upload-area").classList.remove("hidden","uploading");
   document.getElementById("mm-video-file").value="";
+}
+function removeModuleDoc(){
+  document.getElementById("mm-doc-url").value="";document.getElementById("mm-doc-url-input").value="";
+  document.getElementById("mm-doc-preview").classList.add("hidden");
+  document.getElementById("mm-doc-upload-area").classList.remove("hidden","uploading");
+  document.getElementById("mm-doc-file").value="";
 }
 async function saveModuleModal(){
   const title=document.getElementById("mm-title").value.trim();
   if(!title){alert("Titel fehlt!");return;}
   const desc=document.getElementById("mm-desc").value.trim();
   const videoUrl=document.getElementById("mm-video-url").value;
+  const docUrl=document.getElementById("mm-doc-url").value;
   if(editingModuleId){
-    await db.collection("courses").doc(editingModuleCourseId).collection("modules").doc(editingModuleId).update({title,description:desc,videoUrl,quizQuestions:tempQuizQuestions});
+    await db.collection("courses").doc(editingModuleCourseId).collection("modules").doc(editingModuleId).update({title,description:desc,videoUrl,docUrl,quizQuestions:tempQuizQuestions});
   }else{
     const count=(await db.collection("courses").doc(editingModuleCourseId).collection("modules").get()).size;
-    await db.collection("courses").doc(editingModuleCourseId).collection("modules").add({title,description:desc,videoUrl,quizQuestions:tempQuizQuestions,order:count});
+    await db.collection("courses").doc(editingModuleCourseId).collection("modules").add({title,description:desc,videoUrl,docUrl,quizQuestions:tempQuizQuestions,order:count});
   }
   closePopup();if(curCourseId)loadModules(curCourseId);
 }
@@ -1402,6 +1494,17 @@ function saveQuizToModule(){
   tempQuizQuestions=valid;
   closeQuizEditor();
 }
+async function onVideoEnded(courseId,modId,hasQuiz){
+  if(hasQuiz)return;
+  await completeModule(courseId,modId);
+  loadModules(courseId);
+}
+async function completeModule(courseId,modId){
+  const progId=auth.currentUser.uid+"_"+courseId;
+  const progDoc=await db.collection("course_progress").doc(progId).get();
+  const completed=progDoc.exists?progDoc.data().completedModules:[];
+  if(!completed.includes(modId)){completed.push(modId);await db.collection("course_progress").doc(progId).set({completedModules:completed},{merge:true});}
+}
 async function deleteModule(courseId,modId){if(!confirm("Modul loeschen?"))return;await db.collection("courses").doc(courseId).collection("modules").doc(modId).delete();loadModules(courseId);}
 async function startQuiz(courseId,modId){
   const doc=await db.collection("courses").doc(courseId).collection("modules").doc(modId).get();if(!doc.exists)return;
@@ -1415,11 +1518,7 @@ async function startQuiz(courseId,modId){
   }
   const pct=Math.round((correct/total)*100);
   if(pct>=80){
-    const progId=auth.currentUser.uid+"_"+courseId;
-    const progDoc=await db.collection("course_progress").doc(progId).get();
-    const completed=progDoc.exists?progDoc.data().completedModules:[];
-    if(!completed.includes(modId))completed.push(modId);
-    await db.collection("course_progress").doc(progId).set({completedModules:completed},{merge:true});
+    await completeModule(courseId,modId);
     alert("Bestanden! "+pct+"% richtig ("+correct+"/"+total+")");loadModules(courseId);
   }else{alert("Nicht bestanden: "+pct+"% (mind. 80% noetig).\n"+correct+"/"+total+" richtig. Versuche es erneut!");}
 }
