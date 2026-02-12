@@ -1024,14 +1024,27 @@ function enterChat(ch,title){
   if(ch==="signals"){ia.classList.add("hidden");ro.classList.remove("hidden");}else if(ch==="pro_signal"&&!isAdmin){ia.classList.add("hidden");ro.classList.remove("hidden");}
   updateMuteBtn();loadChat();
 }
+function getChannelReadCount(ch){return parseInt(localStorage.getItem("chatRead_"+ch)||"0");}
+function setChannelReadCount(ch,count){localStorage.setItem("chatRead_"+ch,""+count);}
+function renderUnreadBadge(count){
+  if(count<=0)return"";
+  return`<span style="background:var(--danger);color:#fff;font-size:.65rem;font-weight:800;padding:2px 6px;border-radius:10px;min-width:16px;text-align:center;display:inline-block;line-height:1.3">${count>99?"99+":count}</span>`;
+}
+async function loadChannelUnread(channelId,badgeElId){
+  try{const snap=await db.collection("chat").where("channel","==",channelId).get();
+  const total=snap.size;const read=getChannelReadCount(channelId);const unread=total-read;
+  const el=document.getElementById(badgeElId);if(el)el.innerHTML=renderUnreadBadge(unread);
+  }catch(e){}
+}
 function leaveChat(){curChatChannel=null;if(unsubChat)unsubChat();document.getElementById("chat-room").classList.add("hidden");document.getElementById("chat-lobby").classList.remove("hidden");}
 function getPinnedChats(){try{return JSON.parse(localStorage.getItem("pinnedChats")||"[]");}catch(e){return[];}}
 function togglePinChat(chatId){let pins=getPinnedChats();if(pins.includes(chatId))pins=pins.filter(p=>p!==chatId);else pins.push(chatId);localStorage.setItem("pinnedChats",JSON.stringify(pins));renderChatLobby();loadContactsAndRequests();}
 async function deletePrivateChat(friendshipId,e){if(e)e.stopPropagation();if(!confirm("Chat wirklich loeschen?"))return;await db.collection("friendships").doc(friendshipId).delete();loadContactsAndRequests();}
 function renderChatLobby(){
   const channels=[{id:"public",name:"Public Chat",desc:"Allgemeiner Austausch",avatar:"&#x1F30D;",bg:"#2a9d8f"},{id:"signals",name:"Signale",desc:"Nur Trades",avatar:"&#x1F4E1;",bg:"#e9c46a",avatarColor:"#000"},{id:"pro_signal",name:"Pro Signal",desc:"Vom Coach",avatar:"&#x1F680;",bg:"#e76f51"}];
-  const renderChannel=(c)=>`<div class="cl-item"><div class="cl-avatar" style="background:${c.bg}${c.avatarColor?";color:"+c.avatarColor:""}" onclick="enterChat('${c.id}','${c.name}')">${c.avatar}</div><div class="cl-info" onclick="enterChat('${c.id}','${c.name}')"><div class="cl-name">${c.name}</div><div class="cl-last">${c.desc}</div></div></div>`;
+  const renderChannel=(c)=>`<div class="cl-item"><div class="cl-avatar" style="background:${c.bg}${c.avatarColor?";color:"+c.avatarColor:""}" onclick="enterChat('${c.id}','${c.name}')">${c.avatar}</div><div class="cl-info" onclick="enterChat('${c.id}','${c.name}')"><div class="cl-name">${c.name} <span id="badge-${c.id}"></span></div><div class="cl-last">${c.desc}</div></div></div>`;
   document.getElementById("chat-pinned-area").innerHTML=channels.map(renderChannel).join("");
+  channels.forEach(c=>loadChannelUnread(c.id,"badge-"+c.id));
   loadCustomGroups();
 }
 async function loadCustomGroups(){
@@ -1042,10 +1055,12 @@ async function loadCustomGroups(){
     if(!myGroups.length){area.innerHTML="";return;}
     area.innerHTML='<div style="padding:10px 15px;font-size:.8rem;color:var(--text-sub);font-weight:700;margin-top:10px">GRUPPEN</div>'+myGroups.map(doc=>{const g=doc.data();
       const safeName=(g.name||'Gruppe').replace(/'/g,'').replace(/"/g,'');
+      const chId="group_"+doc.id;
       const isGroupAdmin=g.creatorId===auth.currentUser.uid||auth.currentUser.email.toLowerCase()===ADMIN_EMAIL;
       const delBtn=isGroupAdmin?`<div class="cl-actions"><button title="Gruppe loeschen" onclick="event.stopPropagation();deleteGroup('${doc.id}')">&#x1F5D1;&#xFE0E;</button></div>`:"";
-      return`<div class="cl-item"><div class="cl-avatar" style="background:#555" onclick="enterChat('group_${doc.id}','${safeName}')">${g.avatar||"&#x1F465;"}</div><div class="cl-info" onclick="enterChat('group_${doc.id}','${safeName}')"><div class="cl-name">${g.name||"Gruppe"}</div><div class="cl-last">${g.members?g.members.length:0} Mitglieder</div></div>${delBtn}</div>`;
+      return`<div class="cl-item"><div class="cl-avatar" style="background:#555" onclick="enterChat('${chId}','${safeName}')">${g.avatar||"&#x1F465;"}</div><div class="cl-info" onclick="enterChat('${chId}','${safeName}')"><div class="cl-name">${g.name||"Gruppe"} <span id="badge-${chId}"></span></div><div class="cl-last">${g.members?g.members.length:0} Mitglieder</div></div>${delBtn}</div>`;
     }).join("");
+    myGroups.forEach(doc=>loadChannelUnread("group_"+doc.id,"badge-group_"+doc.id));
   }catch(e){}
 }
 let cgInvitedMembers=[];
@@ -1084,6 +1099,7 @@ function loadChat(){
     let msgs=snap.docs.map(d=>({id:d.id,...d.data()}));msgs.sort((a,b)=>(a.timestamp?a.timestamp.toMillis():0)-(b.timestamp?b.timestamp.toMillis():0));
     const cb=document.getElementById("chat-messages");cb.innerHTML=msgs.map(m=>renderMsg(m)).join("");cb.scrollTop=cb.scrollHeight;
     if(curChatChannel==="public"){lastMsgCount=msgs.length;if(isChatActive)localStorage.setItem("chatCount",lastMsgCount);}
+    setChannelReadCount(curChatChannel,snap.size);
     markMessagesRead();
   });
 }
