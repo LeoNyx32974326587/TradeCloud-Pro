@@ -320,6 +320,21 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   .auth-title{font-size:1.5rem;margin-bottom:20px}
 }
 @keyframes slideUpModal{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.ki-tab-bar{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.ki-tab{background:var(--cell-bg);border:1px solid var(--border);color:var(--text-sub);padding:8px 18px;border-radius:20px;cursor:pointer;font-size:.9rem;transition:.2s;font-weight:500}
+.ki-tab.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
+.ki-messages{display:flex;flex-direction:column;min-height:180px;max-height:420px;overflow-y:auto;margin-bottom:16px;gap:8px;padding:4px 0}
+.ki-msg{max-width:88%;padding:11px 15px;border-radius:16px;font-size:.9rem;line-height:1.6;word-break:break-word}
+.ki-msg.user{background:var(--accent);color:#000;align-self:flex-end;border-radius:16px 16px 4px 16px}
+.ki-msg.ai{background:var(--cell-bg);color:var(--text-main);align-self:flex-start;border-radius:16px 16px 16px 4px;border:1px solid var(--border)}
+.ki-typing{display:flex;gap:5px;align-items:center;padding:12px 15px;background:var(--cell-bg);border-radius:16px 16px 16px 4px;border:1px solid var(--border);align-self:flex-start}
+.ki-typing span{width:7px;height:7px;background:var(--text-sub);border-radius:50%;animation:kiDot 1.2s infinite}
+.ki-typing span:nth-child(2){animation-delay:.2s}.ki-typing span:nth-child(3){animation-delay:.4s}
+@keyframes kiDot{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.ki-input-row{display:flex;gap:8px}
+.ki-result-box{background:var(--cell-bg);border:1px solid var(--border);border-radius:12px;padding:16px;white-space:pre-wrap;line-height:1.75;font-size:.9rem;margin-top:16px}
+.ki-chart-drop{border:2px dashed var(--border);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;transition:.25s}
+.ki-chart-drop:hover{border-color:var(--accent);background:rgba(0,0,0,.05)}
 @media(max-width:400px){
   h2{font-size:1.5rem!important}
   .jfc-stats-row{grid-template-columns:1fr}
@@ -685,6 +700,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   <button onclick="showView('Kalender')" id="btn-Kalender">&#x1F4C5; Kalender</button>
   <button onclick="showView('Statistik')" id="btn-Statistik">&#x1F4C8; Statistik</button>
   <button onclick="showView('Historie')" id="btn-Historie">&#x1F4DC; Journal</button>
+  <button onclick="showView('KI')" id="btn-KI">&#x1F916; KI-Assistent</button>
   <div class="nav-separator"></div>
   <button onclick="navGuard('TradingView')" id="btn-TradingView">&#x1F4C8; Chart <span id="lock-TradingView" class="nav-lock hidden">&#x1F512;</span></button>
   <button onclick="navGuard('Lot-Rechner')" id="btn-Lot-Rechner">&#x1F4CA; Lot Rechner <span id="lock-Lot-Rechner" class="nav-lock hidden">&#x1F512;</span></button>
@@ -839,6 +855,45 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section id="view-KI" class="view-section">
+  <div style="margin-bottom:20px"><h2 style="margin:0 0 4px">&#x1F916; KI-Assistent</h2><p style="color:var(--text-sub);font-size:.9rem;margin:0">Powered by Google Gemini</p></div>
+  <div class="ki-tab-bar">
+    <button class="ki-tab active" onclick="switchKITab('chat')" id="ki-tab-chat">&#x1F4AC; Chat</button>
+    <button class="ki-tab" onclick="switchKITab('analyse')" id="ki-tab-analyse">&#x1F4CA; Trade-Analyse</button>
+    <button class="ki-tab" onclick="switchKITab('chart')" id="ki-tab-chart">&#x1F4C8; Chart-Analyse</button>
+  </div>
+  <!-- Chat -->
+  <div id="ki-panel-chat" class="card">
+    <div class="ki-messages" id="ki-messages">
+      <div class="ki-msg ai">Hallo! Ich bin dein KI-Trading-Assistent. Ich kenne deine Trades und kann dir helfen, Muster zu erkennen, Fehler zu vermeiden und besser zu werden. Was möchtest du wissen?</div>
+    </div>
+    <div class="ki-input-row">
+      <input type="text" id="ki-chat-input" placeholder="Frag mich etwas zu deinen Trades..." style="flex:1" onkeydown="if(event.key==='Enter')sendKIChat()">
+      <button class="btn-primary" onclick="sendKIChat()" style="white-space:nowrap">Senden</button>
+    </div>
+  </div>
+  <!-- Analyse -->
+  <div id="ki-panel-analyse" class="card hidden">
+    <h4 style="margin-top:0">Portfolio-Analyse</h4>
+    <p style="color:var(--text-sub);font-size:.9rem;margin-bottom:20px">Die KI analysiert all deine Trades und gibt dir gezieltes Feedback zu Stärken, Schwächen und konkreten Verbesserungen.</p>
+    <button class="btn-primary" onclick="analyzeMyTrades()" style="width:100%" id="ki-analyse-btn">&#x1F4CA; Jetzt analysieren</button>
+    <div id="ki-analyse-result"></div>
+  </div>
+  <!-- Chart -->
+  <div id="ki-panel-chart" class="card hidden">
+    <h4 style="margin-top:0">Chart-Analyse</h4>
+    <p style="color:var(--text-sub);font-size:.9rem;margin-bottom:16px">Lade einen Chart-Screenshot hoch — die KI erkennt Muster, Trends und mögliche Setups.</p>
+    <div class="ki-chart-drop" onclick="document.getElementById('ki-chart-file').click()">
+      <div style="font-size:2.5rem;margin-bottom:8px">&#x1F4C8;</div>
+      <div style="font-weight:700;margin-bottom:4px">Chart hochladen</div>
+      <div style="font-size:.85rem;color:var(--text-sub)">JPG, PNG, WebP &mdash; klicken oder Datei reinziehen</div>
+    </div>
+    <input type="file" id="ki-chart-file" accept="image/*" style="display:none" onchange="handleChartUpload(event)">
+    <div id="ki-chart-preview" style="margin-top:14px"></div>
+    <div id="ki-chart-result"></div>
   </div>
 </section>
 </div><script>
@@ -2065,4 +2120,102 @@ function showAssetDropdown(input,ddId){
   input.onblur=function(){setTimeout(()=>dd.classList.remove("open"),150);};
 }
 function selectAsset(inputId,symbol,ddId){document.getElementById(inputId).value=symbol;document.getElementById(ddId).classList.remove("open");}
+
+// ─── KI-ASSISTENT (Gemini) ───────────────────────────────────────────────────
+const _GK='AIzaSyDCgM4h6Rgk-r95Qy7BlT1S4QQI-4IDqAQ';
+const _GU='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+_GK;
+let _kiHistory=[];
+
+function switchKITab(tab){
+  ['chat','analyse','chart'].forEach(t=>{
+    document.getElementById('ki-tab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('ki-panel-'+t).classList.toggle('hidden',t!==tab);
+  });
+}
+
+function _kiTradeCtx(){
+  const all=window.allTrades||window.trades||[];
+  if(!all.length)return'Noch keine Trades im Journal.';
+  const wins=all.filter(t=>parseFloat(t.pnl)>0).length;
+  const pnl=all.reduce((s,t)=>s+(parseFloat(t.pnl)||0),0);
+  const pairs=[...new Set(all.map(t=>t.asset))].slice(0,10).join(', ');
+  const recent=all.slice(-10).map(t=>`${t.asset||'-'} ${t.direction||'-'} PnL:${t.pnl||0} Datum:${t.date||'-'}`).join('\n');
+  return`Gesamttrades: ${all.length} | Wins: ${wins} | Winrate: ${Math.round(wins/all.length*100)}% | Gesamt-PnL: ${pnl.toFixed(2)}\nInstrumente: ${pairs}\nLetzte 10 Trades:\n${recent}`;
+}
+
+async function _gemini(contents){
+  const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents,generationConfig:{temperature:0.7,maxOutputTokens:1200}})});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  return d.candidates?.[0]?.content?.parts?.[0]?.text||'Keine Antwort erhalten.';
+}
+
+async function sendKIChat(){
+  const inp=document.getElementById('ki-chat-input');
+  const txt=inp.value.trim();if(!txt)return;
+  inp.value='';
+  _kiAppend(txt,'user');
+  const box=document.getElementById('ki-messages');
+  const dot=document.createElement('div');dot.className='ki-typing';dot.id='ki-dot';
+  dot.innerHTML='<span></span><span></span><span></span>';
+  box.appendChild(dot);box.scrollTop=box.scrollHeight;
+  const sys=`Du bist ein professioneller Trading-Coach für eine Trading-Journal-App. Antworte immer auf Deutsch, präzise und motivierend. Trading-Daten des Nutzers:\n${_kiTradeCtx()}`;
+  _kiHistory.push({role:'user',parts:[{text:txt}]});
+  const ctx=_kiHistory.slice(-8);ctx[0]={role:'user',parts:[{text:sys+'\n\nFrage: '+txt}]};
+  try{
+    const rep=await _gemini(ctx);
+    document.getElementById('ki-dot')?.remove();
+    _kiAppend(rep,'ai');
+    _kiHistory.push({role:'model',parts:[{text:rep}]});
+  }catch(e){
+    document.getElementById('ki-dot')?.remove();
+    _kiAppend('Fehler: KI nicht erreichbar. Bitte API-Key prüfen.','ai');
+  }
+}
+
+function _kiAppend(text,role){
+  const el=document.createElement('div');el.className='ki-msg '+role;
+  el.textContent=text;
+  const box=document.getElementById('ki-messages');
+  box.appendChild(el);box.scrollTop=box.scrollHeight;
+}
+
+async function analyzeMyTrades(){
+  const btn=document.getElementById('ki-analyse-btn');
+  const res=document.getElementById('ki-analyse-result');
+  btn.disabled=true;btn.textContent='Analysiere…';res.innerHTML='';
+  const all=window.allTrades||window.trades||[];
+  const detail=all.slice(-30).map(t=>`Asset:${t.asset||'-'} Richtung:${t.direction||'-'} PnL:${t.pnl||0} Datum:${t.date||'-'} Setup:${t.setup||'-'}`).join('\n');
+  const prompt=`Du bist ein professioneller Trading-Coach. Analysiere die folgenden Trading-Daten eines Nutzers und gib ein ausführliches Feedback auf Deutsch.\n\n${_kiTradeCtx()}\n\nDetaillierte Trades (letzte 30):\n${detail}\n\nBitte analysiere:\n1. Stärken — was läuft gut\n2. Schwächen — wo gibt es Verbesserungspotenzial\n3. Muster bei Verlusttrades\n4. Konkrete Handlungsempfehlungen\n5. Psychologische Aspekte (falls erkennbar)\n\nStrukturiere die Antwort übersichtlich.`;
+  try{
+    const rep=await _gemini([{role:'user',parts:[{text:prompt}]}]);
+    res.innerHTML='<div class="ki-result-box">'+rep.replace(/</g,'&lt;').replace(/\n/g,'<br>')+'</div>';
+  }catch(e){res.innerHTML='<div style="color:var(--danger);margin-top:12px">Fehler bei der Analyse. Bitte nochmal versuchen.</div>';}
+  btn.disabled=false;btn.textContent='&#x1F4CA; Erneut analysieren';
+}
+
+async function handleChartUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  const prev=document.getElementById('ki-chart-preview');
+  const res=document.getElementById('ki-chart-result');
+  res.innerHTML='';
+  const reader=new FileReader();
+  reader.onload=async function(ev){
+    const b64=ev.target.result.split(',')[1];
+    prev.innerHTML=`<img src="${ev.target.result}" style="width:100%;border-radius:12px;max-height:320px;object-fit:contain;margin-bottom:4px">`;
+    res.innerHTML='<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F50D; Analysiere Chart…</div>';
+    try{
+      const contents=[{role:'user',parts:[
+        {inlineData:{mimeType:file.type,data:b64}},
+        {text:'Du bist ein professioneller Chart-Analyst. Analysiere diesen Trading-Chart auf Deutsch und erkläre:\n1. Charttyp und Zeitrahmen (falls erkennbar)\n2. Aktuelle Trendrichtung\n3. Wichtige Support- und Widerstandszonen\n4. Erkennbare Chart-Muster oder Formationen\n5. Mögliche Long- und Short-Setups mit Einstiegsbereichen\n6. Worauf ein Trader bei diesem Chart besonders achten sollte\n\nSei konkret, strukturiert und professionell.'}
+      ]}];
+      const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents})});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const d=await r.json();
+      const rep=d.candidates?.[0]?.content?.parts?.[0]?.text||'Keine Analyse möglich.';
+      res.innerHTML='<div class="ki-result-box">'+rep.replace(/</g,'&lt;').replace(/\n/g,'<br>')+'</div>';
+    }catch(err){res.innerHTML='<div style="color:var(--danger);margin-top:10px">Fehler bei der Chart-Analyse. Bitte erneut versuchen.</div>';}
+  };
+  reader.readAsDataURL(file);
+}
 </script></body></html>
