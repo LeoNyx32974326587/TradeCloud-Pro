@@ -335,6 +335,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .ki-result-box{background:var(--cell-bg);border:1px solid var(--border);border-radius:12px;padding:16px;white-space:pre-wrap;line-height:1.75;font-size:.9rem;margin-top:16px}
 .ki-chart-drop{border:2px dashed var(--border);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;transition:.25s}
 .ki-chart-drop:hover{border-color:var(--accent);background:rgba(0,0,0,.05)}
+.trade-img-drop{border:1.5px dashed var(--border);border-radius:10px;padding:11px 16px;text-align:center;cursor:pointer;transition:.2s;font-size:.88rem;color:var(--text-sub)}
+.trade-img-drop:hover{border-color:var(--accent);color:var(--text)}
+.trade-img-paste-btn{width:100%;margin-top:6px;padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--cell-bg);color:var(--text-sub);font-weight:600;font-size:.85rem;cursor:pointer;transition:.2s}
+.trade-img-paste-btn:hover{border-color:var(--accent);color:var(--text)}
 @media(max-width:400px){
   h2{font-size:1.5rem!important}
   .jfc-stats-row{grid-template-columns:1fr}
@@ -372,10 +376,26 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <label>Datum</label><input type="datetime-local" id="datetime">
     <div class="input-row-2"><div><label>Entry</label><input type="number" id="inpEntry" step="any"></div><div><label>Stop Loss</label><input type="number" id="inpSL" step="any"></div></div>
     <div class="input-row-3"><div><label>TP 1</label><input type="number" id="inpTP1" step="any"></div><div><label>TP 2</label><input type="number" id="inpTP2" step="any"></div><div><label>TP 3</label><input type="number" id="inpTP3" step="any"></div></div>
-    <label>Setup (Bild Link)</label>
-    <input type="url" id="imgSetup" placeholder="Bild URL">
+    <label>Setup (Screenshot)</label>
+    <div class="trade-img-picker">
+      <div class="trade-img-drop" onclick="document.getElementById('setupImgFile').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor=''" ondrop="event.preventDefault();this.style.borderColor='';const f=event.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadTradeImgFromBlob(f,'setup')">&#x1F4F8; Klicken, reinziehen oder <b>Strg+V</b></div>
+      <button type="button" onclick="pasteTradeImg('setup')" class="trade-img-paste-btn">&#x1F4CB; Aus Zwischenablage</button>
+      <input type="file" id="setupImgFile" accept="image/*" style="display:none" onchange="handleTradeImgUpload(event,'setup')">
+      <div id="setupImgPreview"></div>
+    </div>
+    <input type="hidden" id="imgSetup">
     <label>Notiz</label><textarea id="note" rows="2"></textarea>
-    <div id="closedFields" class="hidden"><label style="color:var(--success)">PnL (Euro)</label><input type="number" id="pnl" step="0.01"><label>Result (Bild Link)</label><input type="url" id="imgResult"></div>
+    <div id="closedFields" class="hidden">
+      <label style="color:var(--success)">PnL (Euro)</label><input type="number" id="pnl" step="0.01">
+      <label>Result (Screenshot)</label>
+      <div class="trade-img-picker">
+        <div class="trade-img-drop" onclick="document.getElementById('resultImgFile').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor=''" ondrop="event.preventDefault();this.style.borderColor='';const f=event.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadTradeImgFromBlob(f,'result')">&#x1F4F8; Klicken, reinziehen oder <b>Strg+V</b></div>
+        <button type="button" onclick="pasteTradeImg('result')" class="trade-img-paste-btn">&#x1F4CB; Aus Zwischenablage</button>
+        <input type="file" id="resultImgFile" accept="image/*" style="display:none" onchange="handleTradeImgUpload(event,'result')">
+        <div id="resultImgPreview"></div>
+      </div>
+      <input type="hidden" id="imgResult">
+    </div>
     <div id="admin-feedback-container" class="hidden" style="margin-top:20px;border-top:1px solid #333;padding-top:15px"><label style="color:var(--accent)">Coach Feedback</label><textarea id="inpAdminFeedback" rows="2" style="border-color:var(--accent)" placeholder="Tipp fuer den User..."></textarea></div>
     <button onclick="saveTrade()" class="btn-primary" style="margin-top:15px">SPEICHERN</button>
   </div>
@@ -1416,6 +1436,7 @@ function prepareCreateView(){
   if(userStatus==="test"){const mt=trades.filter(t=>(t.journal||"Main")===(activeJournal||journals[0]?.name||"Main"));if(mt.length>=5){alert("Test-Limit: Max. 5 Trades!\nUpgrade auf Pro.");return;}}
   document.getElementById("editId").value="";const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());document.getElementById("datetime").value=now.toISOString().slice(0,16);
   ["assetInput","pnl","note","inpEntry","inpSL","inpTP1","inpTP2","inpTP3","imgSetup","imgResult","inpAdminFeedback"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  clearTradeImg('setup');clearTradeImg('result');
   if(activeJournal)document.getElementById("inpJournalSelect").value=activeJournal;document.getElementById("admin-feedback-container").classList.add("hidden");document.getElementById("status").value="Aktiv";toggleFormFields();document.getElementById("form-title").innerText="Neuer Trade";document.getElementById("trade-form-modal").classList.remove("hidden");document.getElementById("popup-overlay").classList.add("open");
 }
 async function saveTrade(){
@@ -1427,7 +1448,7 @@ async function saveTrade(){
   if(tradeStatus==="Geschlossen"){const existing=id?trades.find(t=>t.id===id):null;if(!existing||!existing.closedAt){const cn=new Date();cn.setMinutes(cn.getMinutes()-cn.getTimezoneOffset());data.closedAt=cn.toISOString().slice(0,16);}}
   if(id)await db.collection("trades").doc(id).update(data);else{await db.collection("trades").add(data);kiRateNewTrade(data);}await loadData();closePopup();
 }
-function editTrade(id,cn){const t=trades.find(x=>x.id===id);if(!t)return;document.getElementById("editId").value=t.id;document.getElementById("datetime").value=t.date;document.getElementById("assetInput").value=t.asset;document.getElementById("inpJournalSelect").value=t.journal||(journals[0]?journals[0].name:"Main");document.getElementById("status").value=cn?"Geschlossen":t.status;document.getElementById("pnl").value=t.pnl;document.getElementById("imgSetup").value=t.imgSetup||"";document.getElementById("imgResult").value=t.imgResult||"";document.getElementById("note").value=t.note||"";document.getElementById("inpEntry").value=t.entry||"";document.getElementById("inpSL").value=t.sl||"";document.getElementById("inpTP1").value=t.tp1||"";document.getElementById("inpTP2").value=t.tp2||"";document.getElementById("inpTP3").value=t.tp3||"";document.getElementById("inpAdminFeedback").value=t.adminFeedback||"";document.getElementById("admin-feedback-container").classList.toggle("hidden",!isAdmin);document.getElementById("form-title").innerText="Trade Bearbeiten";toggleFormFields();document.getElementById("trade-form-modal").classList.remove("hidden");document.getElementById("popup-overlay").classList.add("open");}
+function editTrade(id,cn){const t=trades.find(x=>x.id===id);if(!t)return;document.getElementById("editId").value=t.id;document.getElementById("datetime").value=t.date;document.getElementById("assetInput").value=t.asset;document.getElementById("inpJournalSelect").value=t.journal||(journals[0]?journals[0].name:"Main");document.getElementById("status").value=cn?"Geschlossen":t.status;document.getElementById("pnl").value=t.pnl;document.getElementById("imgSetup").value=t.imgSetup||"";document.getElementById("imgResult").value=t.imgResult||"";if(t.imgSetup)showTradeImgPreview('setup',t.imgSetup);else clearTradeImg('setup');if(t.imgResult)showTradeImgPreview('result',t.imgResult);else clearTradeImg('result');document.getElementById("note").value=t.note||"";document.getElementById("inpEntry").value=t.entry||"";document.getElementById("inpSL").value=t.sl||"";document.getElementById("inpTP1").value=t.tp1||"";document.getElementById("inpTP2").value=t.tp2||"";document.getElementById("inpTP3").value=t.tp3||"";document.getElementById("inpAdminFeedback").value=t.adminFeedback||"";document.getElementById("admin-feedback-container").classList.toggle("hidden",!isAdmin);document.getElementById("form-title").innerText="Trade Bearbeiten";toggleFormFields();document.getElementById("trade-form-modal").classList.remove("hidden");document.getElementById("popup-overlay").classList.add("open");}
 async function delTrade(id){if(confirm("Loeschen?")){await db.collection("trades").doc(id).delete();await loadData();showView("Historie");}}
 function toggleFormFields(){const s=document.getElementById("status").value;document.getElementById("closedFields").classList.toggle("hidden",s==="Aktiv");}
 function openCreateJournal(){
@@ -2339,8 +2360,40 @@ async function pasteFromClipboard(){
 }
 window.addEventListener('paste',e=>{
   const panel=document.getElementById('ki-panel-chart');
-  if(!panel||panel.classList.contains('hidden'))return;
-  const item=Array.from(e.clipboardData?.items||[]).find(i=>i.type.startsWith('image/'));
-  if(item){e.preventDefault();processChartBlob(item.getAsFile());}
+  if(panel&&!panel.classList.contains('hidden')){
+    const item=Array.from(e.clipboardData?.items||[]).find(i=>i.type.startsWith('image/'));
+    if(item){e.preventDefault();processChartBlob(item.getAsFile());return;}
+  }
+  const modal=document.getElementById('trade-form-modal');
+  if(modal&&!modal.classList.contains('hidden')){
+    const item=Array.from(e.clipboardData?.items||[]).find(i=>i.type.startsWith('image/'));
+    if(item){
+      e.preventDefault();
+      const closedOpen=!document.getElementById('closedFields').classList.contains('hidden');
+      const field=(closedOpen&&document.getElementById('imgSetup').value&&!document.getElementById('imgResult').value)?'result':'setup';
+      loadTradeImgFromBlob(item.getAsFile(),field);
+    }
+  }
 });
+function showTradeImgPreview(field,dataUrl){
+  document.getElementById(field+'ImgPreview').innerHTML=`<div style="position:relative;margin-top:6px"><img src="${dataUrl}" style="width:100%;max-height:160px;object-fit:contain;border-radius:10px;border:1px solid var(--border)"><button type="button" onclick="clearTradeImg('${field}')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.8);border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;color:#fff;font-size:.75rem;line-height:1">&#x2715;</button></div>`;
+}
+function clearTradeImg(field){
+  document.getElementById('img'+(field==='setup'?'Setup':'Result')).value='';
+  document.getElementById(field+'ImgPreview').innerHTML='';
+  const fi=document.getElementById(field+'ImgFile');if(fi)fi.value='';
+}
+function loadTradeImgFromBlob(blob,field){
+  const reader=new FileReader();
+  reader.onload=ev=>{document.getElementById('img'+(field==='setup'?'Setup':'Result')).value=ev.target.result;showTradeImgPreview(field,ev.target.result);};
+  reader.readAsDataURL(blob);
+}
+function handleTradeImgUpload(e,field){const f=e.target.files[0];if(f)loadTradeImgFromBlob(f,field);}
+async function pasteTradeImg(field){
+  try{
+    const items=await navigator.clipboard.read();
+    for(const item of items){const t=item.types.find(x=>x.startsWith('image/'));if(t){loadTradeImgFromBlob(await item.getType(t),field);return;}}
+    alert('Kein Bild in der Zwischenablage. Bitte zuerst einen Screenshot kopieren.');
+  }catch(_){alert('Zwischenablage nicht lesbar. Bitte Strg+V im Formular drücken.');}
+}
 </script></body></html>
