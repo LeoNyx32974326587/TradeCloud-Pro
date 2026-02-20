@@ -2207,7 +2207,7 @@ function _kiTradeCtx(){
 
 async function _gemini(contents){
   const messages=contents.map(c=>({role:c.role==='model'?'assistant':'user',content:c.parts.map(p=>p.text).join('')}));
-  const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GM,messages,temperature:0.7,max_tokens:1200})});
+  const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GM,messages,temperature:0.7,max_tokens:400})});
   if(!r.ok){
     let errMsg='HTTP '+r.status;
     try{const ed=await r.json();errMsg+=' – '+(ed?.error?.message||JSON.stringify(ed));}catch(_){}
@@ -2226,7 +2226,7 @@ async function sendKIChat(){
   const dot=document.createElement('div');dot.className='ki-typing';dot.id='ki-dot';
   dot.innerHTML='<span></span><span></span><span></span>';
   box.appendChild(dot);box.scrollTop=box.scrollHeight;
-  const sys=`Du bist ein professioneller Trading-Coach für eine Trading-Journal-App. Antworte immer auf Deutsch, präzise und motivierend.\n\n${_STRATEGY}\n\nTrading-Daten des Nutzers:\n${_kiTradeCtx()}\n\nBeziehe dich bei allen Antworten immer auf die Strategie des Nutzers (Liquidity Sweep → BOS → 0.618/0.718 Fib-Entry). Erkläre ob seine Trades dieser Strategie entsprechen und gib konkrete Verbesserungshinweise basierend darauf.`;
+  const sys=`Du bist ein professioneller Trading-Coach für eine Trading-Journal-App. Antworte immer auf Deutsch, sehr kurz und prägnant (max. 3-4 Sätze). Keine langen Erklärungen, kein Fülltext – nur das Wesentliche.\n\n${_STRATEGY}\n\nTrading-Daten des Nutzers:\n${_kiTradeCtx()}\n\nBeziehe dich bei allen Antworten auf die Strategie des Nutzers (Liquidity Sweep → BOS → 0.618/0.718 Fib-Entry). Sei direkt und konkret.`;
   _kiHistory.push({role:'user',parts:[{text:txt}]});
   const ctx=_kiHistory.slice(-8);ctx[0]={role:'user',parts:[{text:sys+'\n\nFrage: '+txt}]};
   try{
