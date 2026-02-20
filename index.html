@@ -871,7 +871,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       <div class="ki-msg ai">Hallo! Ich bin dein KI-Trading-Assistent. Ich kenne deine Trades und kann dir helfen, Muster zu erkennen, Fehler zu vermeiden und besser zu werden. Was möchtest du wissen?</div>
     </div>
     <div class="ki-input-row">
-      <textarea id="ki-chat-input" placeholder="Frag mich etwas zu deinen Trades..." style="flex:1;resize:none;min-height:60px" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendKIChat()}"></textarea>
+      <textarea id="ki-chat-input" placeholder="Frag mich etwas zu deinen Trades..." style="flex:1;resize:none;min-height:110px;max-height:260px;overflow-y:auto" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendKIChat()}" oninput="this.style.height='110px';this.style.height=Math.min(this.scrollHeight,260)+'px'"></textarea>
       <button class="btn-primary" onclick="sendKIChat()" style="white-space:nowrap">Senden</button>
     </div>
   </div>
@@ -2216,7 +2216,7 @@ async function _gemini(contents){
 async function sendKIChat(){
   const inp=document.getElementById('ki-chat-input');
   const txt=inp.value.trim();if(!txt)return;
-  inp.value='';
+  inp.value='';inp.style.height='110px';
   _kiAppend(txt,'user');
   const box=document.getElementById('ki-messages');
   const dot=document.createElement('div');dot.className='ki-typing';dot.id='ki-dot';
