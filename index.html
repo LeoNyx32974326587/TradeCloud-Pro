@@ -1424,7 +1424,7 @@ async function saveTrade(){
   const tradeStatus=document.getElementById("status").value;
   const data={userId:auth.currentUser.uid,date:document.getElementById("datetime").value,asset,journal:jval,status:tradeStatus,pnl:parseFloat(document.getElementById("pnl").value)||0,imgSetup:document.getElementById("imgSetup").value,imgResult:document.getElementById("imgResult").value,note:document.getElementById("note").value,entry:document.getElementById("inpEntry").value,sl:document.getElementById("inpSL").value,tp1:document.getElementById("inpTP1").value,tp2:document.getElementById("inpTP2").value,tp3:document.getElementById("inpTP3").value,adminFeedback:document.getElementById("inpAdminFeedback").value};
   if(tradeStatus==="Geschlossen"){const existing=id?trades.find(t=>t.id===id):null;if(!existing||!existing.closedAt){const cn=new Date();cn.setMinutes(cn.getMinutes()-cn.getTimezoneOffset());data.closedAt=cn.toISOString().slice(0,16);}}
-  if(id)await db.collection("trades").doc(id).update(data);else await db.collection("trades").add(data);await loadData();closePopup();
+  if(id)await db.collection("trades").doc(id).update(data);else{await db.collection("trades").add(data);kiRateNewTrade(data);}await loadData();closePopup();
 }
 function editTrade(id,cn){const t=trades.find(x=>x.id===id);if(!t)return;document.getElementById("editId").value=t.id;document.getElementById("datetime").value=t.date;document.getElementById("assetInput").value=t.asset;document.getElementById("inpJournalSelect").value=t.journal||(journals[0]?journals[0].name:"Main");document.getElementById("status").value=cn?"Geschlossen":t.status;document.getElementById("pnl").value=t.pnl;document.getElementById("imgSetup").value=t.imgSetup||"";document.getElementById("imgResult").value=t.imgResult||"";document.getElementById("note").value=t.note||"";document.getElementById("inpEntry").value=t.entry||"";document.getElementById("inpSL").value=t.sl||"";document.getElementById("inpTP1").value=t.tp1||"";document.getElementById("inpTP2").value=t.tp2||"";document.getElementById("inpTP3").value=t.tp3||"";document.getElementById("inpAdminFeedback").value=t.adminFeedback||"";document.getElementById("admin-feedback-container").classList.toggle("hidden",!isAdmin);document.getElementById("form-title").innerText="Trade Bearbeiten";toggleFormFields();document.getElementById("trade-form-modal").classList.remove("hidden");document.getElementById("popup-overlay").classList.add("open");}
 async function delTrade(id){if(confirm("Loeschen?")){await db.collection("trades").doc(id).delete();await loadData();showView("Historie");}}
@@ -2179,6 +2179,25 @@ function switchKITab(tab){
   if(tab==='analyse')_kiPopulateTradeSelect();
 }
 
+async function kiRateNewTrade(data){
+  const prompt=`Du bist ein Trading-Coach. Bewerte diesen Trade anhand der SMC-Strategie (Liquidity Sweep → BOS → 0.618/0.718 Fib-Entry).\n\n${_STRATEGY}\n\nTrade: Asset: ${data.asset} | Status: ${data.status} | PnL: ${data.pnl}€ | Entry: ${data.entry||'-'} | SL: ${data.sl||'-'} | TP1: ${data.tp1||'-'} | Notiz: ${data.note||'-'}\n\nAntworte NUR in diesem Format:\nBEWERTUNG: GUTER_TRADE oder SCHLECHTER_TRADE\nGRUND: (max. 1 Satz)`;
+  try{
+    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GM,messages:[{role:'user',content:prompt}],temperature:0.3,max_tokens:80})});
+    if(!r.ok)return;
+    const d=await r.json();
+    const txt=d.choices?.[0]?.message?.content||'';
+    const isGood=txt.includes('GUTER_TRADE');
+    const grund=(txt.split('GRUND:')[1]||'').trim();
+    _showKIToast(isGood?'✅ Guter Trade':'❌ Schlechter Trade',grund,isGood);
+  }catch(e){}
+}
+function _showKIToast(title,text,isGood){
+  const ex=document.getElementById('ki-toast');if(ex)ex.remove();
+  const t=document.createElement('div');t.id='ki-toast';
+  t.style.cssText=`position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:${isGood?'rgba(48,209,88,.15)':'rgba(255,69,58,.15)'};border:2px solid ${isGood?'#30d158':'#ff453a'};color:#fff;padding:14px 22px;border-radius:16px;z-index:9999;text-align:center;max-width:88vw;box-shadow:0 4px 24px rgba(0,0,0,.6);animation:fadeIn .3s`;
+  t.innerHTML=`<div style="font-weight:800;font-size:1.05rem;margin-bottom:4px">${title}</div><div style="font-size:.85rem;opacity:.8">${text}</div>`;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),6000);
+}
 function _kiPopulateTradeSelect(){
   const sel=document.getElementById('ki-trade-select');
   if(!sel)return;
