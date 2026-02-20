@@ -2455,12 +2455,17 @@ function toggleDashboardNews(val){
 }
 async function _ffFetch(slug){
   const base='https://nfs.faireconomy.media/ff_calendar_'+slug+'.json';
-  const proxy='https://api.allorigins.win/raw?url='+encodeURIComponent(base);
-  // try direct first (works if server sends CORS headers), then proxy
-  for(const url of [base,proxy]){
+  const urls=[
+    base,                                                        // direkt (falls CORS passt)
+    'https://cors.eu.org/'+base,                                 // primärer Proxy
+    'https://api.allorigins.win/raw?url='+encodeURIComponent(base) // Fallback
+  ];
+  for(const url of urls){
     try{
       const r=await fetch(url,{cache:'no-cache'});
-      if(r.ok)return await r.json();
+      if(!r.ok)continue;
+      const json=await r.json();
+      if(Array.isArray(json)&&json.length>0)return json;
     }catch(_){}
   }
   return [];
