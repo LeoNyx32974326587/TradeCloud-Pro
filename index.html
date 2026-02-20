@@ -2122,9 +2122,43 @@ function showAssetDropdown(input,ddId){
 function selectAsset(inputId,symbol,ddId){document.getElementById(inputId).value=symbol;document.getElementById(ddId).classList.remove("open");}
 
 // ─── KI-ASSISTENT (Gemini) ───────────────────────────────────────────────────
-const _GK='AIzaSyDCgM4h6Rgk-r95Qy7BlT1S4QQI-4IDqAQ';
+const _GK='AIzaSyC_CadgmECk92Bld8EeZkZxv6HF9ep1C7U';
 const _GU='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+_GK;
 let _kiHistory=[];
+
+// ─── STRATEGIE DES NUTZERS ───────────────────────────────────────────────────
+const _STRATEGY=`
+WICHTIG – Das ist die exakte Trading-Strategie des Nutzers (Smart Money Concepts / SMC):
+
+SCHRITT 1 – LIQUIDITY SWEEP:
+  Der Markt macht einen gezielten Run auf ein vorheriges High (Buy-Side Liquidity) oder Low (Sell-Side Liquidity).
+  Dabei werden Stopps anderer Trader abgeholt. Dieser Sweep ist das erste Bestätigungssignal.
+
+SCHRITT 2 – BREAK OF STRUCTURE (BOS):
+  Direkt nach dem Sweep bricht der Markt eine wichtige Struktur in die entgegengesetzte Richtung.
+  Bullish: Sweep des Lows → BOS nach oben (höheres High).
+  Bearish: Sweep des Highs → BOS nach unten (tieferes Low).
+  Der BOS bestätigt, dass die Richtungsänderung real ist.
+
+SCHRITT 3 – ENTRY BEI FIBONACCI-RETRACEMENT (0.618 oder 0.718):
+  Nach dem BOS zieht der Markt zurück. Der Entry liegt beim Retracement auf:
+    - 0.618 Fibonacci-Level (Golden Ratio) — primäres Ziel
+    - 0.718 Fibonacci-Level — alternatives / tieferes Entry-Level
+  An diesen Levels reagiert der Markt typischerweise mit der erwarteten Bewegung.
+
+BEISPIEL LONG-SETUP:
+  1. Markt swept das letzte Swing-Low (Sell-Side Liquidity wird abgeholt)
+  2. Starker Anstieg → BOS nach oben (bullishes Momentum)
+  3. Retracement zurück auf 0.618 oder 0.718 Fib der letzten Aufwärtsbewegung = ENTRY LONG
+
+BEISPIEL SHORT-SETUP:
+  1. Markt swept das letzte Swing-High (Buy-Side Liquidity wird abgeholt)
+  2. Starker Absturz → BOS nach unten (bearishes Momentum)
+  3. Retracement zurück auf 0.618 oder 0.718 Fib der letzten Abwärtsbewegung = ENTRY SHORT
+
+Beurteile JEDEN Aspekt immer anhand dieser Strategie. Wenn Trades oder Charts analysiert werden,
+prüfe ob Liquidity Sweep, BOS und das 0.618/0.718 Fib-Level korrekt identifiziert und genutzt wurden.
+`;
 
 function switchKITab(tab){
   ['chat','analyse','chart'].forEach(t=>{
@@ -2159,7 +2193,7 @@ async function sendKIChat(){
   const dot=document.createElement('div');dot.className='ki-typing';dot.id='ki-dot';
   dot.innerHTML='<span></span><span></span><span></span>';
   box.appendChild(dot);box.scrollTop=box.scrollHeight;
-  const sys=`Du bist ein professioneller Trading-Coach für eine Trading-Journal-App. Antworte immer auf Deutsch, präzise und motivierend. Trading-Daten des Nutzers:\n${_kiTradeCtx()}`;
+  const sys=`Du bist ein professioneller Trading-Coach für eine Trading-Journal-App. Antworte immer auf Deutsch, präzise und motivierend.\n\n${_STRATEGY}\n\nTrading-Daten des Nutzers:\n${_kiTradeCtx()}\n\nBeziehe dich bei allen Antworten immer auf die Strategie des Nutzers (Liquidity Sweep → BOS → 0.618/0.718 Fib-Entry). Erkläre ob seine Trades dieser Strategie entsprechen und gib konkrete Verbesserungshinweise basierend darauf.`;
   _kiHistory.push({role:'user',parts:[{text:txt}]});
   const ctx=_kiHistory.slice(-8);ctx[0]={role:'user',parts:[{text:sys+'\n\nFrage: '+txt}]};
   try{
@@ -2186,7 +2220,7 @@ async function analyzeMyTrades(){
   btn.disabled=true;btn.textContent='Analysiere…';res.innerHTML='';
   const all=window.allTrades||window.trades||[];
   const detail=all.slice(-30).map(t=>`Asset:${t.asset||'-'} Richtung:${t.direction||'-'} PnL:${t.pnl||0} Datum:${t.date||'-'} Setup:${t.setup||'-'}`).join('\n');
-  const prompt=`Du bist ein professioneller Trading-Coach. Analysiere die folgenden Trading-Daten eines Nutzers und gib ein ausführliches Feedback auf Deutsch.\n\n${_kiTradeCtx()}\n\nDetaillierte Trades (letzte 30):\n${detail}\n\nBitte analysiere:\n1. Stärken — was läuft gut\n2. Schwächen — wo gibt es Verbesserungspotenzial\n3. Muster bei Verlusttrades\n4. Konkrete Handlungsempfehlungen\n5. Psychologische Aspekte (falls erkennbar)\n\nStrukturiere die Antwort übersichtlich.`;
+  const prompt=`Du bist ein professioneller Trading-Coach. Analysiere die Trading-Daten des Nutzers strikt anhand seiner SMC-Strategie und gib ausführliches Feedback auf Deutsch.\n\n${_STRATEGY}\n\nTrading-Übersicht:\n${_kiTradeCtx()}\n\nDetaillierte Trades (letzte 30):\n${detail}\n\nBitte analysiere genau anhand der Strategie (Liquidity Sweep → BOS → 0.618/0.718 Fib-Entry):\n1. STRATEGIE-COMPLIANCE — Wie konsequent folgt der Nutzer seinen eigenen Regeln? Wie oft wurde der Sweep korrekt abgewartet? Wurde der BOS als Bestätigung genutzt? Wurde beim 0.618 oder 0.718 Fib eingestiegen?\n2. STÄRKEN — Was läuft strategiekonform gut?\n3. SCHWÄCHEN — Wo wird von der Strategie abgewichen (z.B. Entry ohne Sweep, kein BOS abgewartet, falsches Fib-Level)?\n4. MUSTER BEI VERLUST-TRADES — Welcher Strategieschritt fehlt typischerweise bei Verlustern?\n5. KONKRETE HANDLUNGSEMPFEHLUNGEN — Spezifisch für Liquidity Sweep, BOS-Erkennung und Fib-Entry\n6. PSYCHOLOGIE — Wird ungeduldig eingestiegen bevor alle 3 Bedingungen erfüllt sind?\n\nStrukturiere die Antwort klar mit Überschriften. Sei direkt und konkret.`;
   try{
     const rep=await _gemini([{role:'user',parts:[{text:prompt}]}]);
     res.innerHTML='<div class="ki-result-box">'+rep.replace(/</g,'&lt;').replace(/\n/g,'<br>')+'</div>';
@@ -2207,7 +2241,7 @@ async function handleChartUpload(e){
     try{
       const contents=[{role:'user',parts:[
         {inlineData:{mimeType:file.type,data:b64}},
-        {text:'Du bist ein professioneller Chart-Analyst. Analysiere diesen Trading-Chart auf Deutsch und erkläre:\n1. Charttyp und Zeitrahmen (falls erkennbar)\n2. Aktuelle Trendrichtung\n3. Wichtige Support- und Widerstandszonen\n4. Erkennbare Chart-Muster oder Formationen\n5. Mögliche Long- und Short-Setups mit Einstiegsbereichen\n6. Worauf ein Trader bei diesem Chart besonders achten sollte\n\nSei konkret, strukturiert und professionell.'}
+        {text:`Du bist ein professioneller SMC-Chart-Analyst. Analysiere diesen Chart auf Deutsch anhand folgender Strategie:\n\n${_STRATEGY}\n\nAnalysiere den Chart STRIKT nach diesen Punkten:\n1. LIQUIDITY SWEEP – Ist ein aktueller oder kürzlicher Sweep eines Highs/Lows erkennbar? Beschreibe genau welche Liquidität geholt wurde (Buy-Side oder Sell-Side).\n2. BREAK OF STRUCTURE (BOS) – Gibt es nach dem Sweep einen BOS? Ist er bereits bestätigt oder noch ausstehend?\n3. FIBONACCI 0.618 / 0.718 – Wo liegen die 0.618 und 0.718 Fib-Level der letzten relevanten Bewegung? Ist der Preis bereits dort oder nähert er sich?\n4. SETUP-BEWERTUNG – Ist aktuell ein gültiges Setup nach der Strategie vorhanden (alle 3 Bedingungen erfüllt oder in Entstehung)? Bullish oder Bearish?\n5. ENTRY-BEREICH – Konkreter Preisbereich für den Entry (0.618 oder 0.718 Fib)\n6. INVALIDIERUNG – Wann wäre das Setup ungültig (wo liegt der Stopploss logisch)?\n7. GENERELLES – Zeitrahmen, Trendstruktur, wichtige Zonen\n\nWenn kein klares Setup vorhanden ist, erkläre was noch abgewartet werden muss. Sei präzise und direkt.`}
       ]}];
       const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents})});
       if(!r.ok)throw new Error('HTTP '+r.status);
