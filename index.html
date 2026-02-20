@@ -382,6 +382,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       <button type="button" onclick="pasteTradeImg('setup')" class="trade-img-paste-btn">&#x1F4CB; Aus Zwischenablage</button>
       <input type="file" id="setupImgFile" accept="image/*" style="display:none" onchange="handleTradeImgUpload(event,'setup')">
       <div id="setupImgPreview"></div>
+      <div id="tradeImgAiHint" style="min-height:18px;margin-top:4px;text-align:center"></div>
     </div>
     <input type="hidden" id="imgSetup">
     <label>Notiz</label><textarea id="note" rows="2"></textarea>
@@ -2382,11 +2383,43 @@ function clearTradeImg(field){
   document.getElementById('img'+(field==='setup'?'Setup':'Result')).value='';
   document.getElementById(field+'ImgPreview').innerHTML='';
   const fi=document.getElementById(field+'ImgFile');if(fi)fi.value='';
+  if(field==='setup'){const h=document.getElementById('tradeImgAiHint');if(h)h.innerHTML='';}
 }
 function loadTradeImgFromBlob(blob,field){
   const reader=new FileReader();
-  reader.onload=ev=>{document.getElementById('img'+(field==='setup'?'Setup':'Result')).value=ev.target.result;showTradeImgPreview(field,ev.target.result);};
+  reader.onload=ev=>{
+    document.getElementById('img'+(field==='setup'?'Setup':'Result')).value=ev.target.result;
+    showTradeImgPreview(field,ev.target.result);
+    if(field==='setup')autoFillTradeFields(ev.target.result);
+  };
   reader.readAsDataURL(blob);
+}
+async function autoFillTradeFields(dataUrl){
+  const hint=document.getElementById('tradeImgAiHint');
+  if(hint)hint.innerHTML='<span style="color:var(--text-sub);font-size:.82rem">&#x23F3; KI erkennt Entry, SL &amp; TPs…</span>';
+  const prompt='Analyze this trading chart screenshot. Extract the Entry price, Stop Loss (SL), and Take Profit levels (TP1, TP2, TP3) that are visible or drawn on the chart.\nReply ONLY with this JSON, no other text:\n{"entry":null,"sl":null,"tp1":null,"tp2":null,"tp3":null}\nUse the exact price numbers shown in the chart. Set null if a value is not clearly visible.';
+  try{
+    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GMV,messages:[{role:'user',content:[{type:'image_url',image_url:{url:dataUrl}},{type:'text',text:prompt}]}],temperature:0.1,max_tokens:150})});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const text=d.choices?.[0]?.message?.content||'';
+    const match=text.match(/\{[\s\S]*?\}/);
+    if(!match)throw new Error('no json');
+    const vals=JSON.parse(match[0]);
+    const map={entry:'inpEntry',sl:'inpSL',tp1:'inpTP1',tp2:'inpTP2',tp3:'inpTP3'};
+    let filled=0;
+    Object.entries(map).forEach(([k,id])=>{
+      if(vals[k]!=null){
+        const el=document.getElementById(id);
+        if(el){el.value=vals[k];el.style.transition='border-color .4s';el.style.borderColor='var(--accent)';setTimeout(()=>{el.style.borderColor='';},2500);filled++;}
+      }
+    });
+    if(hint)hint.innerHTML=filled>0
+      ?`<span style="color:var(--accent);font-size:.82rem">&#x2714; ${filled} Werte erkannt &amp; ausgef&#xFC;llt</span>`
+      :'<span style="color:var(--text-sub);font-size:.82rem">Keine Werte erkannt</span>';
+  }catch(_){
+    if(hint)hint.innerHTML='<span style="color:var(--text-sub);font-size:.82rem">Automatische Erkennung nicht m&#xF6;glich</span>';
+  }
 }
 function handleTradeImgUpload(e,field){const f=e.target.files[0];if(f)loadTradeImgFromBlob(f,field);}
 async function pasteTradeImg(field){
