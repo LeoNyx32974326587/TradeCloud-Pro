@@ -2180,7 +2180,7 @@ function switchKITab(tab){
 function _kiPopulateTradeSelect(){
   const sel=document.getElementById('ki-trade-select');
   if(!sel)return;
-  const all=window.allTrades||window.trades||[];
+  const all=trades||[];
   const sorted=[...all].filter(t=>t.status==='Geschlossen'||!t.status).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const prev=sel.value;
   sel.innerHTML='<option value="">&#x1F4CA; Alle Trades (Portfolio-Analyse)</option>';
@@ -2196,7 +2196,7 @@ function _kiPopulateTradeSelect(){
 }
 
 function _kiTradeCtx(){
-  const all=window.allTrades||window.trades||[];
+  const all=trades||[];
   if(!all.length)return'Noch keine Trades im Journal.';
   const wins=all.filter(t=>parseFloat(t.pnl)>0).length;
   const pnl=all.reduce((s,t)=>s+(parseFloat(t.pnl)||0),0);
@@ -2251,7 +2251,7 @@ async function analyzeMyTrades(){
   const btn=document.getElementById('ki-analyse-btn');
   const res=document.getElementById('ki-analyse-result');
   btn.disabled=true;btn.textContent='Analysiere\u2026';res.innerHTML='';
-  const all=window.allTrades||window.trades||[];
+  const all=trades||[];
   const sel=document.getElementById('ki-trade-select');
   const selectedId=sel?sel.value:'';
   let prompt;
