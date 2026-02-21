@@ -2444,7 +2444,8 @@ async function pasteTradeImg(field){
 let _newsEvents=[],_newsTick=null;
 const _NEWS_FLAGS={USD:'&#x1F1FA;&#x1F1F8;',EUR:'&#x1F1EA;&#x1F1FA;',GBP:'&#x1F1EC;&#x1F1E7;',JPY:'&#x1F1EF;&#x1F1F5;',CHF:'&#x1F1E8;&#x1F1ED;',CAD:'&#x1F1E8;&#x1F1E6;',AUD:'&#x1F1E6;&#x1F1FA;',NZD:'&#x1F1F3;&#x1F1FF;',CNY:'&#x1F1E8;&#x1F1F3;'};
 const _NEWS_IMP={High:'#ff3b30',Medium:'#ff9f0a',Low:'#8e8e93'};
-const _FF_CK='ffcal_v2',_FF_TTL=30*60*1000;
+const _FF_CK='ffcal_v3',_FF_TTL=30*60*1000;
+const _TV_CCY={US:'USD',EU:'EUR',GB:'GBP',DE:'EUR',JP:'JPY',CH:'CHF',CA:'CAD',AU:'AUD',NZ:'NZD',CN:'CNY',FR:'EUR',IT:'EUR',ES:'EUR'};
 function toggleDashboardNews(val){
   showDashboardNews=val;
   localStorage.setItem('dashboardNews',val?'true':'false');
@@ -2456,15 +2457,23 @@ function toggleDashboardNews(val){
     loadDashboardNews();
   }
 }
+async function _tvCalFetch(){
+  const from=new Date().toISOString();
+  const to=new Date(Date.now()+14*24*3600*1000).toISOString();
+  const r=await fetch(`https://economic-calendar.tradingview.com/events?from=${from}&to=${to}&countries=US,EU,GB,DE,JP,CH,CA,AU,NZ,CN,FR,IT,ES&minImportance=1`,{cache:'no-cache'});
+  if(!r.ok)throw 0;
+  const json=await r.json();
+  return(json.result||[]).map(e=>({title:e.title,country:_TV_CCY[e.country]||e.country,date:e.date,impact:e.importance>=2?'High':e.importance>=1?'Medium':'Low'}));
+}
 async function _ffFetch(slug){
   const base='https://nfs.faireconomy.media/ff_calendar_'+slug+'.json';
   const enc=encodeURIComponent(base);
   const tries=[
-    ()=>fetch('https://api.allorigins.win/get?url='+enc,{cache:'no-cache'}).then(async r=>{if(!r.ok)throw 0;const j=await r.json();return JSON.parse(j.contents);}),
+    ()=>fetch('https://api.allorigins.win/get?url='+enc,{cache:'no-cache'}).then(async r=>{if(!r.ok)throw 0;const j=await r.json();const d=JSON.parse(j.contents);if(!Array.isArray(d))throw 0;return d;}),
     ()=>fetch('https://api.allorigins.win/raw?url='+enc,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json();}),
     ()=>fetch('https://api.cors.lol/?url='+base,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json();}),
     ()=>fetch('https://cors.eu.org/'+base,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json();}),
-    ()=>fetch('https://corsproxy.io/?url='+enc,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json();}),
+    ()=>fetch('https://corsproxy.io/?url='+enc,{cache:'no-cache'}).then(async r=>{if(!r.ok)throw 0;const d=await r.json();if(!Array.isArray(d))throw 0;return d;}),
     ()=>fetch(base,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json();})
   ];
   for(const fn of tries){
@@ -2472,14 +2481,23 @@ async function _ffFetch(slug){
   }
   return [];
 }
-async function _ffFetchCached(){
+async function _fetchAllCalData(){
+  try{const d=await _tvCalFetch();if(d.length)return d;}catch(_){}
+  const[tw,nw]=await Promise.all([_ffFetch('thisweek'),_ffFetch('nextweek')]);
+  return[...tw,...nw];
+}
+async function _calCached(){
+  const now=Date.now();
   try{
     const raw=localStorage.getItem(_FF_CK);
-    if(raw){const{ts,data}=JSON.parse(raw);if(Date.now()-ts<_FF_TTL&&Array.isArray(data)&&data.length)return data;}
+    if(raw){
+      const{ts,data}=JSON.parse(raw);
+      const hasFuture=Array.isArray(data)&&data.some(e=>new Date(e.date).getTime()>now);
+      if(now-ts<_FF_TTL&&hasFuture)return data;
+    }
   }catch(_){}
-  const[tw,nw]=await Promise.all([_ffFetch('thisweek'),_ffFetch('nextweek')]);
-  const data=[...tw,...nw];
-  if(data.length){try{localStorage.setItem(_FF_CK,JSON.stringify({ts:Date.now(),data}));}catch(_){}}
+  const data=await _fetchAllCalData();
+  if(data.length){try{localStorage.setItem(_FF_CK,JSON.stringify({ts:now,data}));}catch(_){}}
   return data;
 }
 async function loadDashboardNews(){
@@ -2488,7 +2506,7 @@ async function loadDashboardNews(){
   if(_newsTick){clearInterval(_newsTick);_newsTick=null;}
   w.innerHTML='<div style="color:var(--text-sub);font-size:.75rem;padding:4px 8px">&#x23F3; lädt…</div>';
   try{
-    const data=await _ffFetchCached();
+    const data=await _calCached();
     if(!data.length){w.innerHTML='<div style="color:var(--text-sub);font-size:.72rem;padding:4px 8px">&#x1F4C5; Kalender nicht erreichbar</div>';return;}
     const now=Date.now();
     _newsEvents=data
@@ -2497,7 +2515,7 @@ async function loadDashboardNews(){
       .sort((a,b)=>new Date(a.date)-new Date(b.date))
       .slice(0,3);
     if(!_newsEvents.length){
-      w.innerHTML='<div style="color:var(--text-sub);font-size:.72rem;padding:4px 8px">&#x1F634; Keine anstehenden Events</div>';
+      w.innerHTML='<div style="color:var(--text-sub);font-size:.72rem;padding:4px 8px">&#x1F4C5; Nächste Events ab Montag</div>';
       return;
     }
     _renderNewsWidget();
