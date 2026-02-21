@@ -2200,8 +2200,27 @@ BEISPIEL SHORT-SETUP:
   2. Starker Absturz → BOS nach unten (bearishes Momentum)
   3. Retracement zurück auf 0.618 oder 0.718 Fib der letzten Abwärtsbewegung = ENTRY SHORT
 
+ZUSÄTZLICHE BESTÄTIGUNGEN (erhöhen die Setup-Qualität):
+
+TREND-KONTEXT:
+  Identifiziere den übergeordneten Trend (Higher Highs & Higher Lows = bullish / Lower Highs & Lower Lows = bearish).
+  Ein Long-Setup ist nur in einem bullischen Trend valide. Ein Short-Setup nur in einem bärischen Trend.
+  Counter-Trend-Setups gelten automatisch als schwächer und riskanter.
+
+ORDER BLOCK (OB):
+  Eine Order Block Zone ist die letzte bearishe Candle vor einer starken bullischen Bewegung (Bullisher OB)
+  bzw. die letzte bullishe Candle vor einer starken bärischen Bewegung (Bärischer OB).
+  Ein Entry im Bereich des 0.618/0.718 Fib, der auch mit einem OB übereinstimmt, ist eine sehr starke Bestätigung.
+
+FAIR VALUE GAP (FVG):
+  Ein FVG entsteht, wenn zwischen drei Kerzen eine Lücke bleibt (die Dochte der ersten und dritten Kerze überschneiden sich nicht).
+  Läuft der Preis in einen FVG im Bereich des Fib-Entrys zurück, ist das eine starke Bestätigung für den Entry.
+
+Ein GUTER TRADE erfüllt: Sweep + BOS + Fib-Entry + Trend-Kontext passt + mindestens 1 Bestätigung (OB oder FVG).
+Ein SCHLECHTER TRADE fehlt mindestens einer der 5 Bedingungen.
+
 Beurteile JEDEN Aspekt immer anhand dieser Strategie. Wenn Trades oder Charts analysiert werden,
-prüfe ob Liquidity Sweep, BOS und das 0.618/0.718 Fib-Level korrekt identifiziert und genutzt wurden.
+prüfe ob Liquidity Sweep, BOS, das 0.618/0.718 Fib-Level, der Trend-Kontext und OB/FVG-Bestätigungen vorhanden sind.
 `;
 
 function switchKITab(tab){
@@ -2318,8 +2337,8 @@ function _renderKIResult(text){
     .replace(/\*([^*\n]+)\*/g,'$1')
     .replace(/^#{1,4}\s*/gm,'')
     .trim();
-  const ICONS=['🌊','📐','🎯','⚡','💡','📋','💪','⚠️','📉','🔧','🧠'];
-  const COLORS=['#5ac8fa','#30d158','#ffd60a','#ff9f0a','var(--accent)','#5ac8fa','#30d158','#ff9f0a','#ff453a','#bf5af2','#5ac8fa'];
+  const ICONS=['🌊','📐','🎯','📈','🔍','💡','📋','💪','⚠️','📉','🔧'];
+  const COLORS=['#5ac8fa','#30d158','#ffd60a','#bf5af2','#64d2ff','var(--accent)','#5ac8fa','#30d158','#ff9f0a','#ff453a','#bf5af2'];
   // Parse numbered sections: "1. TITLE – content" or "1. TITLE\ncontent"
   const lines=t.split('\n');
   let html='',cur=null;
@@ -2388,10 +2407,10 @@ async function analyzeMyTrades(){
 async function analyzeChartImage(dataUrl){
   const res=document.getElementById('ki-chart-result');
   res.innerHTML='<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F50D; Analysiere Chart…</div>';
-  const prompt=`Du bist ein SMC-Chart-Analyst. Analysiere diesen Chart kurz und präzise auf Deutsch.\n\n${_STRATEGY}\n\nBeantworte in max. 5 knappen Punkten:\n1. SWEEP – Buy-Side oder Sell-Side? Kurz beschreiben.\n2. BOS – Vorhanden / ausstehend?\n3. FIB-ENTRY – 0.618 oder 0.718 Level erreicht oder noch nicht?\n4. SETUP – Bullish / Bearish / kein Setup. Entry-Zone & SL-Level.\n5. FAZIT – Beginne mit "GUTER TRADE" oder "SCHLECHTER TRADE" basierend darauf ob alle 3 Strategiebedingungen (Sweep, BOS, Fib-Entry) erfüllt sind. Dann 1 Satz was jetzt zu tun ist.\n\nKeine langen Erklärungen. Direkt und kompakt.`;
+  const prompt=`Du bist ein SMC-Chart-Analyst. Analysiere diesen Chart kurz und präzise auf Deutsch.\n\n${_STRATEGY}\n\nBeantworte in genau 6 knappen Punkten:\n1. SWEEP – Buy-Side oder Sell-Side? Kurz beschreiben.\n2. BOS – Vorhanden / ausstehend?\n3. FIB-ENTRY – 0.618 oder 0.718 Level erreicht oder noch nicht?\n4. TREND – Übergeordneter Trend bullisch oder bärisch? Passt das Setup zur Trendrichtung?\n5. BESTÄTIGUNGEN – Order Block (OB) und/oder Fair Value Gap (FVG) im Entry-Bereich vorhanden? Wenn ja, kurz wo.\n6. FAZIT – Beginne mit "GUTER TRADE" oder "SCHLECHTER TRADE". GUTER TRADE nur wenn: Sweep + BOS + Fib + Trend passt + mind. 1 Bestätigung (OB/FVG). Dann 1 Satz was jetzt zu tun ist.\n\nKeine langen Erklärungen. Direkt und kompakt.`;
   try{
     const img=await _compressImg(dataUrl);
-    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GMV,messages:[{role:'user',content:[{type:'image_url',image_url:{url:img}},{type:'text',text:prompt}]}],temperature:0.5,max_tokens:450})});
+    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GMV,messages:[{role:'user',content:[{type:'image_url',image_url:{url:img}},{type:'text',text:prompt}]}],temperature:0.5,max_tokens:580})});
     if(!r.ok){let em='HTTP '+r.status;try{const ed=await r.json();em+=' – '+(ed?.error?.message||JSON.stringify(ed));}catch(_){}throw new Error(em);}
     const d=await r.json();
     const rep=d.choices?.[0]?.message?.content||'Keine Analyse möglich.';
