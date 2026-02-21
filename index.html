@@ -2216,8 +2216,10 @@ FAIR VALUE GAP (FVG):
   Ein FVG entsteht, wenn zwischen drei Kerzen eine Lücke bleibt (die Dochte der ersten und dritten Kerze überschneiden sich nicht).
   Läuft der Preis in einen FVG im Bereich des Fib-Entrys zurück, ist das eine starke Bestätigung für den Entry.
 
-Ein GUTER TRADE erfüllt: Sweep + BOS + Fib-Entry + Trend-Kontext passt + mindestens 1 Bestätigung (OB oder FVG).
-Ein SCHLECHTER TRADE fehlt mindestens einer der 5 Bedingungen.
+BEWERTUNGSSTUFEN:
+  GUTER TRADE      – Alle 5 erfüllt: Sweep + BOS + Fib-Entry + Trend passt + mind. OB oder FVG vorhanden.
+  RISKANTER TRADE  – Kernbedingungen (Sweep, BOS, Fib) erfüllt, aber Trend oder OB/FVG fehlen (3–4 von 5).
+  SCHLECHTER TRADE – Mindestens eine Kernbedingung (Sweep, BOS oder Fib) fehlt.
 
 Beurteile JEDEN Aspekt immer anhand dieser Strategie. Wenn Trades oder Charts analysiert werden,
 prüfe ob Liquidity Sweep, BOS, das 0.618/0.718 Fib-Level, der Trend-Kontext und OB/FVG-Bestätigungen vorhanden sind.
@@ -2363,18 +2365,25 @@ function _renderKIResult(text){
     }
   }
   flush();
-  // Highlight FAZIT card based on trade quality verdict
+  // Highlight FAZIT card based on 3-level trade quality verdict
   html=html.replace(
     /(<div style="background[^>]*border-left:3px solid var\(--accent\)[^>]*>)\s*(<div[^>]*>💡 FAZIT<\/div>)\s*(<div[^>]*>)(.*?)(<\/div>\s*<\/div>)/s,
     (match,wrap,label,contentDiv,body,close)=>{
       const isGood=/GUTER\s+TRADE/i.test(body);
+      const isRisky=/RISKANTER\s+TRADE/i.test(body);
       const isBad=/SCHLECHTER\s+TRADE/i.test(body);
-      if(!isGood&&!isBad)return match;
-      const cl=isGood?'#30d158':'#ff453a';
+      if(!isGood&&!isRisky&&!isBad)return match;
+      const cl=isGood?'#30d158':isRisky?'#ff9f0a':'#ff453a';
       const badge=isGood
         ?'<span style="background:rgba(48,209,88,.15);color:#30d158;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px;display:inline-block">✅ GUTER TRADE</span><br>'
-        :'<span style="background:rgba(255,69,58,.15);color:#ff453a;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px;display:inline-block">❌ SCHLECHTER TRADE</span><br>';
-      const cleanBody=body.replace(/GUTER\s+TRADE[,.\s–—]*/i,'').replace(/SCHLECHTER\s+TRADE[,.\s–—]*/i,'').trim();
+        :isRisky
+          ?'<span style="background:rgba(255,159,10,.15);color:#ff9f0a;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px;display:inline-block">⚠️ RISKANTER TRADE</span><br>'
+          :'<span style="background:rgba(255,69,58,.15);color:#ff453a;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px;display:inline-block">❌ SCHLECHTER TRADE</span><br>';
+      const cleanBody=body
+        .replace(/GUTER\s+TRADE[,.\s–—]*/i,'')
+        .replace(/RISKANTER\s+TRADE[,.\s–—]*/i,'')
+        .replace(/SCHLECHTER\s+TRADE[,.\s–—]*/i,'')
+        .trim();
       return wrap.replace('var(--accent)',cl)+label.replace('var(--accent)',cl)+contentDiv+badge+cleanBody+close;
     }
   );
@@ -2407,7 +2416,7 @@ async function analyzeMyTrades(){
 async function analyzeChartImage(dataUrl){
   const res=document.getElementById('ki-chart-result');
   res.innerHTML='<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F50D; Analysiere Chart…</div>';
-  const prompt=`Du bist ein SMC-Chart-Analyst. Analysiere diesen Chart kurz und präzise auf Deutsch.\n\n${_STRATEGY}\n\nBeantworte in genau 6 knappen Punkten:\n1. SWEEP – Buy-Side oder Sell-Side? Kurz beschreiben.\n2. BOS – Vorhanden / ausstehend?\n3. FIB-ENTRY – 0.618 oder 0.718 Level erreicht oder noch nicht?\n4. TREND – Übergeordneter Trend bullisch oder bärisch? Passt das Setup zur Trendrichtung?\n5. BESTÄTIGUNGEN – Order Block (OB) und/oder Fair Value Gap (FVG) im Entry-Bereich vorhanden? Wenn ja, kurz wo.\n6. FAZIT – Beginne mit "GUTER TRADE" oder "SCHLECHTER TRADE". GUTER TRADE nur wenn: Sweep + BOS + Fib + Trend passt + mind. 1 Bestätigung (OB/FVG). Dann 1 Satz was jetzt zu tun ist.\n\nKeine langen Erklärungen. Direkt und kompakt.`;
+  const prompt=`Du bist ein SMC-Chart-Analyst. Analysiere diesen Chart kurz und präzise auf Deutsch.\n\n${_STRATEGY}\n\nBeantworte in genau 6 knappen Punkten:\n1. SWEEP – Buy-Side oder Sell-Side? Kurz beschreiben.\n2. BOS – Vorhanden / ausstehend?\n3. FIB-ENTRY – 0.618 oder 0.718 Level erreicht oder noch nicht?\n4. TREND – Übergeordneter Trend bullisch oder bärisch? Passt das Setup zur Trendrichtung?\n5. BESTÄTIGUNGEN – Order Block (OB) und/oder Fair Value Gap (FVG) im Entry-Bereich vorhanden? Wenn ja, kurz wo.\n6. FAZIT – Beginne mit genau einem dieser Begriffe: "GUTER TRADE", "RISKANTER TRADE" oder "SCHLECHTER TRADE". GUTER TRADE: alle 5 Bedingungen erfüllt. RISKANTER TRADE: Sweep+BOS+Fib vorhanden, aber Trend oder OB/FVG fehlt. SCHLECHTER TRADE: Sweep, BOS oder Fib fehlt. Dann 1 Satz was jetzt zu tun ist.\n\nKeine langen Erklärungen. Direkt und kompakt.`;
   try{
     const img=await _compressImg(dataUrl);
     const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GMV,messages:[{role:'user',content:[{type:'image_url',image_url:{url:img}},{type:'text',text:prompt}]}],temperature:0.5,max_tokens:580})});
