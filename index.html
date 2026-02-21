@@ -2311,6 +2311,41 @@ function _kiAppend(text,role){
   box.appendChild(el);box.scrollTop=box.scrollHeight;
 }
 
+function _renderKIResult(text){
+  // Strip markdown symbols
+  let t=text
+    .replace(/\*\*([^*\n]+)\*\*/g,'$1')
+    .replace(/\*([^*\n]+)\*/g,'$1')
+    .replace(/^#{1,4}\s*/gm,'')
+    .trim();
+  const ICONS=['🌊','📐','🎯','⚡','💡','📋','💪','⚠️','📉','🔧','🧠'];
+  const COLORS=['#5ac8fa','#30d158','#ffd60a','#ff9f0a','var(--accent)','#5ac8fa','#30d158','#ff9f0a','#ff453a','#bf5af2','#5ac8fa'];
+  // Parse numbered sections: "1. TITLE – content" or "1. TITLE\ncontent"
+  const lines=t.split('\n');
+  let html='',cur=null;
+  function flush(){
+    if(!cur)return;
+    const i=cur.n-1,ic=ICONS[i]||'●',cl=COLORS[i]||'var(--accent)';
+    html+=`<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:11px 14px;margin-bottom:8px;border-left:3px solid ${cl}">
+      <div style="color:${cl};font-size:.7rem;font-weight:700;letter-spacing:.7px;margin-bottom:5px;text-transform:uppercase">${ic} ${cur.title}</div>
+      <div style="font-size:.87rem;line-height:1.58;color:var(--text)">${cur.body.filter(Boolean).join('<br>')}</div>
+    </div>`;
+    cur=null;
+  }
+  for(const line of lines){
+    const m=line.match(/^(\d+)\.\s+([^\n–—:]+?)(?:\s*[–—:]\s*(.*))?$/);
+    if(m){
+      flush();
+      cur={n:parseInt(m[1]),title:m[2].trim().toUpperCase(),body:m[3]?[m[3].trim()]:[]};
+    }else if(cur){
+      const s=line.trim();if(s)cur.body.push(s);
+    }else{
+      const s=line.trim();if(s)html+=`<p style="font-size:.87rem;line-height:1.58;margin:0 0 6px">${s}</p>`;
+    }
+  }
+  flush();
+  return html||`<div style="font-size:.87rem;line-height:1.6">${t.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`;
+}
 async function analyzeMyTrades(){
   const btn=document.getElementById('ki-analyse-btn');
   const res=document.getElementById('ki-analyse-result');
@@ -2330,7 +2365,7 @@ async function analyzeMyTrades(){
   }
   try{
     const rep=await _gemini([{role:'user',parts:[{text:prompt}]}]);
-    res.innerHTML='<div class="ki-result-box">'+rep.replace(/</g,'&lt;').replace(/\n/g,'<br>')+'</div>';
+    res.innerHTML='<div style="margin-top:14px">'+_renderKIResult(rep)+'</div>';
   }catch(e){res.innerHTML='<div style="color:var(--danger);margin-top:12px">Fehler: '+(e.message||'Analyse fehlgeschlagen')+'</div>';}
   btn.disabled=false;btn.textContent='&#x1F4CA; Erneut analysieren';
 }
@@ -2345,7 +2380,7 @@ async function analyzeChartImage(dataUrl){
     if(!r.ok){let em='HTTP '+r.status;try{const ed=await r.json();em+=' – '+(ed?.error?.message||JSON.stringify(ed));}catch(_){}throw new Error(em);}
     const d=await r.json();
     const rep=d.choices?.[0]?.message?.content||'Keine Analyse möglich.';
-    res.innerHTML='<div class="ki-result-box">'+rep.replace(/</g,'&lt;').replace(/\n/g,'<br>')+'</div>';
+    res.innerHTML='<div style="margin-top:12px">'+_renderKIResult(rep)+'</div>';
   }catch(err){console.error('[ChartAnalyse] Fehler:',err);res.innerHTML='<div style="color:var(--danger);margin-top:10px">Fehler: '+(err.message||'Analyse fehlgeschlagen')+'</div>';}
 }
 function processChartBlob(blob){
