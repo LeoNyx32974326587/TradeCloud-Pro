@@ -221,10 +221,6 @@ input:checked+.slider:before{transform:translateX(26px)}
 .text-green{color:var(--success)!important}.text-red{color:var(--danger)!important}
 input,select,textarea{background:var(--cell-bg);color:var(--text-main);border:1px solid var(--border);padding:12px;border-radius:10px;width:100%;margin-bottom:12px;box-sizing:border-box;transition:border-color .2s}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 8px rgba(187,134,252,.2)}
-.ki-select-wrap{position:relative;margin-bottom:0}
-.ki-select-wrap select{appearance:none;-webkit-appearance:none;margin-bottom:0;padding:13px 44px 13px 14px;font-size:.95rem;border-radius:12px;background-color:var(--cell-bg);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23bb86fc' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;border:1.5px solid var(--border);color:var(--text-main);width:100%;box-sizing:border-box;cursor:pointer;transition:border-color .25s,box-shadow .25s,background-color .25s}
-.ki-select-wrap select:hover{border-color:rgba(187,134,252,.5);background-color:rgba(187,134,252,.04)}
-.ki-select-wrap:focus-within select{border-color:var(--accent);box-shadow:0 0 0 3px rgba(187,134,252,.15),0 4px 16px rgba(187,134,252,.1);outline:none}
 .btn-primary{background:var(--gradient);color:#fff;padding:15px;border:none;font-weight:800;border-radius:10px;width:100%;cursor:pointer;transition:.2s;box-shadow:0 4px 15px rgba(187,134,252,.25)}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(187,134,252,.35)}
 .btn-icon,.btn-small,.chart-btn{padding:6px 10px;font-size:.85rem;border-radius:8px;border:1px solid var(--border);background:var(--cell-bg);color:var(--text-main);cursor:pointer;transition:.2s;display:inline-flex;align-items:center;justify-content:center;line-height:1}
@@ -918,11 +914,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <p style="color:var(--text-sub);font-size:.9rem;margin-bottom:16px">W&#228;hle einen einzelnen Trade aus oder analysiere alle Trades auf einmal.</p>
     <div style="margin-bottom:16px">
       <label style="font-size:.8rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Trade ausw&#228;hlen</label>
-      <div class="ki-select-wrap">
-        <select id="ki-trade-select">
-          <option value="">&#x1F4CA; Alle Trades (Portfolio-Analyse)</option>
-        </select>
-      </div>
+      <select id="ki-trade-select" style="width:100%;padding:12px;background:var(--cell-bg);border:1px solid var(--border);color:var(--text-main);border-radius:10px;font-size:.95rem;cursor:pointer;box-sizing:border-box">
+        <option value="">&#x1F4CA; Alle Trades (Portfolio-Analyse)</option>
+      </select>
     </div>
     <button class="btn-primary" onclick="analyzeMyTrades()" style="width:100%" id="ki-analyse-btn">&#x1F4CA; Jetzt analysieren</button>
     <div id="ki-analyse-result"></div>
