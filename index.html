@@ -2442,9 +2442,9 @@ async function pasteTradeImg(field){
 
 // ─── DASHBOARD NEWS COUNTDOWN ────────────────────────────────────────────────
 let _newsEvents=[],_newsTick=null;
-const _NEWS_FLAGS={US:'&#x1F1FA;&#x1F1F8;',EU:'&#x1F1EA;&#x1F1FA;',DE:'&#x1F1E9;&#x1F1EA;',GB:'&#x1F1EC;&#x1F1E7;',JP:'&#x1F1EF;&#x1F1F5;',CH:'&#x1F1E8;&#x1F1ED;',CA:'&#x1F1E8;&#x1F1E6;',AU:'&#x1F1E6;&#x1F1FA;',NZ:'&#x1F1F3;&#x1F1FF;',CN:'&#x1F1E8;&#x1F1F3;',FR:'&#x1F1EB;&#x1F1F7;',IT:'&#x1F1EE;&#x1F1F9;',ES:'&#x1F1EA;&#x1F1F8;'};
-const _COUNTRY_CCY={US:'USD',EU:'EUR',DE:'EUR',FR:'EUR',IT:'EUR',ES:'EUR',GB:'GBP',JP:'JPY',CH:'CHF',CA:'CAD',AU:'AUD',NZ:'NZD',CN:'CNY'};
-const _NEWS_IMP={2:'#ff3b30',1:'#ff9f0a',0:'#8e8e93'};
+const _NEWS_FLAGS={USD:'&#x1F1FA;&#x1F1F8;',EUR:'&#x1F1EA;&#x1F1FA;',GBP:'&#x1F1EC;&#x1F1E7;',JPY:'&#x1F1EF;&#x1F1F5;',CHF:'&#x1F1E8;&#x1F1ED;',CAD:'&#x1F1E8;&#x1F1E6;',AUD:'&#x1F1E6;&#x1F1FA;',NZD:'&#x1F1F3;&#x1F1FF;',CNY:'&#x1F1E8;&#x1F1F3;'};
+const _NEWS_IMP={High:'#ff3b30',Medium:'#ff9f0a',Low:'#8e8e93'};
+const _FF_CK='ffcal_v2',_FF_TTL=30*60*1000;
 function toggleDashboardNews(val){
   showDashboardNews=val;
   localStorage.setItem('dashboardNews',val?'true':'false');
@@ -2456,14 +2456,31 @@ function toggleDashboardNews(val){
     loadDashboardNews();
   }
 }
-async function _tvFetch(){
-  const from=new Date().toISOString();
-  const to=new Date(Date.now()+14*24*3600*1000).toISOString();
-  const url=`https://economic-calendar.tradingview.com/events?from=${from}&to=${to}&countries=US,EU,GB,DE,JP,CH,CA,AU,NZ,CN,FR,IT,ES&minImportance=1`;
-  const r=await fetch(url,{cache:'no-cache'});
-  if(!r.ok)throw new Error('TV '+r.status);
-  const json=await r.json();
-  return Array.isArray(json.result)?json.result:[];
+async function _ffFetch(slug){
+  const base='https://nfs.faireconomy.media/ff_calendar_'+slug+'.json';
+  const enc=encodeURIComponent(base);
+  const tries=[
+    ()=>fetch('https://api.allorigins.win/get?url='+enc,{cache:'no-cache'}).then(async r=>{if(!r.ok)throw 0;const j=await r.json();return JSON.parse(j.contents);}),
+    ()=>fetch('https://api.allorigins.win/raw?url='+enc,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json();}),
+    ()=>fetch('https://api.cors.lol/?url='+base,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json();}),
+    ()=>fetch('https://cors.eu.org/'+base,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json();}),
+    ()=>fetch('https://corsproxy.io/?url='+enc,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json();}),
+    ()=>fetch(base,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json();})
+  ];
+  for(const fn of tries){
+    try{const d=await fn();if(Array.isArray(d)&&d.length>0)return d;}catch(_){}
+  }
+  return [];
+}
+async function _ffFetchCached(){
+  try{
+    const raw=localStorage.getItem(_FF_CK);
+    if(raw){const{ts,data}=JSON.parse(raw);if(Date.now()-ts<_FF_TTL&&Array.isArray(data)&&data.length)return data;}
+  }catch(_){}
+  const[tw,nw]=await Promise.all([_ffFetch('thisweek'),_ffFetch('nextweek')]);
+  const data=[...tw,...nw];
+  if(data.length){try{localStorage.setItem(_FF_CK,JSON.stringify({ts:Date.now(),data}));}catch(_){}}
+  return data;
 }
 async function loadDashboardNews(){
   const w=document.getElementById('dashboard-news-widget');if(!w)return;
@@ -2471,12 +2488,12 @@ async function loadDashboardNews(){
   if(_newsTick){clearInterval(_newsTick);_newsTick=null;}
   w.innerHTML='<div style="color:var(--text-sub);font-size:.75rem;padding:4px 8px">&#x23F3; lädt…</div>';
   try{
-    const data=await _tvFetch();
+    const data=await _ffFetchCached();
     if(!data.length){w.innerHTML='<div style="color:var(--text-sub);font-size:.72rem;padding:4px 8px">&#x1F4C5; Kalender nicht erreichbar</div>';return;}
-    const nowMs=Date.now();
+    const now=Date.now();
     _newsEvents=data
-      .filter(e=>e.importance>=1)
-      .filter(e=>new Date(e.date).getTime()>nowMs)
+      .filter(e=>e.impact==='High'||e.impact==='Medium')
+      .filter(e=>new Date(e.date).getTime()>now)
       .sort((a,b)=>new Date(a.date)-new Date(b.date))
       .slice(0,3);
     if(!_newsEvents.length){
@@ -2500,10 +2517,9 @@ function _renderNewsWidget(){
       const d=new Date(e.date);
       const hhmm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
       const flag=_NEWS_FLAGS[e.country]||'&#x1F310;';
-      const ccy=_COUNTRY_CCY[e.country]||e.country;
-      const dot=`<span style="width:7px;height:7px;border-radius:50%;background:${_NEWS_IMP[e.importance]||'#8e8e93'};display:inline-block;flex-shrink:0"></span>`;
+      const dot=`<span style="width:7px;height:7px;border-radius:50%;background:${_NEWS_IMP[e.impact]||'#8e8e93'};display:inline-block;flex-shrink:0"></span>`;
       const name=e.title.length>18?e.title.slice(0,16)+'…':e.title;
-      return `<div class="news-pill">${dot}<span style="font-size:.8rem">${flag}</span><span class="np-cur">${ccy}</span><span class="np-name">${name}</span><span class="np-time">${hhmm}</span><span class="np-timer">-${countdown}</span></div>`;
+      return `<div class="news-pill">${dot}<span style="font-size:.8rem">${flag}</span><span class="np-cur">${e.country}</span><span class="np-name">${name}</span><span class="np-time">${hhmm}</span><span class="np-timer">-${countdown}</span></div>`;
     }).join('')+'</div>';
 }
 </script></body></html>
