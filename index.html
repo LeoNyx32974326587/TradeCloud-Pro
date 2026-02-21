@@ -2583,35 +2583,39 @@ function _compressImg(dataUrl,maxW=1800,quality=0.82){
 async function autoFillTradeFields(dataUrl){
   const hint=document.getElementById('tradeImgAiHint');
   if(hint)hint.innerHTML='<span style="color:var(--text-sub);font-size:.82rem">&#x23F3; KI erkennt Entry, SL &amp; TPs…</span>';
-  const prompt='Analyze this trading chart screenshot. Extract ONLY the explicitly labeled Entry price, Stop Loss (SL), and Take Profit levels (TP1, TP2, TP3).\nIMPORTANT: IGNORE all Fibonacci retracement and extension lines — especially gray/white lines labeled with ratios like 0, 0.236, 0.382, 0.5, 0.618, 0.705, 0.786, 1, -0.27, -0.618 etc. Do NOT use those as Entry, SL or TP values.\nOnly extract levels that are clearly and explicitly marked as Entry, SL, Stop Loss, TP, Take Profit, or similar trade-setup labels.\nReply ONLY with this JSON, no other text:\n{"entry":null,"sl":null,"tp1":null,"tp2":null,"tp3":null}\nUse the exact price numbers. Set null if a value is not clearly visible.';
+  const sysMsg='You are a trading chart price extractor. You ALWAYS respond with valid JSON only — no markdown, no explanation, no code fences.';
+  const userMsg='Look at this trading chart. Find price levels explicitly labeled as Entry, Stop Loss (SL), TP1, TP2, TP3. IGNORE Fibonacci ratio lines (0.618, 0.786 etc.). Return ONLY this JSON with exact numbers or null:\n{"entry":null,"sl":null,"tp1":null,"tp2":null,"tp3":null}';
   try{
     const img=await _compressImg(dataUrl);
-    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GMV,messages:[{role:'user',content:[{type:'image_url',image_url:{url:img}},{type:'text',text:prompt}]}],temperature:0.1,max_tokens:150})});
+    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GMV,messages:[{role:'system',content:sysMsg},{role:'user',content:[{type:'image_url',image_url:{url:img}},{type:'text',text:userMsg}]}],temperature:0,max_tokens:80})});
     if(!r.ok){
-      const errBody=await r.json().catch(()=>({}));
-      const msg=(errBody.error?.message)||('HTTP '+r.status);
-      console.error('[AutoFill] Groq error:',r.status,msg);
-      throw new Error(msg);
+      const eb=await r.json().catch(()=>({}));
+      console.error('[AutoFill] Groq',r.status,(eb.error?.message)||'');
+      throw new Error('HTTP '+r.status);
     }
     const d=await r.json();
-    const text=d.choices?.[0]?.message?.content||'';
-    const match=text.match(/\{[\s\S]*?\}/);
-    if(!match)throw new Error('no json in response: '+text.slice(0,80));
+    const raw=d.choices?.[0]?.message?.content||'';
+    // Extract JSON even if model wraps it in code fences
+    const match=raw.match(/\{[^{}]*\}/);
+    if(!match){
+      if(hint)hint.innerHTML='<span style="color:var(--text-sub);font-size:.82rem">Keine Labels erkannt – Entry/SL/TP sichtbar?</span>';
+      return;
+    }
     const vals=JSON.parse(match[0]);
     const map={entry:'inpEntry',sl:'inpSL',tp1:'inpTP1',tp2:'inpTP2',tp3:'inpTP3'};
     let filled=0;
     Object.entries(map).forEach(([k,id])=>{
-      if(vals[k]!=null){
+      if(vals[k]!=null&&vals[k]!=='null'){
         const el=document.getElementById(id);
         if(el){el.value=vals[k];el.style.transition='border-color .4s';el.style.borderColor='var(--accent)';setTimeout(()=>{el.style.borderColor='';},2500);filled++;}
       }
     });
     if(hint)hint.innerHTML=filled>0
       ?`<span style="color:var(--accent);font-size:.82rem">&#x2714; ${filled} Werte erkannt &amp; ausgef&#xFC;llt</span>`
-      :'<span style="color:var(--text-sub);font-size:.82rem">Keine Werte erkannt – Labels sichtbar?</span>';
+      :'<span style="color:var(--text-sub);font-size:.82rem">Keine Labels erkannt – Entry/SL/TP sichtbar?</span>';
   }catch(err){
     console.error('[AutoFill] Fehler:',err);
-    if(hint)hint.innerHTML='<span style="color:var(--text-sub);font-size:.82rem">Automatische Erkennung nicht m&#xF6;glich</span>';
+    if(hint)hint.innerHTML='<span style="color:var(--text-sub);font-size:.82rem">&#x26A0; Erkennung fehlgeschlagen ('+err.message+')</span>';
   }
 }
 function handleTradeImgUpload(e,field){const f=e.target.files[0];if(f)loadTradeImgFromBlob(f,field);}
