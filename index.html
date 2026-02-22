@@ -2291,11 +2291,11 @@ async function showTradeRatingPreview(){
   box.innerHTML='<div style="font-size:.83rem;color:var(--text-sub);padding:8px 0">&#x23F3; KI bewertet Trade\u2026</div>';
   const newsCtx=await _getNewsCtx(asset);
   const newsNote=newsCtx?`\n\nHeutige relevante News:\n${newsCtx}`:'';
-  const promptText=`Du bist ein Trading-Coach. Bewerte diesen Trade anhand der SMC-Strategie (Liquidity Sweep → BOS → 0.618/0.718 Fib-Entry).\n\n${_STRATEGY}\n\nTrade-Daten: Asset: ${asset} | Entry: ${document.getElementById('inpEntry').value||'-'} | SL: ${document.getElementById('inpSL').value||'-'} | TP1: ${document.getElementById('inpTP1').value||'-'} | Notiz: ${document.getElementById('note').value||'-'}${newsNote}\n\nBewerte ob der Trade die Strategie erfüllt. Antworte NUR in diesem Format:\nBEWERTUNG: SEHR_GUTER_TRADE oder GUTER_TRADE oder SCHLECHTER_TRADE\nGRUND: (max. 2 Sätze, beziehe News mit ein falls vorhanden)`;
+  const promptText=`Du bist ein Trading-Coach. Bewerte diesen Trade anhand der SMC-Strategie (Liquidity Sweep → BOS → 0.618/0.718 Fib-Entry).\n\n${_STRATEGY}\n\nTrade-Daten: Asset: ${asset} | Entry: ${document.getElementById('inpEntry').value||'-'} | SL: ${document.getElementById('inpSL').value||'-'} | TP1: ${document.getElementById('inpTP1').value||'-'} | Notiz: ${document.getElementById('note').value||'-'}${newsNote}\n\nBewertungskriterien (strikt einhalten):\n- SEHR_GUTER_TRADE: Sweep + BOS + Fib-Entry vorhanden UND mindestens Order Block (OB) ODER Fair Value Gap (FVG) im Entry-Bereich erkennbar\n- GUTER_TRADE: Sweep + BOS + Fib-Entry vorhanden, aber kein OB/FVG erkennbar\n- SCHLECHTER_TRADE: Sweep, BOS oder Fib-Entry fehlt\n\nAntworte NUR in diesem Format:\nBEWERTUNG: SEHR_GUTER_TRADE oder GUTER_TRADE oder SCHLECHTER_TRADE\nGRUND: (max. 2 Sätze, erwähne OB/FVG falls gefunden, beziehe News mit ein falls vorhanden)`;
   const imgSetup=document.getElementById('imgSetup').value;
   let msgContent=imgSetup?[{type:'image_url',image_url:{url:await _compressImg(imgSetup)}},{type:'text',text:promptText}]:promptText;
   try{
-    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:imgSetup?_GMV:_GM,messages:[{role:'user',content:msgContent}],temperature:0.3,max_tokens:130})});
+    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:imgSetup?_GMV:_GM,messages:[{role:'user',content:msgContent}],temperature:0.3,max_tokens:180})});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();
     const txt=d.choices?.[0]?.message?.content||'';
@@ -2311,7 +2311,7 @@ async function showTradeRatingPreview(){
 async function kiRateNewTrade(data){
   const newsCtx=await _getNewsCtx(data.asset||'');
   const newsNote=newsCtx?`\n\nHeutige relevante News:\n${newsCtx}`:'';
-  const promptText=`Du bist ein Trading-Coach. Bewerte diesen Trade anhand der SMC-Strategie (Liquidity Sweep → BOS → 0.618/0.718 Fib-Entry).\n\n${_STRATEGY}\n\nTrade-Daten: Asset: ${data.asset} | Status: ${data.status} | PnL: ${data.pnl}€ | Entry: ${data.entry||'-'} | SL: ${data.sl||'-'} | TP1: ${data.tp1||'-'} | Notiz: ${data.note||'-'}${newsNote}\n\nAnalysiere die beigefügten Chart-Screenshots (falls vorhanden) und bewerte ob der Trade die Strategie erfüllt.\n\nAntworte NUR in diesem Format:\nBEWERTUNG: SEHR_GUTER_TRADE oder GUTER_TRADE oder SCHLECHTER_TRADE\nGRUND: (max. 1 Satz)`;
+  const promptText=`Du bist ein Trading-Coach. Bewerte diesen Trade anhand der SMC-Strategie (Liquidity Sweep → BOS → 0.618/0.718 Fib-Entry).\n\n${_STRATEGY}\n\nTrade-Daten: Asset: ${data.asset} | Status: ${data.status} | PnL: ${data.pnl}€ | Entry: ${data.entry||'-'} | SL: ${data.sl||'-'} | TP1: ${data.tp1||'-'} | Notiz: ${data.note||'-'}${newsNote}\n\nAnalysiere die beigefügten Chart-Screenshots (falls vorhanden) und bewerte ob der Trade die Strategie erfüllt.\n\nBewertungskriterien (strikt einhalten):\n- SEHR_GUTER_TRADE: Sweep + BOS + Fib-Entry vorhanden UND mindestens Order Block (OB) ODER Fair Value Gap (FVG) im Entry-Bereich erkennbar\n- GUTER_TRADE: Sweep + BOS + Fib-Entry vorhanden, aber kein OB/FVG erkennbar\n- SCHLECHTER_TRADE: Sweep, BOS oder Fib-Entry fehlt\n\nAntworte NUR in diesem Format:\nBEWERTUNG: SEHR_GUTER_TRADE oder GUTER_TRADE oder SCHLECHTER_TRADE\nGRUND: (max. 1 Satz, erwähne OB/FVG falls im Chart erkennbar)`;
   const rawImgs=[data.imgSetup,data.imgResult].filter(Boolean);
   const useVision=rawImgs.length>0;
   let msgContent;
@@ -2323,7 +2323,7 @@ async function kiRateNewTrade(data){
     msgContent=promptText;
   }
   try{
-    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:useVision?_GMV:_GM,messages:[{role:'user',content:msgContent}],temperature:0.3,max_tokens:80})});
+    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:useVision?_GMV:_GM,messages:[{role:'user',content:msgContent}],temperature:0.3,max_tokens:140})});
     if(!r.ok){console.error('[KiRate] Groq error:',r.status);return;}
     const d=await r.json();
     const txt=d.choices?.[0]?.message?.content||'';
