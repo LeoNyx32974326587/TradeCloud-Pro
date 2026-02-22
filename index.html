@@ -378,7 +378,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <input type="hidden" id="editId">
     <label>Journal</label><select id="inpJournalSelect"></select>
     <label>Status</label><select id="status" onchange="toggleFormFields()"><option value="Aktiv">Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
-    <label>Asset</label><div class="asset-dropdown-wrap"><input type="text" id="assetInput" placeholder="EURUSD" style="text-transform:uppercase" autocomplete="off" oninput="showAssetDropdown(this,'asset-dd-1')" onfocus="showAssetDropdown(this,'asset-dd-1')"><div id="asset-dd-1" class="asset-dropdown"></div></div>
+    <label>Asset</label><div class="asset-dropdown-wrap"><input type="text" id="assetInput" placeholder="EURUSD" style="text-transform:uppercase" autocomplete="off" oninput="showAssetDropdown(this,'asset-dd-1');_checkPairNews(this.value)" onfocus="showAssetDropdown(this,'asset-dd-1')"><div id="asset-dd-1" class="asset-dropdown"></div></div>
+    <div id="news-warning-banner" style="display:none;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,159,10,.4);background:rgba(255,159,10,.08)"></div>
     <label>Datum</label><input type="datetime-local" id="datetime">
     <div class="input-row-2"><div><label>Entry</label><input type="number" id="inpEntry" step="any"></div><div><label>Stop Loss</label><input type="number" id="inpSL" step="any"></div></div>
     <div class="input-row-3"><div><label>TP 1</label><input type="number" id="inpTP1" step="any"></div><div><label>TP 2</label><input type="number" id="inpTP2" step="any"></div><div><label>TP 3</label><input type="number" id="inpTP3" step="any"></div></div>
@@ -935,6 +936,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <button onclick="pasteFromClipboard()" style="width:100%;margin-top:8px;padding:11px;border-radius:10px;border:1px solid var(--border);background:var(--cell-bg);color:var(--text-sub);font-weight:600;font-size:.9rem;cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-sub)'">&#x1F4CB; Aus Zwischenablage einfügen</button>
     <input type="file" id="ki-chart-file" accept="image/*" style="display:none" onchange="handleChartUpload(event)">
     <div id="ki-chart-preview" style="margin-top:14px"></div>
+    <div id="ki-news-strip" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,159,10,.4);background:rgba(255,159,10,.08)"></div>
     <div id="ki-chart-result"></div>
   </div>
 </section>
@@ -2207,7 +2209,7 @@ function showAssetDropdown(input,ddId){
   dd.classList.add("open");
   input.onblur=function(){setTimeout(()=>dd.classList.remove("open"),150);};
 }
-function selectAsset(inputId,symbol,ddId){document.getElementById(inputId).value=symbol;document.getElementById(ddId).classList.remove("open");}
+function selectAsset(inputId,symbol,ddId){document.getElementById(inputId).value=symbol;document.getElementById(ddId).classList.remove("open");if(inputId==='assetInput')_checkPairNews(symbol);}
 
 // ─── KI-ASSISTENT (Gemini) ───────────────────────────────────────────────────
 const _GK='gsk_kdobgI6P6Z6yjxMpvwTk'+'WGdyb3FYz0bVlUXloHlUXCJ4cePBLHsc';
@@ -2541,6 +2543,8 @@ function _buildChartPrompt(newsCtx=''){
 }
 async function analyzeChartImage(dataUrl){
   const res=document.getElementById('ki-chart-result');
+  const strip=document.getElementById('ki-news-strip');
+  if(strip){strip.style.display='none';strip.innerHTML='';}
   const hdrs={'Content-Type':'application/json','Authorization':'Bearer '+_GK};
   res.innerHTML='<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F50D; Erkenne Asset aus Chart\u2026</div>';
   const img=await _compressImg(dataUrl);
@@ -2550,7 +2554,8 @@ async function analyzeChartImage(dataUrl){
     const r1=await fetch(_GU,{method:'POST',headers:hdrs,body:JSON.stringify({model:_GMV,messages:[{role:'user',content:[{type:'image_url',image_url:{url:img}},{type:'text',text:'What is the trading asset or currency pair shown in this chart? Reply with ONLY the symbol, e.g. EURUSD, XAUUSD, BTCUSDT, NAS100. If unclear, reply UNKNOWN.'}]}],temperature:0.1,max_tokens:15})});
     if(r1.ok){const d1=await r1.json();const sym=(d1.choices?.[0]?.message?.content||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(sym&&sym!=='UNKNOWN')detectedAsset=sym;}
   }catch(_){}
-  // Phase 2: News laden + Analyse vorbereiten
+  // Phase 2: News anzeigen + Analyse vorbereiten
+  if(detectedAsset)_checkPairNews(detectedAsset,'ki-news-strip');
   res.innerHTML=`<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F4C8; Analysiere${detectedAsset?' '+detectedAsset:''}\u2026</div>`;
   const newsCtx=await _getNewsCtx(detectedAsset);
   const prompt=_buildChartPrompt(newsCtx);
@@ -2827,6 +2832,21 @@ function _renderNewsWidget(){
       const name=e.title.length>18?e.title.slice(0,16)+'…':e.title;
       return `<div class="news-pill">${dot}${_flagImg(e.country)}<span class="np-cur">${e.country}</span><span class="np-name">${name}</span><span class="np-time">${hhmm}</span><span class="np-timer">-${countdown}</span></div>`;
     }).join('')+'</div>';
+}
+async function _checkPairNews(asset,targetId='news-warning-banner'){
+  const b=document.getElementById(targetId);if(!b)return;
+  const pair=(asset||'').toUpperCase().replace(/[^A-Z]/g,'');
+  if(pair.length<6){b.style.display='none';return;}
+  const base=pair.slice(0,3),quote=pair.slice(3,6);
+  const now=Date.now(),in24h=now+24*3600*1000;
+  b.style.display='block';b.innerHTML='<div style="font-size:.75rem;color:var(--text-sub)">&#x23F3; Pr\xFCfe News\u2026</div>';
+  let data;try{data=await _calCached();}catch(e){b.style.display='none';return;}
+  const hits=data.filter(e=>{const t=new Date(e.date).getTime();return!isNaN(t)&&t>=now&&t<=in24h&&(e.country===base||e.country===quote);}).sort((a,c)=>new Date(a.date)-new Date(c.date));
+  if(!hits.length){b.style.display='none';return;}
+  const ic={High:'#ff3b30',Medium:'#ff9f0a',Low:'#8e8e93'};
+  let html=`<div style="font-size:.78rem;font-weight:700;color:#ff9f0a;margin-bottom:6px">&#x26A0;&#xFE0E; News in den n\xe4chsten 24h f\xfcr ${base}/${quote}</div>`;
+  hits.forEach(e=>{const t=new Date(e.date);const hhmm=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');html+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="width:7px;height:7px;border-radius:50%;background:${ic[e.impact]||'#8e8e93'};display:inline-block;flex-shrink:0"></span>${_flagImg(e.country)}<span style="font-size:.73rem;color:var(--text-sub);flex-shrink:0;min-width:28px">${hhmm}</span><span style="font-size:.78rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.title||''}</span><span style="font-size:.7rem;color:${ic[e.impact]||'#8e8e93'};flex-shrink:0;margin-left:4px">${e.impact}</span></div>`;});
+  b.innerHTML=html;b.style.display='block';
 }
 async function loadNewsView(){
   const b=document.getElementById('news-box');if(!b)return;
