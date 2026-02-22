@@ -1573,7 +1573,7 @@ function showView(v){
   if(v==="Einstellungen"&&isAdmin&&!isCoach){loadAdminFeedback();loadAdminZentrale();loadUpgradeRequests();}
   if(v==="Einstellungen"&&isAdmin&&isCoach){loadAdminFeedback();}
   if(v==="Uebersicht")renderDashboard();if(v==="Kalender")renderCalendar();if(v==="Historie")renderHistory();if(v==="Statistik")renderStatistics();if(v==="Einstellungen")renderSettingsList();if(v==="Kurse")loadCourses();
-  if(v==="News"){const b=document.getElementById("news-box");b.innerHTML="";const s=document.createElement("script");s.src="https://s3.tradingview.com/external-embedding/embed-widget-events.js";s.async=true;s.innerHTML=JSON.stringify({colorTheme:"dark",width:"100%",height:"100%",locale:"de"});b.appendChild(s);}
+  if(v==="News"){loadNewsView();}
   if(v==="TradingView")setTimeout(renderTradingViewWidget,50);
 }
 function toggleMenu(){document.getElementById("navDrawer").classList.toggle("open");document.getElementById("menu-overlay").classList.toggle("open");}
@@ -2735,5 +2735,35 @@ function _renderNewsWidget(){
       const name=e.title.length>18?e.title.slice(0,16)+'…':e.title;
       return `<div class="news-pill">${dot}<span style="font-size:.8rem">${flag}</span><span class="np-cur">${e.country}</span><span class="np-name">${name}</span><span class="np-time">${hhmm}</span><span class="np-timer">-${countdown}</span></div>`;
     }).join('')+'</div>';
+}
+async function loadNewsView(){
+  const b=document.getElementById('news-box');if(!b)return;
+  b.innerHTML='<div style="padding:24px;color:var(--text-sub);font-size:.9rem">&#x23F3; Lädt Wirtschaftskalender…</div>';
+  try{
+    const data=await _calCached();
+    if(!data.length){b.innerHTML='<div style="padding:24px;color:var(--text-sub)">&#x1F4C5; Keine Events verfügbar</div>';return;}
+    const sorted=data.slice().sort((a,c)=>new Date(a.date)-new Date(c.date));
+    const groups={};
+    sorted.forEach(e=>{
+      const d=new Date(e.date);
+      const key=d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+      if(!groups[key])groups[key]=[];
+      groups[key].push(e);
+    });
+    const impColor={High:'#ff3b30',Medium:'#ff9f0a',Low:'#8e8e93'};
+    let html='<div style="overflow-y:auto;height:100%;padding:16px;box-sizing:border-box">';
+    for(const[day,events] of Object.entries(groups)){
+      html+=`<div style="font-size:.7rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border)">${day}</div>`;
+      events.forEach(e=>{
+        const flag=_NEWS_FLAGS[e.country]||'&#x1F310;';
+        const t=new Date(e.date);
+        const hhmm=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+        const dot=`<span style="width:8px;height:8px;border-radius:50%;background:${impColor[e.impact]||'#8e8e93'};display:inline-block;flex-shrink:0"></span>`;
+        html+=`<div style="display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;border:1px solid var(--border);margin-bottom:4px;background:var(--cell-bg)">${dot}<span style="font-size:.85rem">${flag}</span><span style="font-size:.75rem;color:var(--text-sub);min-width:30px;font-weight:600">${e.country}</span><span style="font-size:.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.title||''}</span><span style="font-size:.75rem;color:var(--text-sub);flex-shrink:0">${hhmm}</span></div>`;
+      });
+    }
+    html+='</div>';
+    b.innerHTML=html;
+  }catch(err){b.innerHTML='<div style="padding:24px;color:var(--text-sub)">&#x26A0; Kalender nicht verfügbar</div>';}
 }
 </script></body></html>
