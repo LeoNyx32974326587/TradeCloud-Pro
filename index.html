@@ -378,8 +378,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <input type="hidden" id="editId">
     <label>Journal</label><select id="inpJournalSelect"></select>
     <label>Status</label><select id="status" onchange="toggleFormFields()"><option value="Aktiv">Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
-    <label>Asset</label><div class="asset-dropdown-wrap"><input type="text" id="assetInput" placeholder="EURUSD" style="text-transform:uppercase" autocomplete="off" oninput="showAssetDropdown(this,'asset-dd-1');_checkPairNews(this.value)" onfocus="showAssetDropdown(this,'asset-dd-1')"><div id="asset-dd-1" class="asset-dropdown"></div></div>
-    <div id="news-warning-banner" style="display:none;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,159,10,.4);background:rgba(255,159,10,.08)"></div>
+    <label>Asset</label><div class="asset-dropdown-wrap"><input type="text" id="assetInput" placeholder="EURUSD" style="text-transform:uppercase" autocomplete="off" oninput="showAssetDropdown(this,'asset-dd-1')" onfocus="showAssetDropdown(this,'asset-dd-1')"><div id="asset-dd-1" class="asset-dropdown"></div></div>
     <label>Datum</label><input type="datetime-local" id="datetime">
     <div class="input-row-2"><div><label>Entry</label><input type="number" id="inpEntry" step="any"></div><div><label>Stop Loss</label><input type="number" id="inpSL" step="any"></div></div>
     <div class="input-row-3"><div><label>TP 1</label><input type="number" id="inpTP1" step="any"></div><div><label>TP 2</label><input type="number" id="inpTP2" step="any"></div><div><label>TP 3</label><input type="number" id="inpTP3" step="any"></div></div>
@@ -2208,7 +2207,7 @@ function showAssetDropdown(input,ddId){
   dd.classList.add("open");
   input.onblur=function(){setTimeout(()=>dd.classList.remove("open"),150);};
 }
-function selectAsset(inputId,symbol,ddId){document.getElementById(inputId).value=symbol;document.getElementById(ddId).classList.remove("open");if(inputId==='assetInput')_checkPairNews(symbol);}
+function selectAsset(inputId,symbol,ddId){document.getElementById(inputId).value=symbol;document.getElementById(ddId).classList.remove("open");}
 
 // ─── KI-ASSISTENT (Gemini) ───────────────────────────────────────────────────
 const _GK='gsk_kdobgI6P6Z6yjxMpvwTk'+'WGdyb3FYz0bVlUXloHlUXCJ4cePBLHsc';
@@ -2300,7 +2299,7 @@ async function showTradeRatingPreview(){
     const isGood=txt.includes('GUTER_TRADE');
     const grund=(txt.split('GRUND:')[1]||'').trim();
     const col=isGood?'#30d158':'#ff453a';
-    box.innerHTML=`<div style="background:${isGood?'rgba(48,209,88,.1)':'rgba(255,69,58,.1)'};border:1px solid ${col};border-radius:9px;padding:10px 12px"><div style="font-weight:700;color:${col};margin-bottom:5px">${isGood?'&#x2705; GUTER TRADE':'&#x274C; SCHLECHTER TRADE'}</div><div style="font-size:.83rem;line-height:1.45">${grund}</div>${newsCtx?`<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(255,255,255,.08);font-size:.72rem;color:var(--text-sub)">&#x1F4F0; News ber&uuml;cksichtigt</div>`:''}</div>`;
+    box.innerHTML=`<div style="background:${isGood?'rgba(48,209,88,.1)':'rgba(255,69,58,.1)'};border:1px solid ${col};border-radius:9px;padding:10px 12px"><div style="font-weight:700;color:${col};margin-bottom:5px">${isGood?'&#x2705; GUTER TRADE':'&#x274C; SCHLECHTER TRADE'}</div><div style="font-size:.83rem;line-height:1.45">${grund}</div></div>`;
   }catch(e){box.innerHTML=`<div style="color:var(--danger);font-size:.83rem">Fehler: ${e.message}</div>`;}
 }
 async function kiRateNewTrade(data){
@@ -2562,8 +2561,7 @@ async function analyzeChartImage(dataUrl){
     if(!r.ok){let em='HTTP '+r.status;try{const ed=await r.json();em+=' – '+(ed?.error?.message||JSON.stringify(ed));}catch(_){}throw new Error(em);}
     const d=await r.json();
     const rep=d.choices?.[0]?.message?.content||'Keine Analyse möglich.';
-    const assetBadge=detectedAsset?`<div style="display:inline-block;margin-bottom:8px;padding:3px 10px;border-radius:6px;background:var(--cell-bg);border:1px solid var(--border);font-size:.75rem;color:var(--text-sub)">&#x1F4C4; ${detectedAsset}${newsCtx?' &middot; &#x1F4F0; News einbezogen':''}</div>`:'';
-    res.innerHTML='<div style="margin-top:12px">'+assetBadge+_renderKIResult(rep)+'</div>';
+    res.innerHTML='<div style="margin-top:12px">'+_renderKIResult(rep)+'</div>';
   }catch(err){console.error('[ChartAnalyse] Fehler:',err);res.innerHTML='<div style="color:var(--danger);margin-top:10px">Fehler: '+(err.message||'Analyse fehlgeschlagen')+'</div>';}
 }
 async function analyzeTradeSetupImg(){
@@ -2831,21 +2829,6 @@ function _renderNewsWidget(){
       const name=e.title.length>18?e.title.slice(0,16)+'…':e.title;
       return `<div class="news-pill">${dot}${_flagImg(e.country)}<span class="np-cur">${e.country}</span><span class="np-name">${name}</span><span class="np-time">${hhmm}</span><span class="np-timer">-${countdown}</span></div>`;
     }).join('')+'</div>';
-}
-async function _checkPairNews(asset){
-  const b=document.getElementById('news-warning-banner');if(!b)return;
-  const pair=(asset||'').toUpperCase().replace(/[^A-Z]/g,'');
-  if(pair.length<6){b.style.display='none';return;}
-  const base=pair.slice(0,3),quote=pair.slice(3,6);
-  const now=Date.now(),in24h=now+24*3600*1000;
-  b.style.display='block';b.innerHTML='<div style="font-size:.75rem;color:var(--text-sub)">&#x23F3; Pr\xFCfe News\u2026</div>';
-  let data;try{data=await _calCached();}catch(e){b.style.display='none';return;}
-  const hits=data.filter(e=>{const t=new Date(e.date).getTime();return!isNaN(t)&&t>=now&&t<=in24h&&(e.country===base||e.country===quote);}).sort((a,c)=>new Date(a.date)-new Date(c.date));
-  if(!hits.length){b.style.display='none';return;}
-  const ic={High:'#ff3b30',Medium:'#ff9f0a',Low:'#8e8e93'};
-  let html=`<div style="font-size:.78rem;font-weight:700;color:#ff9f0a;margin-bottom:6px">&#x26A0;&#xFE0E; News in den naechsten 24h fuer ${base}/${quote}</div>`;
-  hits.forEach(e=>{const t=new Date(e.date);const hhmm=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');html+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="width:7px;height:7px;border-radius:50%;background:${ic[e.impact]||'#8e8e93'};display:inline-block;flex-shrink:0"></span>${_flagImg(e.country)}<span style="font-size:.73rem;color:var(--text-sub);flex-shrink:0;min-width:28px">${hhmm}</span><span style="font-size:.78rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.title||''}</span><span style="font-size:.7rem;color:${ic[e.impact]||'#8e8e93'};flex-shrink:0;margin-left:4px">${e.impact}</span></div>`;});
-  b.innerHTML=html;b.style.display='block';
 }
 async function loadNewsView(){
   const b=document.getElementById('news-box');if(!b)return;
