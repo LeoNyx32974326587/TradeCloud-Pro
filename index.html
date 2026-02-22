@@ -928,6 +928,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   <div id="ki-panel-chart" class="card hidden">
     <h4 style="margin-top:0">Chart-Analyse</h4>
     <div id="ki-chart-news" style="margin-bottom:12px"></div>
+    <input type="text" id="ki-chart-asset" placeholder="Asset (z.B. EURUSD, XAUUSD) – für präzisen News-Kontext" style="width:100%;margin-bottom:10px;padding:9px 12px;border-radius:9px;border:1px solid var(--border);background:var(--cell-bg);color:var(--text);font-size:.9rem;box-sizing:border-box">
     <p style="color:var(--text-sub);font-size:.9rem;margin-bottom:12px">Lade einen Chart-Screenshot hoch oder füge ihn aus der Zwischenablage ein — die KI erkennt Muster, Trends und mögliche Setups.</p>
     <div class="ki-chart-drop" onclick="document.getElementById('ki-chart-file').click()">
       <div style="font-size:2.5rem;margin-bottom:8px">&#x1F4C8;</div>
@@ -2538,16 +2539,19 @@ async function _getNewsCtx(asset=''){
     const rel=asset
       ? ccys.filter(c=>up.includes(c)||(up.includes('XAU')&&c==='USD')||(up.replace(/\d+/g,'').endsWith('US')&&c==='USD'))
       : null;
+    const sod=new Date();sod.setHours(0,0,0,0);
     const eod=new Date();eod.setHours(23,59,59,999);
     const evts=data
-      .filter(e=>{const t=new Date(e.date).getTime();return t>now&&t<=eod.getTime();})
+      .filter(e=>{const t=new Date(e.date).getTime();return t>=sod.getTime()&&t<=eod.getTime();})
       .filter(e=>rel?rel.includes(e.country):e.impact==='High')
       .slice(0,5);
     if(!evts.length)return '';
     return evts.map(e=>{
       const diff=Math.round((new Date(e.date).getTime()-now)/60000);
-      const when=diff<60?`in ${diff} Min.`:diff<1440?`in ${Math.round(diff/60)}h`
-        :new Date(e.date).toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'})+' '+new Date(e.date).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+      let when;
+      if(diff<0){const ago=Math.abs(diff);when=ago<60?`vor ${ago} Min.`:`vor ${Math.round(ago/60)}h`;}
+      else if(diff<60){when=`in ${diff} Min.`;}
+      else{when=`in ${Math.round(diff/60)}h`;}
       return `[${e.impact}] ${e.title} (${e.country}) – ${when}`;
     }).join('\n');
   }catch(_){return '';}
@@ -2555,14 +2559,15 @@ async function _getNewsCtx(asset=''){
 function _buildChartPrompt(newsCtx=''){
   const fazitN=newsCtx?7:6;
   const newsPoint=newsCtx
-    ?`\n6. NEWS-RISIKO – Folgende relevante Nachrichten stehen bevor:\n${newsCtx}\nBewerte kurz das Risiko für diesen Trade (High-Impact vor Entry = hohes Risiko).`
+    ?`\n6. NEWS-RISIKO – Heutige relevante Nachrichten (vergangene und bevorstehende):\n${newsCtx}\nBewerte kurz das Risiko: Bereits veröffentlichte High-Impact-News können den Markt schon bewegt haben; bevorstehende erhöhen die Volatilität.`
     :'';
   return `Du bist ein SMC-Chart-Analyst. Analysiere diesen Chart kurz und präzise auf Deutsch.\n\n${_STRATEGY}\n\nBeantworte in genau ${fazitN} knappen Punkten:\n1. SWEEP – Buy-Side oder Sell-Side? Kurz beschreiben.\n2. BOS – Vorhanden / ausstehend?\n3. FIB-ENTRY – 0.618 oder 0.718 Level erreicht oder noch nicht?\n4. TREND – Übergeordneter Trend bullisch oder bärisch? Passt das Setup zur Trendrichtung?\n5. BESTÄTIGUNGEN – Order Block (OB) und/oder Fair Value Gap (FVG) im Entry-Bereich vorhanden? Wenn ja, kurz wo.${newsPoint}\n${fazitN}. FAZIT – Beginne mit genau einem dieser Begriffe: "GUTER TRADE", "RISKANTER TRADE" oder "SCHLECHTER TRADE". GUTER TRADE: alle 5 Bedingungen erfüllt. RISKANTER TRADE: Sweep+BOS+Fib vorhanden, aber Trend oder OB/FVG fehlt. SCHLECHTER TRADE: Sweep, BOS oder Fib fehlt. Dann 1 Satz was jetzt zu tun ist.\n\nKeine langen Erklärungen. Direkt und kompakt.`;
 }
 async function analyzeChartImage(dataUrl){
   const res=document.getElementById('ki-chart-result');
-  res.innerHTML='<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F50D; Analysiere Chart…</div>';
-  const newsCtx=await _getNewsCtx();
+  res.innerHTML='<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F50D; Analysiere Chart' + (document.getElementById('ki-chart-asset')?.value?' + News':'') + '…</div>';
+  const asset=(document.getElementById('ki-chart-asset')?.value||'').trim();
+  const newsCtx=await _getNewsCtx(asset);
   const prompt=_buildChartPrompt(newsCtx);
   try{
     const img=await _compressImg(dataUrl);
