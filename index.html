@@ -928,8 +928,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   <div id="ki-panel-chart" class="card hidden">
     <h4 style="margin-top:0">Chart-Analyse</h4>
     <div id="ki-chart-news" style="margin-bottom:12px"></div>
-    <input type="text" id="ki-chart-asset" placeholder="Asset (z.B. EURUSD, XAUUSD) – für präzisen News-Kontext" style="width:100%;margin-bottom:10px;padding:9px 12px;border-radius:9px;border:1px solid var(--border);background:var(--cell-bg);color:var(--text);font-size:.9rem;box-sizing:border-box">
-    <p style="color:var(--text-sub);font-size:.9rem;margin-bottom:12px">Lade einen Chart-Screenshot hoch oder füge ihn aus der Zwischenablage ein — die KI erkennt Muster, Trends und mögliche Setups.</p>
+    <p style="color:var(--text-sub);font-size:.9rem;margin-bottom:12px">Lade einen Chart-Screenshot hoch oder füge ihn aus der Zwischenablage ein — die KI erkennt das Asset, prüft aktuelle News und analysiert das Setup.</p>
     <div class="ki-chart-drop" onclick="document.getElementById('ki-chart-file').click()">
       <div style="font-size:2.5rem;margin-bottom:8px">&#x1F4C8;</div>
       <div style="font-weight:700;margin-bottom:4px">Chart hochladen</div>
@@ -2565,17 +2564,28 @@ function _buildChartPrompt(newsCtx=''){
 }
 async function analyzeChartImage(dataUrl){
   const res=document.getElementById('ki-chart-result');
-  res.innerHTML='<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F50D; Analysiere Chart' + (document.getElementById('ki-chart-asset')?.value?' + News':'') + '…</div>';
-  const asset=(document.getElementById('ki-chart-asset')?.value||'').trim();
-  const newsCtx=await _getNewsCtx(asset);
+  const hdrs={'Content-Type':'application/json','Authorization':'Bearer '+_GK};
+  res.innerHTML='<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F50D; Erkenne Asset aus Chart\u2026</div>';
+  const img=await _compressImg(dataUrl);
+  // Phase 1: Asset aus Bild erkennen
+  let detectedAsset='';
+  try{
+    const r1=await fetch(_GU,{method:'POST',headers:hdrs,body:JSON.stringify({model:_GMV,messages:[{role:'user',content:[{type:'image_url',image_url:{url:img}},{type:'text',text:'What is the trading asset or currency pair shown in this chart? Reply with ONLY the symbol, e.g. EURUSD, XAUUSD, BTCUSDT, NAS100. If unclear, reply UNKNOWN.'}]}],temperature:0.1,max_tokens:15})});
+    if(r1.ok){const d1=await r1.json();const sym=(d1.choices?.[0]?.message?.content||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(sym&&sym!=='UNKNOWN')detectedAsset=sym;}
+  }catch(_){}
+  // Phase 2: News laden
+  res.innerHTML=`<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F4F0; ${detectedAsset||'Asset'} erkannt \u2013 lade News\u2026</div>`;
+  const newsCtx=await _getNewsCtx(detectedAsset);
+  // Phase 3: Vollanalyse mit News
+  res.innerHTML=`<div style="color:var(--text-sub);font-size:.9rem;margin-top:10px">&#x1F4C8; Analysiere${detectedAsset?' '+detectedAsset:''}${newsCtx?' + News':''}\u2026</div>`;
   const prompt=_buildChartPrompt(newsCtx);
   try{
-    const img=await _compressImg(dataUrl);
-    const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GMV,messages:[{role:'user',content:[{type:'image_url',image_url:{url:img}},{type:'text',text:prompt}]}],temperature:0.5,max_tokens:newsCtx?680:580})});
+    const r=await fetch(_GU,{method:'POST',headers:hdrs,body:JSON.stringify({model:_GMV,messages:[{role:'user',content:[{type:'image_url',image_url:{url:img}},{type:'text',text:prompt}]}],temperature:0.5,max_tokens:newsCtx?680:580})});
     if(!r.ok){let em='HTTP '+r.status;try{const ed=await r.json();em+=' – '+(ed?.error?.message||JSON.stringify(ed));}catch(_){}throw new Error(em);}
     const d=await r.json();
     const rep=d.choices?.[0]?.message?.content||'Keine Analyse möglich.';
-    res.innerHTML='<div style="margin-top:12px">'+_renderKIResult(rep)+'</div>';
+    const assetBadge=detectedAsset?`<div style="display:inline-block;margin-bottom:8px;padding:3px 10px;border-radius:6px;background:var(--cell-bg);border:1px solid var(--border);font-size:.75rem;color:var(--text-sub)">&#x1F4C4; ${detectedAsset}${newsCtx?' &middot; &#x1F4F0; News einbezogen':''}</div>`:'';
+    res.innerHTML='<div style="margin-top:12px">'+assetBadge+_renderKIResult(rep)+'</div>';
   }catch(err){console.error('[ChartAnalyse] Fehler:',err);res.innerHTML='<div style="color:var(--danger);margin-top:10px">Fehler: '+(err.message||'Analyse fehlgeschlagen')+'</div>';}
 }
 async function analyzeTradeSetupImg(){
