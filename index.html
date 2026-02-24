@@ -2919,29 +2919,41 @@ function _renderNewsViewContent(){
     '<span style="display:flex;align-items:center;gap:5px;margin-left:auto"><span style="width:10px;height:10px;border-radius:2px;background:rgba(255,159,10,.3);display:inline-block"></span><span style="font-size:.75rem;color:var(--text-sub)">&lt;1h</span></span>'+
     '<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(255,59,48,.3);display:inline-block"></span><span style="font-size:.75rem;color:var(--text-sub)">&lt;5min</span></span>'+
     '</div>';
+  // Nur Events anzeigen die noch nicht beendet sind (max. 5 min Gnadenfrist)
+  const visible=_newsViewData.map((e,i)=>({e,i})).filter(({e})=>new Date(e.date).getTime()-now>-300000);
+  const liveItems=visible.filter(({e})=>Math.abs(new Date(e.date).getTime()-now)<=300000);
+  const futureItems=visible.filter(({e})=>new Date(e.date).getTime()-now>300000);
+  const renderRow=(e,i)=>{
+    const t=new Date(e.date).getTime();
+    const diff=t-now;
+    const hhmm=new Date(e.date).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    const dot=`<span style="width:8px;height:8px;border-radius:50%;background:${impColor[e.impact]||'#8e8e93'};flex-shrink:0;display:inline-block"></span>`;
+    let rowClass='news-row';
+    let countdownHtml='';
+    if(diff>0&&diff<=300000){rowClass+=' live';const mm=Math.floor(diff/60000);const ss=Math.floor((diff%60000)/1000);countdownHtml=`<span class="news-countdown">${mm}:${String(ss).padStart(2,'0')}</span>`;}
+    else if(diff>0&&diff<=3600000){rowClass+=' upcoming';const mm=Math.floor(diff/60000);const ss=Math.floor((diff%60000)/1000);countdownHtml=`<span class="news-countdown">${mm}:${String(ss).padStart(2,'0')}</span>`;}
+    else if(diff<=0){rowClass+=' live';countdownHtml='<span class="news-countdown">LIVE</span>';}
+    return `<div class="${rowClass}" onclick="openNewsDetail(${i})">${dot}${_flagImg(e.country)}<span style="font-size:.75rem;color:var(--text-sub);font-weight:600;flex-shrink:0;min-width:30px">${e.country}</span><span style="font-size:.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.title||''}</span><span style="font-size:.75rem;color:var(--text-sub);flex-shrink:0;min-width:36px;text-align:right">${hhmm}</span>${countdownHtml}</div>`;
+  };
+  let html='<div style="overflow-y:auto;height:100%;padding:16px;box-sizing:border-box">'+legend;
+  // Aktive Events immer ganz oben
+  if(liveItems.length){
+    html+=`<div style="font-size:.7rem;font-weight:700;color:#ff3b30;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(255,59,48,.4)">&#x1F534; Jetzt aktiv</div>`;
+    liveItems.forEach(({e,i})=>{html+=renderRow(e,i);});
+  }
+  // Zukünftige Events nach Tag gruppiert
   const groups={};
-  _newsViewData.forEach((e,i)=>{
+  futureItems.forEach(({e,i})=>{
     const d=new Date(e.date);
     const key=d.toDateString()===todayDateStr?'Heute':d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
     if(!groups[key])groups[key]=[];
     groups[key].push({e,i});
   });
-  let html='<div style="overflow-y:auto;height:100%;padding:16px;box-sizing:border-box">'+legend;
   for(const[day,items] of Object.entries(groups)){
     html+=`<div style="font-size:.7rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border)">${day}</div>`;
-    items.forEach(({e,i})=>{
-      const t=new Date(e.date).getTime();
-      const diff=t-now;
-      const hhmm=new Date(e.date).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-      const dot=`<span style="width:8px;height:8px;border-radius:50%;background:${impColor[e.impact]||'#8e8e93'};flex-shrink:0;display:inline-block"></span>`;
-      let rowClass='news-row';
-      let countdownHtml='';
-      if(diff>0&&diff<=300000){rowClass+=' live';const mm=Math.floor(diff/60000);const ss=Math.floor((diff%60000)/1000);countdownHtml=`<span class="news-countdown">${mm}:${String(ss).padStart(2,'0')}</span>`;}
-      else if(diff>0&&diff<=3600000){rowClass+=' upcoming';const mm=Math.floor(diff/60000);const ss=Math.floor((diff%60000)/1000);countdownHtml=`<span class="news-countdown">${mm}:${String(ss).padStart(2,'0')}</span>`;}
-      else if(diff<=0&&diff>=-300000){rowClass+=' live';countdownHtml='<span class="news-countdown">LIVE</span>';}
-      html+=`<div class="${rowClass}" onclick="openNewsDetail(${i})">${dot}${_flagImg(e.country)}<span style="font-size:.75rem;color:var(--text-sub);font-weight:600;flex-shrink:0;min-width:30px">${e.country}</span><span style="font-size:.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.title||''}</span><span style="font-size:.75rem;color:var(--text-sub);flex-shrink:0;min-width:36px;text-align:right">${hhmm}</span>${countdownHtml}</div>`;
-    });
+    items.forEach(({e,i})=>{html+=renderRow(e,i);});
   }
+  if(!visible.length)html+='<div style="padding:24px;color:var(--text-sub);font-size:.85rem;text-align:center">&#x1F4C5; Keine aktuellen Events</div>';
   html+='</div>';
   const scroller=b.firstElementChild;
   const savedScroll=scroller?scroller.scrollTop:0;
