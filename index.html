@@ -2543,6 +2543,7 @@ async function analyzeMyTrades(){
   const selectedId=sel?sel.value:'';
   const duRegel=`\nWICHTIG: Sprich den Trader immer direkt mit "du" an. Verwende NIEMALS "Ich sehe", "Ich denke" o.\u00e4. Formuliere stets: "Du hast...", "Bei deinem Trade...", "Hier fehlt..."`;
   let prompt;
+  let annotatedImgUrl=null;
   if(selectedId){
     const t=all.find(x=>x.id===selectedId);
     if(!t){res.innerHTML='<div style="color:var(--danger);margin-top:12px">Trade nicht gefunden.</div>';btn.disabled=false;btn.textContent='&#x1F4CA; Erneut analysieren';return;}
@@ -2551,6 +2552,12 @@ async function analyzeMyTrades(){
     const newsNote=newsCtx?`\n\n7. NEWS-RISIKO \u2014 Heutige relevante News (${t.asset||''}):\n${newsCtx}\nHat das News-Umfeld diesen Trade beeinflusst? War der Einstieg news-technisch riskant?`:'';
     const fazitN=newsCtx?7:6;
     prompt=`Du bist ein professioneller Trading-Coach. Analysiere diesen einzelnen Trade strikt anhand der SMC-Strategie und gib ausf\u00FChrliches Feedback auf Deutsch.${duRegel}\n\n${_STRATEGY}\n\nTrade-Details:\n${detail}\n\nBitte analysiere genau anhand der Strategie (Liquidity Sweep \u2192 BOS \u2192 0.618/0.718 Fib-Entry):\n1. STRATEGIE-COMPLIANCE \u2014 Entspricht dieser Trade der Strategie? Was wurde richtig/falsch gemacht?\n2. EINSTIEG \u2014 War der Entry korrekt (beim 0.618 oder 0.718 Fib nach BOS)?\n3. SETUP-QUALIT\u00C4T \u2014 Wie klar war das Setup? Wurde auf alle 3 Bedingungen gewartet?\n4. ERGEBNIS-ANALYSE \u2014 Was hat zu diesem PnL gef\u00FChrt?\n5. KONKRETE VERBESSERUNGEN \u2014 Was h\u00E4tte besser gemacht werden k\u00F6nnen?\n6. LERNPUNKTE \u2014 Was kannst du aus diesem Trade mitnehmen?${newsNote}\n\nSei direkt, konkret und lehrreich.`;
+    const tradeImg=t.imgSetup||t.imgResult;
+    if(tradeImg){
+      res.innerHTML='<div style="color:var(--text-sub);font-size:.88rem;padding:6px 0">&#x1F4CD; Erkenne SMC-Elemente im Chart\u2026</div>';
+      try{annotatedImgUrl=await _annotateTradeChart(tradeImg);}catch(_){}
+      res.innerHTML='<div style="color:var(--text-sub);font-size:.88rem;padding:4px 0">&#x1F4CA; Analysiere Trade\u2026</div>';
+    }
   } else {
     const detail=all.slice(-30).map(t=>`Asset:${t.asset||'-'} Richtung:${t.direction||'-'} PnL:${t.pnl||0} Datum:${t.date||'-'} Setup:${t.setup||'-'}`).join('\n');
     const newsCtx=await _getNewsCtx('');
@@ -2559,11 +2566,62 @@ async function analyzeMyTrades(){
   }
   try{
     const rep=await _gemini([{role:'user',parts:[{text:prompt}]}]);
-    res.innerHTML='<div style="margin-top:14px">'+_renderKIResult(rep)+'</div>';
+    const imgHtml=annotatedImgUrl
+      ?`<div style="margin-bottom:16px;padding:12px;background:var(--cell-bg);border:1px solid var(--border);border-radius:12px"><div style="font-size:.72rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">&#x1F4CD; SMC-Elemente eingezeichnet</div><img src="${annotatedImgUrl}" style="width:100%;border-radius:8px;cursor:zoom-in;display:block" onclick="window.open('${annotatedImgUrl}','_blank')"><div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap"><span style="font-size:.75rem;color:#ff9f0a;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:rgba(255,159,10,.4);border:1px solid #ff9f0a;display:inline-block;border-radius:2px"></span>Sweep</span><span style="font-size:.75rem;color:#0a84ff;display:flex;align-items:center;gap:4px"><span style="width:10px;height:2px;background:#0a84ff;display:inline-block"></span>BOS</span><span style="font-size:.75rem;color:#30d158;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:rgba(48,209,88,.3);border:1px solid #30d158;display:inline-block;border-radius:2px"></span>Entry Zone</span></div></div>`
+      :'';
+    res.innerHTML='<div style="margin-top:14px">'+imgHtml+_renderKIResult(rep)+'</div>';
   }catch(e){res.innerHTML='<div style="color:var(--danger);margin-top:12px">Fehler: '+(e.message||'Analyse fehlgeschlagen')+'</div>';}
   btn.disabled=false;btn.textContent='&#x1F4CA; Erneut analysieren';
 }
 
+async function _getTradeAnnotations(imgDataUrl){
+  const img=await _compressImg(imgDataUrl,1200,0.8);
+  const prompt=`You are an SMC (Smart Money Concepts) trading chart analyst. Identify these 3 elements in the chart image and return their approximate positions as percentages of the image dimensions.Return ONLY valid JSON, no markdown, no explanation:{"sweep":{"found":true,"x1":10,"y1":15,"x2":25,"y2":30},"bos":{"found":true,"x1":20,"y":40,"x2":80},"entry":{"found":true,"x1":55,"y1":35,"x2":75,"y2":45}}Definitions:- sweep: rectangular box around the Liquidity Sweep candle/wick (the spike that grabs buy/sell side liquidity)- bos: horizontal line where Break of Structure occurs (x1=line start x%, y=height%, x2=line end x%)- entry: rectangular box for the Fibonacci retracement entry zone (0.618-0.718 area after BOS)Coordinates: x=0 is left edge, x=100 is right edge, y=0 is top, y=100 is bottom. All values 0-100.If an element is not clearly visible set "found":false.`;
+  const r=await fetch(_GU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_GK},body:JSON.stringify({model:_GMV,messages:[{role:'user',content:[{type:'image_url',image_url:{url:img}},{type:'text',text:prompt}]}],temperature:0.1,max_tokens:120})});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  const raw=d.choices?.[0]?.message?.content||'';
+  return JSON.parse(_cleanModelJSON(raw)||'{}');
+}
+function _drawTradeAnnotations(imgSrc,ann){
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');c.width=img.width;c.height=img.height;
+      const ctx=c.getContext('2d');
+      ctx.drawImage(img,0,0);
+      const w=img.width,h=img.height;
+      const px=(v,t)=>Math.round(v/100*t);
+      const fs=Math.max(13,Math.round(h*0.026));
+      ctx.font=`bold ${fs}px Arial`;ctx.textBaseline='bottom';
+      if(ann.sweep?.found){
+        const x1=px(ann.sweep.x1,w),y1=px(ann.sweep.y1,h),bw=px(ann.sweep.x2,w)-x1,bh=px(ann.sweep.y2,h)-y1;
+        ctx.fillStyle='rgba(255,159,10,0.2)';ctx.fillRect(x1,y1,bw,bh);
+        ctx.strokeStyle='#ff9f0a';ctx.lineWidth=Math.max(2,Math.round(h*0.003));ctx.setLineDash([]);ctx.strokeRect(x1,y1,bw,bh);
+        ctx.fillStyle='#ff9f0a';ctx.fillText('SWEEP',x1+4,y1-3);
+      }
+      if(ann.bos?.found){
+        const x1=px(ann.bos.x1,w),x2=px(ann.bos.x2,w),y=px(ann.bos.y,h);
+        ctx.strokeStyle='#0a84ff';ctx.lineWidth=Math.max(2,Math.round(h*0.003));ctx.setLineDash([Math.round(h*0.01),Math.round(h*0.005)]);
+        ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle='#0a84ff';ctx.fillText('BOS',x1+4,y-3);
+      }
+      if(ann.entry?.found){
+        const x1=px(ann.entry.x1,w),y1=px(ann.entry.y1,h),bw=px(ann.entry.x2,w)-x1,bh=px(ann.entry.y2,h)-y1;
+        ctx.fillStyle='rgba(48,209,88,0.18)';ctx.fillRect(x1,y1,bw,bh);
+        ctx.strokeStyle='#30d158';ctx.lineWidth=Math.max(2,Math.round(h*0.003));ctx.setLineDash([]);ctx.strokeRect(x1,y1,bw,bh);
+        ctx.fillStyle='#30d158';ctx.fillText('ENTRY 0.618',x1+4,y1-3);
+      }
+      resolve(c.toDataURL('image/jpeg',0.92));
+    };
+    img.onerror=()=>resolve(imgSrc);
+    img.src=imgSrc;
+  });
+}
+async function _annotateTradeChart(imgDataUrl){
+  const ann=await _getTradeAnnotations(imgDataUrl);
+  return _drawTradeAnnotations(imgDataUrl,ann);
+}
 async function _getNewsCtx(asset=''){
   try{
     const data=await _calCached();
