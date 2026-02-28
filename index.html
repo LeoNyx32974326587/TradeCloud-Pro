@@ -940,10 +940,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <p style="color:var(--text-sub);font-size:.9rem;margin-bottom:16px">W&#228;hle einen einzelnen Trade aus oder analysiere alle Trades auf einmal.</p>
     <div style="margin-bottom:16px">
       <label style="font-size:.8rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Trade ausw&#228;hlen</label>
-      <select id="ki-trade-select" style="width:100%;padding:12px;background:var(--cell-bg);border:1px solid var(--border);color:var(--text-main);border-radius:10px;font-size:.95rem;cursor:pointer;box-sizing:border-box">
+      <select id="ki-trade-select" onchange="_kiShowTradeImg()" style="width:100%;padding:12px;background:var(--cell-bg);border:1px solid var(--border);color:var(--text-main);border-radius:10px;font-size:.95rem;cursor:pointer;box-sizing:border-box">
         <option value="">&#x1F4CA; Alle Trades (Portfolio-Analyse)</option>
       </select>
     </div>
+    <div id="ki-trade-img-preview" style="display:none;margin-bottom:14px"></div>
     <button class="btn-primary" onclick="analyzeMyTrades()" style="width:100%" id="ki-analyse-btn">&#x1F4CA; Jetzt analysieren</button>
     <div id="ki-analyse-result"></div>
   </div>
@@ -2386,6 +2387,20 @@ function _kiPopulateTradeSelect(){
     sel.appendChild(opt);
   });
   if(prev)sel.value=prev;
+  _kiShowTradeImg();
+}
+function _kiShowTradeImg(){
+  const box=document.getElementById('ki-trade-img-preview');if(!box)return;
+  const sel=document.getElementById('ki-trade-select');
+  const id=sel?sel.value:'';
+  if(!id){box.style.display='none';box.innerHTML='';return;}
+  const all=(trades||[]).filter(t=>(t.journal||'Main')===activeJournal);
+  const t=all.find(x=>x.id===id);
+  const img=t&&(t.imgSetup||t.imgResult);
+  if(!img){box.style.display='none';box.innerHTML='';return;}
+  const label=t.imgSetup?'&#x1F4F7; Setup':'&#x1F3AF; Ergebnis';
+  box.style.display='block';
+  box.innerHTML=`<div style="font-size:.75rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">${label}</div><img src="${img}" style="width:100%;max-height:220px;object-fit:contain;border-radius:12px;border:1px solid var(--border);background:#000;cursor:zoom-in" onclick="window.open('${img}','_blank')">`;
 }
 
 function _kiTradeCtx(){
