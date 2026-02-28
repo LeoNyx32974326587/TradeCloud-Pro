@@ -355,6 +355,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .news-detail-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:.85rem}
 .news-detail-row:last-child{border-bottom:none}
 .news-detail-label{color:var(--text-sub);font-size:.78rem}
+.ki-progress-wrap{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:14px 0 6px}
+.ki-progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),#30d158);border-radius:2px;transition:width .5s ease}
+.ki-progress-label{font-size:.82rem;color:var(--text-sub);padding-bottom:4px}
 .ki-chart-drop{border:2px dashed var(--border);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;transition:.25s}
 .ki-chart-drop:hover{border-color:var(--accent);background:rgba(0,0,0,.05)}
 .trade-img-drop{border:1.5px dashed var(--border);border-radius:10px;padding:11px 16px;text-align:center;cursor:pointer;transition:.2s;font-size:.88rem;color:var(--text-sub)}
@@ -2534,19 +2537,25 @@ function _renderKIResult(text){
   );
   return html||`<div style="font-size:.87rem;line-height:1.6;word-break:break-word;overflow-wrap:break-word;white-space:normal">${t.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`;
 }
+function _setKIProg(pct,label){
+  const bar=document.getElementById('ki-prog');const lbl=document.getElementById('ki-prog-lbl');
+  if(bar)bar.style.width=pct+'%';if(lbl)lbl.textContent=label;
+}
 async function analyzeMyTrades(){
   const btn=document.getElementById('ki-analyse-btn');
   const res=document.getElementById('ki-analyse-result');
-  btn.disabled=true;btn.textContent='Analysiere\u2026';res.innerHTML='';
+  _lastAnnotatedImg=null;
+  btn.disabled=true;btn.textContent='Analysiere\u2026';
+  res.innerHTML='<div style="margin-top:14px"><div class="ki-progress-wrap"><div class="ki-progress-bar" id="ki-prog" style="width:5%"></div></div><div class="ki-progress-label" id="ki-prog-lbl">Starte Analyse\u2026</div></div>';
   const all=(trades||[]).filter(t=>(t.journal||'Main')===activeJournal);
   const sel=document.getElementById('ki-trade-select');
   const selectedId=sel?sel.value:'';
   const duRegel=`\nWICHTIG: Sprich den Trader immer direkt mit "du" an. Verwende NIEMALS "Ich sehe", "Ich denke" o.\u00e4. Formuliere stets: "Du hast...", "Bei deinem Trade...", "Hier fehlt..."`;
   let prompt;
-  let annotatedImgUrl=null;
   if(selectedId){
     const t=all.find(x=>x.id===selectedId);
     if(!t){res.innerHTML='<div style="color:var(--danger);margin-top:12px">Trade nicht gefunden.</div>';btn.disabled=false;btn.textContent='&#x1F4CA; Erneut analysieren';return;}
+    _setKIProg(15,'News-Kontext wird geladen\u2026');
     const detail=`Asset: ${t.asset||'-'} | Richtung: ${t.direction||'-'} | PnL: ${t.pnl||0}\u20AC | Datum: ${t.date||'-'} | Setup: ${t.setup||'-'} | RRR: ${t.rrr||'-'} | Anmerkungen: ${t.notes||t.comment||'-'}`;
     const newsCtx=await _getNewsCtx(t.asset||'');
     const newsNote=newsCtx?`\n\n7. NEWS-RISIKO \u2014 Heutige relevante News (${t.asset||''}):\n${newsCtx}\nHat das News-Umfeld diesen Trade beeinflusst? War der Einstieg news-technisch riskant?`:'';
@@ -2554,22 +2563,28 @@ async function analyzeMyTrades(){
     prompt=`Du bist ein professioneller Trading-Coach. Analysiere diesen einzelnen Trade strikt anhand der SMC-Strategie und gib ausf\u00FChrliches Feedback auf Deutsch.${duRegel}\n\n${_STRATEGY}\n\nTrade-Details:\n${detail}\n\nBitte analysiere genau anhand der Strategie (Liquidity Sweep \u2192 BOS \u2192 0.618/0.718 Fib-Entry):\n1. STRATEGIE-COMPLIANCE \u2014 Entspricht dieser Trade der Strategie? Was wurde richtig/falsch gemacht?\n2. EINSTIEG \u2014 War der Entry korrekt (beim 0.618 oder 0.718 Fib nach BOS)?\n3. SETUP-QUALIT\u00C4T \u2014 Wie klar war das Setup? Wurde auf alle 3 Bedingungen gewartet?\n4. ERGEBNIS-ANALYSE \u2014 Was hat zu diesem PnL gef\u00FChrt?\n5. KONKRETE VERBESSERUNGEN \u2014 Was h\u00E4tte besser gemacht werden k\u00F6nnen?\n6. LERNPUNKTE \u2014 Was kannst du aus diesem Trade mitnehmen?${newsNote}\n\nSei direkt, konkret und lehrreich.`;
     const tradeImg=t.imgSetup||t.imgResult;
     if(tradeImg){
-      res.innerHTML='<div style="color:var(--text-sub);font-size:.88rem;padding:6px 0">&#x1F4CD; Erkenne SMC-Elemente im Chart\u2026</div>';
-      try{annotatedImgUrl=await _annotateTradeChart(tradeImg);}catch(_){}
-      res.innerHTML='<div style="color:var(--text-sub);font-size:.88rem;padding:4px 0">&#x1F4CA; Analysiere Trade\u2026</div>';
+      _setKIProg(30,'Erkenne SMC-Elemente im Chart\u2026');
+      try{_lastAnnotatedImg=await _annotateTradeChart(tradeImg);}catch(_){}
+      _setKIProg(65,'Erstelle Analyse\u2026');
+    } else {
+      _setKIProg(40,'Erstelle Analyse\u2026');
     }
   } else {
+    _setKIProg(15,'Trades werden ausgewertet\u2026');
     const detail=all.slice(-30).map(t=>`Asset:${t.asset||'-'} Richtung:${t.direction||'-'} PnL:${t.pnl||0} Datum:${t.date||'-'} Setup:${t.setup||'-'}`).join('\n');
     const newsCtx=await _getNewsCtx('');
     const newsNote=newsCtx?`\n\n7. NEWS-BEWUSSTSEIN \u2014 Heutige High-Impact News:\n${newsCtx}\nWird bei deinen Trades auf das News-Umfeld geachtet? Wurden Trades kurz vor/nach High-Impact-News vermieden?`:'';
     prompt=`Du bist ein professioneller Trading-Coach. Analysiere deine Trading-Daten strikt anhand deiner SMC-Strategie und gib ausf\u00FChrliches Feedback auf Deutsch.${duRegel}\n\n${_STRATEGY}\n\nTrading-\u00DCbersicht:\n${_kiTradeCtx()}\n\nDetaillierte Trades (letzte 30):\n${detail}\n\nBitte analysiere genau anhand der Strategie (Liquidity Sweep \u2192 BOS \u2192 0.618/0.718 Fib-Entry):\n1. STRATEGIE-COMPLIANCE \u2014 Wie konsequent folgst du deinen eigenen Regeln?\n2. ST\u00C4RKEN \u2014 Was l\u00E4uft strategiekonform gut?\n3. SCHW\u00C4CHEN \u2014 Wo weichst du von der Strategie ab?\n4. MUSTER BEI VERLUST-TRADES \u2014 Welcher Strategieschritt fehlt typischerweise bei deinen Verlustern?\n5. KONKRETE HANDLUNGSEMPFEHLUNGEN \u2014 Spezifisch f\u00FCr Liquidity Sweep, BOS-Erkennung und Fib-Entry\n6. PSYCHOLOGIE \u2014 Steigst du ungeduldig ein bevor alle 3 Bedingungen erf\u00FCllt sind?${newsNote}\n\nStrukturiere die Antwort klar mit \u00DCberschriften. Sei direkt und konkret.`;
+    _setKIProg(40,'Erstelle Portfolio-Analyse\u2026');
   }
   try{
     const rep=await _gemini([{role:'user',parts:[{text:prompt}]}]);
-    const imgHtml=annotatedImgUrl
-      ?`<div style="margin-bottom:16px;padding:12px;background:var(--cell-bg);border:1px solid var(--border);border-radius:12px"><div style="font-size:.72rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">&#x1F4CD; SMC-Elemente eingezeichnet</div><img src="${annotatedImgUrl}" style="width:100%;border-radius:8px;cursor:zoom-in;display:block" onclick="window.open('${annotatedImgUrl}','_blank')"><div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap"><span style="font-size:.75rem;color:#ff9f0a;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:rgba(255,159,10,.4);border:1px solid #ff9f0a;display:inline-block;border-radius:2px"></span>Sweep</span><span style="font-size:.75rem;color:#0a84ff;display:flex;align-items:center;gap:4px"><span style="width:10px;height:2px;background:#0a84ff;display:inline-block"></span>BOS</span><span style="font-size:.75rem;color:#30d158;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:rgba(48,209,88,.3);border:1px solid #30d158;display:inline-block;border-radius:2px"></span>Entry Zone</span></div></div>`
+    _setKIProg(100,'Fertig');
+    const imgHtml=_lastAnnotatedImg
+      ?`<div style="margin-bottom:16px;padding:12px;background:var(--cell-bg);border:1px solid var(--border);border-radius:12px"><div style="font-size:.72rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">&#x1F4CD; SMC-Elemente eingezeichnet</div><img id="ki-ann-img" style="width:100%;border-radius:8px;cursor:zoom-in;display:block" onclick="if(_lastAnnotatedImg)window.open(_lastAnnotatedImg,'_blank')"><div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap"><span style="font-size:.75rem;color:#ff9f0a;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:rgba(255,159,10,.4);border:1px solid #ff9f0a;display:inline-block;border-radius:2px"></span>Sweep</span><span style="font-size:.75rem;color:#0a84ff;display:flex;align-items:center;gap:4px"><span style="width:10px;height:2px;background:#0a84ff;display:inline-block"></span>BOS</span><span style="font-size:.75rem;color:#30d158;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:rgba(48,209,88,.3);border:1px solid #30d158;display:inline-block;border-radius:2px"></span>Entry Zone</span></div></div>`
       :'';
     res.innerHTML='<div style="margin-top:14px">'+imgHtml+_renderKIResult(rep)+'</div>';
+    if(_lastAnnotatedImg){const el=document.getElementById('ki-ann-img');if(el)el.src=_lastAnnotatedImg;}
   }catch(e){res.innerHTML='<div style="color:var(--danger);margin-top:12px">Fehler: '+(e.message||'Analyse fehlgeschlagen')+'</div>';}
   btn.disabled=false;btn.textContent='&#x1F4CA; Erneut analysieren';
 }
@@ -2838,6 +2853,7 @@ async function pasteTradeImg(field){
 // ─── DASHBOARD NEWS COUNTDOWN ────────────────────────────────────────────────
 let _newsEvents=[],_newsTick=null;
 let _newsViewData=[],_newsViewTick=null;
+let _lastAnnotatedImg=null;
 const _NEWS_FLAGS={USD:'us',EUR:'eu',GBP:'gb',JPY:'jp',CHF:'ch',CAD:'ca',AUD:'au',NZD:'nz',CNY:'cn'};
 function _flagImg(ccy){const c=_NEWS_FLAGS[ccy];return c?`<img src="https://flagcdn.com/20x15/${c}.png" width="20" height="15" style="border-radius:2px;vertical-align:middle;flex-shrink:0" alt="${ccy}">`:`<span style="font-size:.8rem;line-height:1">🌐</span>`;}
 const _NEWS_IMP={High:'#ff3b30',Medium:'#ff9f0a',Low:'#8e8e93'};
