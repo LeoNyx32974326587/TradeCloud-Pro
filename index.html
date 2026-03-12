@@ -1525,9 +1525,9 @@ function renderHistory(){
 function prepareCreateView(){
   if(userStatus==="test"){const mt=trades.filter(t=>(t.journal||"Main")===(activeJournal||journals[0]?.name||"Main"));if(mt.length>=5){alert("Test-Limit: Max. 5 Trades!\nUpgrade auf Pro.");return;}}
   document.getElementById("editId").value="";const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());document.getElementById("datetime").value=now.toISOString().slice(0,16);
-  ["assetInput","pnl","note","inpEntry","inpSL","inpTP1","inpTP2","inpTP3","imgSetup","imgResult","inpAdminFeedback"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  ["assetInput","pnl","note","inpEntry","inpSL","inpTP1","inpTP2","inpTP3","imgSetup","imgResult"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   clearTradeImg('setup');clearTradeImg('result');
-  if(activeJournal)document.getElementById("inpJournalSelect").value=activeJournal;document.getElementById("admin-feedback-container").classList.add("hidden");document.getElementById("status").value="Aktiv";toggleFormFields();document.getElementById("form-title").innerText="Neuer Trade";document.getElementById("trade-form-modal").classList.remove("hidden");document.getElementById("popup-overlay").classList.add("open");const _kip=document.getElementById('trade-ki-preview');if(_kip){_kip.style.display='none';_kip.innerHTML='';}  _checkPairNews('');_calCached();
+  if(activeJournal)document.getElementById("inpJournalSelect").value=activeJournal;document.getElementById("status").value="Aktiv";document.getElementById("tradeDirection").value="Long";document.getElementById("resultType").value="Gewinn";toggleFormFields();document.getElementById("form-title").innerText="Neuer Trade";document.getElementById("trade-form-modal").classList.remove("hidden");document.getElementById("popup-overlay").classList.add("open");const _kip=document.getElementById('trade-ki-preview');if(_kip){_kip.style.display='none';_kip.innerHTML='';}  _checkPairNews('');_calCached();
 }
 async function saveTrade(){
   const id=document.getElementById("editId").value;const asset=document.getElementById("assetInput").value.toUpperCase();if(!asset){alert("Asset fehlt!");return;}
