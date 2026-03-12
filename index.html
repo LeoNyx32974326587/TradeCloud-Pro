@@ -397,9 +397,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <input type="hidden" id="editId">
     <label>Journal</label><select id="inpJournalSelect"></select>
     <label>Status</label><select id="status" onchange="toggleFormFields()"><option value="Aktiv">Laufend (Offen)</option><option value="Geschlossen">Geschlossen</option></select>
-    <label>Richtung</label><select id="tradeDirection" onchange="toggleFormFields()"><option value="Long">&#x1F7E2; Long</option><option value="Short">&#x1F534; Short</option><option value="LongPending">&#x23F3; Long Pending</option><option value="ShortPending">&#x23F3; Short Pending</option></select>
     <label>Asset</label><div class="asset-dropdown-wrap"><input type="text" id="assetInput" placeholder="EURUSD" style="text-transform:uppercase" autocomplete="off" oninput="showAssetDropdown(this,'asset-dd-1');_checkPairNews(this.value)" onfocus="showAssetDropdown(this,'asset-dd-1')"><div id="asset-dd-1" class="asset-dropdown"></div></div>
     <div id="news-warning-banner" style="display:none;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,159,10,.4);background:rgba(255,159,10,.08)"></div>
+    <label>Richtung</label><select id="tradeDirection" onchange="toggleFormFields()"><option value="Long">&#x1F7E2; Long</option><option value="Short">&#x1F534; Short</option><option value="LongPending">&#x23F3; Long Pending</option><option value="ShortPending">&#x23F3; Short Pending</option></select>
     <label>Datum</label><input type="datetime-local" id="datetime">
     <div class="input-row-2"><div><label>Entry</label><input type="number" id="inpEntry" step="any"></div><div><label>Stop Loss</label><input type="number" id="inpSL" step="any"></div></div>
     <div class="input-row-3"><div><label>TP 1</label><input type="number" id="inpTP1" step="any"></div><div><label>TP 2</label><input type="number" id="inpTP2" step="any"></div><div><label>TP 3</label><input type="number" id="inpTP3" step="any"></div></div>
