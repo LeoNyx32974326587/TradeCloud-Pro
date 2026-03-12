@@ -416,7 +416,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       <div id="tradeChartResult" style="display:none;margin-top:8px"></div>
     </div>
     <input type="hidden" id="imgSetup">
-    <label>Notiz</label><textarea id="note" rows="2"></textarea>
     <div id="closedFields" class="hidden">
       <label style="color:var(--success)">PnL (Euro)</label><input type="number" id="pnl" step="0.01">
       <label>Ergebnis</label><select id="resultType"><option value="Gewinn">&#x2705; Gewinn</option><option value="Verlust">&#x274C; Verlust</option><option value="Breakeven">&#x27A1;&#xFE0E; Breakeven</option><option value="NichtAbgeholt" id="optNichtAbgeholt" hidden>&#x23F3; Nicht abgeholt</option></select>
@@ -429,6 +428,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       </div>
       <input type="hidden" id="imgResult">
     </div>
+    <label>Notiz</label><textarea id="note" rows="2"></textarea>
     <div id="admin-feedback-container" class="hidden" style="margin-top:20px;border-top:1px solid #333;padding-top:15px"><label style="color:var(--accent)">Coach Feedback</label><textarea id="inpAdminFeedback" rows="2" style="border-color:var(--accent)" placeholder="Tipp fuer den User..."></textarea></div>
     <button onclick="saveTrade()" class="btn-primary" style="margin-top:8px">SPEICHERN</button>
   </div>
